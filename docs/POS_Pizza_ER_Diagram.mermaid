@@ -1,0 +1,330 @@
+erDiagram
+    %% === AUTENTICACION ===
+    users {
+        uuid id PK
+        varchar email UK
+        varchar password_hash
+        varchar name
+        varchar role
+        boolean is_active
+        timestamp last_login_at
+        timestamp created_at
+        timestamp updated_at
+    }
+    sessions {
+        uuid id PK
+        uuid user_id FK
+        varchar refresh_token
+        varchar device_info
+        timestamp expires_at
+        boolean is_revoked
+    }
+    audit_logs {
+        uuid id PK
+        uuid user_id FK
+        varchar action
+        varchar entity_type
+        uuid entity_id
+        jsonb details
+        timestamp created_at
+    }
+
+    %% === CATALOGO ===
+    categories {
+        uuid id PK
+        varchar name
+        varchar slug UK
+        varchar icon
+        integer display_order
+        boolean is_active
+    }
+    products {
+        uuid id PK
+        uuid category_id FK
+        varchar name
+        varchar slug UK
+        decimal base_price
+        varchar image_url
+        boolean has_variants
+        boolean is_active
+        integer display_order
+    }
+    product_variants {
+        uuid id PK
+        uuid product_id FK
+        varchar name
+        decimal price
+        integer display_order
+        boolean is_active
+    }
+    modifier_groups {
+        uuid id PK
+        varchar name
+        integer min_selections
+        integer max_selections
+        boolean is_active
+    }
+    modifiers {
+        uuid id PK
+        uuid group_id FK
+        varchar name
+        decimal price
+        boolean is_active
+    }
+    product_modifiers {
+        uuid id PK
+        uuid product_id FK
+        uuid modifier_group_id FK
+    }
+
+    %% === PROMOCIONES ===
+    promotions {
+        uuid id PK
+        varchar name
+        decimal promo_price
+        decimal original_price
+        boolean is_active
+        date start_date
+        date end_date
+    }
+    promotion_items {
+        uuid id PK
+        uuid promotion_id FK
+        uuid product_id FK
+        uuid variant_id FK
+        integer quantity
+        boolean is_required
+    }
+
+    %% === SALON ===
+    tables {
+        uuid id PK
+        integer number UK
+        integer capacity
+        varchar zone
+        varchar status
+        boolean is_active
+    }
+
+    %% === PEDIDOS ===
+    orders {
+        uuid id PK
+        varchar ticket_number
+        varchar order_type
+        uuid table_id FK
+        varchar customer_name
+        uuid user_id FK
+        uuid cash_register_id FK
+        varchar status
+        decimal subtotal
+        decimal tax_rate
+        decimal tax_amount
+        decimal total
+        text notes
+        text cancellation_reason
+        timestamp created_at
+        timestamp delivered_at
+    }
+    order_items {
+        uuid id PK
+        uuid order_id FK
+        uuid product_id FK
+        uuid variant_id FK
+        varchar product_name
+        integer quantity
+        decimal unit_price
+        decimal modifiers_total
+        decimal subtotal
+        text notes
+    }
+    order_item_modifiers {
+        uuid id PK
+        uuid order_item_id FK
+        uuid modifier_id FK
+        varchar modifier_name
+        decimal price
+    }
+    order_status_history {
+        uuid id PK
+        uuid order_id FK
+        varchar status
+        uuid changed_by FK
+        integer estimated_remaining_min
+        timestamp created_at
+    }
+    order_promotions {
+        uuid id PK
+        uuid order_id FK
+        uuid promotion_id FK
+        varchar promo_name
+        decimal promo_price
+    }
+
+    %% === PAGOS Y CAJA ===
+    payment_transactions {
+        uuid id PK
+        uuid order_id FK
+        varchar payment_method
+        decimal amount
+        decimal cash_received
+        decimal change_amount
+        varchar reference_number
+        varchar status
+        text refund_reason
+        timestamp refunded_at
+        timestamp created_at
+    }
+    cash_registers {
+        uuid id PK
+        uuid user_id FK
+        timestamp opened_at
+        timestamp closed_at
+        decimal opening_amount
+        decimal expected_cash
+        decimal actual_cash
+        decimal difference
+        decimal total_sales
+        decimal total_cash_sales
+        decimal total_digital_sales
+        integer total_tickets
+        integer total_cancelled
+        text notes
+        varchar status
+    }
+    ticket_sequences {
+        uuid id PK
+        date date UK
+        integer last_number
+    }
+
+    %% === TRACKING ===
+    order_tracking {
+        uuid id PK
+        uuid order_id FK
+        varchar tracking_code UK
+        text qr_data
+        integer estimated_minutes
+        timestamp expires_at
+    }
+
+    %% === INVENTARIO ===
+    inventory_items {
+        uuid id PK
+        varchar name
+        varchar sku UK
+        varchar unit
+        decimal current_stock
+        decimal min_stock
+        decimal cost_per_unit
+        varchar supplier
+        boolean is_active
+    }
+    product_ingredients {
+        uuid id PK
+        uuid product_id FK
+        uuid variant_id FK
+        uuid inventory_item_id FK
+        decimal quantity_used
+    }
+    inventory_movements {
+        uuid id PK
+        uuid inventory_item_id FK
+        varchar movement_type
+        decimal quantity
+        decimal stock_after
+        varchar reference_type
+        uuid reference_id
+        uuid user_id FK
+        timestamp created_at
+    }
+
+    %% === CONFIGURACION ===
+    business_config {
+        uuid id PK
+        varchar business_name
+        varchar ruc
+        text address
+        varchar phone
+        varchar email
+        decimal tax_rate
+        varchar currency
+        text ticket_header
+        text ticket_footer
+        varchar tracking_base_url
+        integer tracking_expiry_hours
+        varchar logo_url
+    }
+    product_prep_times {
+        uuid id PK
+        uuid product_id FK
+        uuid variant_id FK
+        integer prep_time_minutes
+    }
+    printer_configs {
+        uuid id PK
+        varchar name
+        varchar location
+        varchar connection_type
+        varchar ip_address
+        integer paper_width
+        boolean is_active
+    }
+
+    %% === REPORTES ===
+    daily_summaries {
+        uuid id PK
+        date date UK
+        integer total_orders
+        decimal total_sales
+        decimal total_cash
+        decimal total_digital
+        decimal avg_ticket
+    }
+
+    %% === NOTIFICACIONES ===
+    notifications {
+        uuid id PK
+        varchar type
+        varchar title
+        text message
+        varchar target_role
+        uuid target_user_id FK
+        varchar reference_type
+        uuid reference_id
+        boolean is_read
+        timestamp read_at
+        timestamp created_at
+    }
+
+    %% ====== RELACIONES ======
+    users ||--o{ sessions : "has"
+    users ||--o{ audit_logs : "generates"
+    users ||--o{ orders : "creates"
+    users ||--o{ cash_registers : "opens"
+    users ||--o{ inventory_movements : "registers"
+    users ||--o{ notifications : "receives"
+
+    categories ||--o{ products : "contains"
+    products ||--o{ product_variants : "has_sizes"
+    products ||--o{ product_modifiers : "allows"
+    modifier_groups ||--o{ modifiers : "groups"
+    modifier_groups ||--o{ product_modifiers : "linked_to"
+    products ||--o{ product_ingredients : "recipe"
+    products ||--o{ product_prep_times : "prep_time"
+
+    promotions ||--o{ promotion_items : "includes"
+    products ||--o{ promotion_items : "part_of"
+
+    tables ||--o{ orders : "assigned_to"
+    cash_registers ||--o{ orders : "registered_in"
+    orders ||--o{ order_items : "contains"
+    orders ||--|| order_tracking : "tracked_by"
+    orders ||--|| payment_transactions : "paid_with"
+    orders ||--o{ order_status_history : "history"
+    orders ||--o| order_promotions : "promo_applied"
+
+    order_items ||--o{ order_item_modifiers : "has_modifiers"
+    products ||--o{ order_items : "sold_as"
+
+    inventory_items ||--o{ product_ingredients : "used_in"
+    inventory_items ||--o{ inventory_movements : "tracks"
