@@ -1,0 +1,62 @@
+{
+  "common": {
+    "appName": "POS Pizza",
+    "version": "Versión 1.0.0",
+    "secureAccess": "Acceso Seguro"
+  },
+  "login": {
+    "title": "POS Pizza",
+    "subtitle": "Inicia sesión para acceder a tu terminal de caja",
+    "emailLabel": "Correo Electrónico",
+    "emailPlaceholder": "admin@pospizza.com",
+    "passwordLabel": "Contraseña",
+    "signIn": "Iniciar Sesión",
+    "authenticating": "Autenticando...",
+    "accessDenied": "Acceso Denegado",
+    "invalidCredentials": "Correo o contraseña inválidos",
+    "tryAgain": "Intentar de Nuevo"
+  },
+  "sidebar": {
+    "menu": "Menú",
+    "orderList": "Pedidos",
+    "history": "Historial",
+    "bills": "Facturas",
+    "settings": "Configuración",
+    "helpCenter": "Centro de Ayuda",
+    "signOut": "Cerrar Sesión",
+    "signOutConfirmTitle": "¿Cerrar Sesión?",
+    "signOutConfirmText": "¿Estás seguro de que deseas finalizar tu turno?",
+    "signOutConfirmButton": "Sí, Cerrar Sesión",
+    "cancel": "Cancelar"
+  },
+  "topbar": {
+    "searchPlaceholder": "Buscar en el menú...",
+    "toggleDarkMode": "Cambiar Modo Oscuro",
+    "cashier": "Cajero(a)"
+  },
+  "pos": {
+    "categories": "Categorías",
+    "menu": "Menú",
+    "showingItems": "Mostrando {count} Productos",
+    "add": "Agregar",
+    "freshlyMade": "Preparado fresco diariamente."
+  },
+  "cart": {
+    "currentOrder": "Pedido Actual",
+    "table": "Mesa",
+    "new": "Nuevo",
+    "noItemSelected": "Sin Productos",
+    "selectItems": "Selecciona productos del menú.",
+    "regular": "Regular",
+    "subtotal": "Subtotal",
+    "tax": "IGV (18%)",
+    "total": "TOTAL",
+    "addCheck": "Agregar Cuenta",
+    "placeOrder": "Realizar Pedido",
+    "processing": "Procesando...",
+    "orderPlaced": "¡Pedido Realizado!",
+    "orderPlacedText": "Ticket: {ticket} ha sido enviado a cocina.",
+    "checkoutFailed": "Error en el Pedido",
+    "checkoutFailedText": "No se pudo enviar el pedido al servidor. Inténtalo nuevamente."
+  }
+}

@@ -1,0 +1,32 @@
+⏳ Running SQLite migrations programmatically...
+❌ Failed to apply migrations DrizzleError: Failed to run the query '
+CREATE TABLE `product_modifiers` (
+	`id` text PRIMARY KEY NOT NULL,
+	`product_id` text NOT NULL,
+	`modifier_group_id` text NOT NULL,
+	PRIMARY KEY(`product_id`, `modifier_group_id`),
+	FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`modifier_group_id`) REFERENCES `modifier_groups`(`id`) ON UPDATE no action ON DELETE no action
+);
+'
+    at BetterSQLiteSession.run (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\src\sqlite-core\session.ts:271:10)
+    at SQLiteSyncDialect.migrate (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\src\sqlite-core\dialect.ts:864:15)
+    ... 4 lines matching cause stack trace ...
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object.transformer (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12) {
+  cause: SqliteError: table "product_modifiers" has more than one primary key
+      at Database.prepare (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\better-sqlite3\lib\methods\wrappers.js:5:21)
+      at BetterSQLiteSession.prepareQuery (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\src\better-sqlite3\session.ts:60:28)
+      at BetterSQLiteSession.prepareOneTimeQuery (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\src\sqlite-core\session.ts:250:15)
+      at BetterSQLiteSession.run (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\src\sqlite-core\session.ts:269:16)
+      at SQLiteSyncDialect.migrate (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\src\sqlite-core\dialect.ts:864:15)
+      at migrate (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\node_modules\src\better-sqlite3\migrator.ts:10:13)
+      at runMigrations (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\apps\api\src\drizzle\migrate.ts:7:5)
+      at <anonymous> (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\apps\api\src\drizzle\migrate.ts:16:1)
+      at Object.<anonymous> (C:\Users\sofia\OneDrive\Escritorio\pos-pizza-web-realtime\apps\api\src\drizzle\migrate.ts:16:15)
+      at Module._compile (node:internal/modules/cjs/loader:1546:14) {
+    code: 'SQLITE_ERROR'
+  }
+}

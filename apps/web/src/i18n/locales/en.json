@@ -1,0 +1,62 @@
+{
+  "common": {
+    "appName": "POS Pizza",
+    "version": "Version 1.0.0",
+    "secureAccess": "Secure Access"
+  },
+  "login": {
+    "title": "POS Pizza",
+    "subtitle": "Sign in to access your cashier terminal",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "admin@pospizza.com",
+    "passwordLabel": "Password",
+    "signIn": "Sign In",
+    "authenticating": "Authenticating...",
+    "accessDenied": "Access Denied",
+    "invalidCredentials": "Invalid email or password",
+    "tryAgain": "Try Again"
+  },
+  "sidebar": {
+    "menu": "Menu",
+    "orderList": "Order List",
+    "history": "History",
+    "bills": "Bills",
+    "settings": "Settings",
+    "helpCenter": "Help Center",
+    "signOut": "Sign Out",
+    "signOutConfirmTitle": "Sign Out?",
+    "signOutConfirmText": "Are you sure you want to end your shift?",
+    "signOutConfirmButton": "Yes, Sign Out",
+    "cancel": "Cancel"
+  },
+  "topbar": {
+    "searchPlaceholder": "Search menu...",
+    "toggleDarkMode": "Toggle Dark Mode",
+    "cashier": "Cashier"
+  },
+  "pos": {
+    "categories": "Categories",
+    "menu": "Menu",
+    "showingItems": "Showing {count} Items",
+    "add": "Add",
+    "freshlyMade": "Freshly made daily."
+  },
+  "cart": {
+    "currentOrder": "Current Order",
+    "table": "Table",
+    "new": "New",
+    "noItemSelected": "No Item Selected",
+    "selectItems": "Please select items from the menu.",
+    "regular": "Regular",
+    "subtotal": "Subtotal",
+    "tax": "Tax (18%)",
+    "total": "TOTAL",
+    "addCheck": "Add Check",
+    "placeOrder": "Place Order",
+    "processing": "Processing...",
+    "orderPlaced": "Order Placed!",
+    "orderPlacedText": "Ticket: {ticket} has been sent to the kitchen.",
+    "checkoutFailed": "Checkout Failed",
+    "checkoutFailedText": "Failed to submit order to the server. Please try again."
+  }
+}
