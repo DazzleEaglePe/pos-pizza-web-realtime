@@ -13,58 +13,113 @@ import Link from "next/link";
 import { io } from "socket.io-client";
 import { useParams } from "next/navigation";
 import { API_URL, WS_URL } from "@/lib/config";
+import { useTranslation } from "@/i18n";
 
-const STATUS_STEPS = [
-  {
-    key: "RECEIVED",
-    title: "Pedido Recibido",
-    desc: "Hemos recibido tu pedido.",
-  },
-  {
-    key: "PREPARING",
-    title: "Preparando",
-    desc: "Estamos preparando tus ingredientes.",
-  },
-  {
-    key: "IN_OVEN",
-    title: "En el Horno",
-    desc: "Tu pizza se está horneando a la perfección.",
-  },
-  {
-    key: "READY",
-    title: "Listo para Recoger",
-    desc: "¡Tu pedido está listo! Acércate al mostrador.",
-  },
-  {
-    key: "DELIVERED",
-    title: "Entregado",
-    desc: "¡Listo! Tu pedido fue entregado. Gracias por tu compra.",
-  },
-];
+type OrderStatus =
+  | "RECEIVED"
+  | "PREPARING"
+  | "IN_OVEN"
+  | "READY"
+  | "DELIVERED"
+  | "CANCELLED"
+  | (string & {});
+
+type TrackedOrderItem = {
+  productName: string;
+  quantity: number;
+  subtotal: number;
+  variantName?: string | null;
+};
+
+type StatusHistoryEntry = {
+  status: OrderStatus;
+  createdAt: string;
+};
+
+type TrackedOrder = {
+  id: string;
+  ticketNumber: string;
+  status: OrderStatus;
+  orderType?: "DINE_IN" | "TAKEOUT" | (string & {});
+  customerName?: string | null;
+  table?: { number: number; zone?: string | null } | null;
+  createdAt: string;
+  deliveredAt?: string | null;
+  updatedAt?: string | null;
+  total: number;
+  items?: TrackedOrderItem[];
+  statusHistory?: StatusHistoryEntry[];
+};
+
+type StatusUpdatedEvent = {
+  orderId: string;
+  status: OrderStatus;
+  updatedAt?: string;
+  deliveredAt?: string;
+};
 
 export default function TrackingTicketPage() {
   const params = useParams();
   const ticketNumber = params.ticketNumber as string;
 
-  const [order, setOrder] = useState<any>(null);
+  const { t, locale, setLocale } = useTranslation();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const lang = new URLSearchParams(window.location.search).get("lang");
+    if (lang === "en" || lang === "es") setLocale(lang);
+  }, [setLocale]);
+
+  const [order, setOrder] = useState<TrackedOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isWsConnected, setIsWsConnected] = useState(false);
 
+  const timeLocale = locale === "en" ? "en-US" : "es-PE";
+
+  const STATUS_STEPS = [
+    {
+      key: "RECEIVED",
+      title: t("tracking.steps.RECEIVED.title"),
+      desc: t("tracking.steps.RECEIVED.desc"),
+    },
+    {
+      key: "PREPARING",
+      title: t("tracking.steps.PREPARING.title"),
+      desc: t("tracking.steps.PREPARING.desc"),
+    },
+    {
+      key: "IN_OVEN",
+      title: t("tracking.steps.IN_OVEN.title"),
+      desc: t("tracking.steps.IN_OVEN.desc"),
+    },
+    {
+      key: "READY",
+      title: t("tracking.steps.READY.title"),
+      desc: t("tracking.steps.READY.desc"),
+    },
+    {
+      key: "DELIVERED",
+      title: t("tracking.steps.DELIVERED.title"),
+      desc: t("tracking.steps.DELIVERED.desc"),
+    },
+  ] as const;
+
   // 1. Fetch initial order data via REST
   useEffect(() => {
     if (!ticketNumber) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`${API_URL}/orders/track/${ticketNumber}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Pedido no encontrado");
+        if (!res.ok) throw new Error("ORDER_NOT_FOUND");
         return res.json();
       })
       .then((data) => {
-        setOrder(data);
+        setOrder(data as TrackedOrder);
         setError(null);
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => setError(err?.message || "errors.generic"))
       .finally(() => setLoading(false));
   }, [ticketNumber]);
 
@@ -83,9 +138,9 @@ export default function TrackingTicketPage() {
       setIsWsConnected(false);
     });
 
-    socket.on("order:statusUpdated", (data: any) => {
+    socket.on("order:statusUpdated", (data: StatusUpdatedEvent) => {
       if (data.orderId === order.id) {
-        setOrder((prev: any) =>
+        setOrder((prev) =>
           prev
             ? {
                 ...prev,
@@ -103,7 +158,7 @@ export default function TrackingTicketPage() {
                     new Date().toISOString();
 
                   const exists = prevHistory.some(
-                    (h: any) => String(h?.status) === String(data.status),
+                    (h) => String(h?.status) === String(data.status),
                   );
                   if (exists) return prevHistory;
 
@@ -125,12 +180,12 @@ export default function TrackingTicketPage() {
 
   const statusKey = String(order?.status || "");
   const statusLabelMap: Record<string, string> = {
-    RECEIVED: "Pedido recibido",
-    PREPARING: "En preparación",
-    IN_OVEN: "En el horno",
-    READY: "Listo para recoger",
-    DELIVERED: "Entregado",
-    CANCELLED: "Cancelado",
+    RECEIVED: t("tracking.status.RECEIVED"),
+    PREPARING: t("tracking.status.PREPARING"),
+    IN_OVEN: t("tracking.status.IN_OVEN"),
+    READY: t("tracking.status.READY"),
+    DELIVERED: t("tracking.status.DELIVERED"),
+    CANCELLED: t("tracking.status.CANCELLED"),
   };
   const statusLabel: string = statusLabelMap[statusKey] || statusKey;
 
@@ -174,7 +229,9 @@ export default function TrackingTicketPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#f5f7f9]">
         <Loader2 className="w-10 h-10 text-primary animate-spin" />
-        <p className="mt-4 text-gray-500 font-medium">Buscando tu pedido...</p>
+        <p className="mt-4 text-gray-500 font-medium">
+          {t("tracking.searching")}
+        </p>
       </div>
     );
   }
@@ -184,16 +241,16 @@ export default function TrackingTicketPage() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#f5f7f9] px-6 text-center">
         <Pizza className="w-16 h-16 text-gray-300 mb-4" />
         <h1 className="text-2xl font-black text-gray-800 mb-2">
-          Pedido No Encontrado
+          {t("tracking.notFoundTitle")}
         </h1>
         <p className="text-gray-500 text-sm">
-          El ticket <b>{ticketNumber}</b> no existe o ya expiró.
+          {t("tracking.notFoundText", { ticket: ticketNumber })}
         </p>
         <Link
           href="/tracking"
           className="mt-6 text-primary font-bold text-sm underline"
         >
-          Volver
+          {t("common.back")}
         </Link>
       </div>
     );
@@ -204,16 +261,16 @@ export default function TrackingTicketPage() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#f5f7f9] px-6 text-center">
         <Pizza className="w-16 h-16 text-gray-300 mb-4" />
         <h1 className="text-2xl font-black text-gray-800 mb-2">
-          Pedido Cancelado
+          {t("tracking.cancelledTitle")}
         </h1>
         <p className="text-gray-500 text-sm">
-          El ticket <b>{ticketNumber}</b> fue cancelado.
+          {t("tracking.cancelledText", { ticket: ticketNumber })}
         </p>
         <Link
           href="/tracking"
           className="mt-6 text-primary font-bold text-sm underline"
         >
-          Volver
+          {t("common.back")}
         </Link>
       </div>
     );
@@ -230,7 +287,7 @@ export default function TrackingTicketPage() {
             <Link
               href="/tracking"
               className="w-10 h-10 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center text-gray-500 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-              aria-label="Volver"
+              aria-label={t("common.back")}
             >
               <ChevronLeft className="w-5 h-5" />
             </Link>
@@ -244,17 +301,17 @@ export default function TrackingTicketPage() {
               </div>
               <div className="hidden sm:block">
                 <div className="font-black text-gray-900 leading-none tracking-tight">
-                  POS Pizza
+                  {t("common.appName")}
                 </div>
                 <div className="text-xs font-bold text-gray-500 mt-1">
-                  Seguimiento
+                  {t("tracking.brandSubtitle")}
                 </div>
               </div>
             </Link>
           </div>
 
           <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-gray-500">
-            Ticket{" "}
+            {t("cart.ticketLabel")}{" "}
             <span className="text-gray-900 font-black">
               {order.ticketNumber}
             </span>
@@ -269,23 +326,34 @@ export default function TrackingTicketPage() {
                   {order.ticketNumber}
                 </h1>
                 <p className="text-gray-500 mt-2 font-medium">
-                  Pedido realizado:{" "}
+                  {t("tracking.placedAt")}:{" "}
                   <span className="font-bold text-primary">
-                    {new Date(order.createdAt).toLocaleTimeString("es-PE", {
+                    {new Date(order.createdAt).toLocaleTimeString(timeLocale, {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </span>
                 </p>
 
+                <p className="text-gray-500 mt-1 font-medium">
+                  {order?.orderType === "DINE_IN" && order?.table
+                    ? `${t("cart.table")} ${order.table.number}${order.table.zone ? ` (${order.table.zone})` : ""}`
+                    : order?.customerName
+                      ? `${t("cart.takeout")}: ${order.customerName}`
+                      : t("cart.takeout")}
+                </p>
+
                 {order.status === "DELIVERED" && order.deliveredAt && (
                   <p className="text-gray-500 mt-1 font-medium">
-                    Entregado:{" "}
+                    {t("tracking.deliveredAt")}:{" "}
                     <span className="font-bold text-gray-900">
-                      {new Date(order.deliveredAt).toLocaleTimeString("es-PE", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {new Date(order.deliveredAt).toLocaleTimeString(
+                        timeLocale,
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
                     </span>
                   </p>
                 )}
@@ -305,7 +373,7 @@ export default function TrackingTicketPage() {
                     }`}
                     aria-hidden
                   />
-                  {isWsConnected ? "En vivo" : "Sin conexion"}
+                  {isWsConnected ? t("tracking.live") : t("tracking.offline")}
                 </span>
               </div>
             </div>
@@ -329,12 +397,12 @@ export default function TrackingTicketPage() {
 
                     const ts = historyByStatus.get(step.key);
                     const time = ts
-                      ? new Date(ts).toLocaleTimeString("es-PE", {
+                      ? new Date(ts).toLocaleTimeString(timeLocale, {
                           hour: "2-digit",
                           minute: "2-digit",
                         })
                       : stepStatus === "active"
-                        ? "En curso"
+                        ? t("tracking.inProgress")
                         : "--:--";
 
                     return (
@@ -356,12 +424,12 @@ export default function TrackingTicketPage() {
               <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-2 font-bold text-gray-900 border-b border-gray-100 pb-4 mb-4">
                   <Ticket className="w-5 h-5 text-primary" />
-                  <h3>Resumen del Pedido</h3>
+                  <h3>{t("tracking.orderSummary")}</h3>
                 </div>
 
                 <div className="space-y-3 mb-6">
                   {Array.isArray(order.items) &&
-                    order.items.map((item: any, idx: number) => (
+                    order.items.map((item, idx: number) => (
                       <div
                         key={idx}
                         className="flex justify-between font-semibold text-[15px] text-gray-700"
@@ -375,7 +443,7 @@ export default function TrackingTicketPage() {
                 </div>
 
                 <div className="flex justify-between font-black text-lg text-gray-900 pt-4 border-t border-dashed border-gray-200">
-                  <span>Total</span>
+                  <span>{t("tracking.total")}</span>
                   <span>S/ {Number(order.total).toFixed(2)}</span>
                 </div>
               </div>

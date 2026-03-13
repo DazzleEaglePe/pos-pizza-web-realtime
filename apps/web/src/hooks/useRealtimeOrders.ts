@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { API_URL, WS_URL } from "@/lib/config";
-import { getAccessToken } from "@/lib/auth";
+import { WS_URL } from "@/lib/config";
+import { apiFetch } from "@/lib/api";
 
 export interface RealtimeOrderItem {
   id: string;
@@ -15,6 +15,7 @@ export interface RealtimeOrderItem {
 
 export interface RealtimeTable {
   number: number;
+  zone?: string | null;
 }
 
 export interface RealtimeOrder {
@@ -112,58 +113,20 @@ export function useRealtimeOrders(handlers?: {
    */
   const updateOrderStatus = useCallback(
     async (orderId: string, status: string) => {
-      const token = getAccessToken();
-
-      const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+      return await apiFetch(`/orders/${orderId}/status`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify({ status }),
       });
-
-      if (!res.ok) {
-        let message = `Failed to update order (${res.status})`;
-        try {
-          const data = await res.json();
-          message = data?.message || message;
-        } catch {
-          // ignore
-        }
-        throw new Error(message);
-      }
-
-      return res.json();
     },
     [],
   );
 
   const cancelOrder = useCallback(
     async (orderId: string, reason?: string | null) => {
-      const token = getAccessToken();
-
-      const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
+      return await apiFetch(`/orders/${orderId}/cancel`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify({ reason: reason || null }),
       });
-
-      if (!res.ok) {
-        let message = `Failed to cancel order (${res.status})`;
-        try {
-          const data = await res.json();
-          message = data?.message || message;
-        } catch {
-          // ignore
-        }
-        throw new Error(message);
-      }
-
-      return res.json();
     },
     [],
   );

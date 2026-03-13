@@ -2,7 +2,13 @@
   "common": {
     "appName": "POS Pizza",
     "version": "Versión 1.0.0",
-    "secureAccess": "Acceso Seguro"
+    "secureAccess": "Acceso Seguro",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "loading": "Cargando...",
+    "refresh": "Actualizar"
   },
   "login": {
     "title": "POS Pizza",
@@ -44,6 +50,21 @@
   "cart": {
     "currentOrder": "Pedido Actual",
     "table": "Mesa",
+    "dineIn": "Salón",
+    "takeout": "Para llevar",
+    "customerNameOptional": "Nombre del cliente (opcional)",
+    "customerNamePlaceholder": "Ej: Juan",
+    "note": "Nota",
+    "itemNoteTitle": "Nota del item",
+    "itemNotePlaceholder": "Ej: sin cebolla",
+    "edit": "Editar",
+    "add": "Agregar",
+    "quantity": "Cantidad",
+    "variant": "Variante",
+    "decrease": "Disminuir",
+    "increase": "Aumentar",
+    "items": "Items",
+    "discount": "Descuento",
     "new": "Nuevo",
     "noItemSelected": "Sin Productos",
     "selectItems": "Selecciona productos del menú.",
@@ -56,7 +77,120 @@
     "processing": "Procesando...",
     "orderPlaced": "¡Pedido Realizado!",
     "orderPlacedText": "Ticket: {ticket} ha sido enviado a cocina.",
+    "openTracking": "Abrir seguimiento",
+    "copyLink": "Copiar link",
+    "ticketLabel": "Ticket",
+    "scanQrOrOpenLink": "Escanea el QR o abre el link.",
+    "qrAlt": "QR de seguimiento",
+    "changeToGive": "Vuelto a entregar",
+    "linkCopied": "Link copiado",
+    "linkCopyFailed": "No se pudo copiar",
     "checkoutFailed": "Error en el Pedido",
     "checkoutFailedText": "No se pudo enviar el pedido al servidor. Inténtalo nuevamente."
+  },
+  "tables": {
+    "selectTable": "Selecciona una mesa",
+    "title": "Seleccionar mesa",
+    "loading": "Cargando mesas...",
+    "empty": "No hay mesas disponibles.",
+    "noZone": "General",
+    "capacity": "Capacidad",
+    "statusAvailable": "Disponible",
+    "statusOccupied": "Ocupada",
+    "statusReserved": "Reservada"
+  },
+  "payment": {
+    "title": "Completar pago",
+    "cashTab": "Efectivo",
+    "digitalTab": "Digital",
+    "cashReceived": "Monto recibido",
+    "exact": "Exacto",
+    "change": "Vuelto",
+    "missingMoney": "Falta dinero",
+    "referenceLabel": "Número de operación / referencia",
+    "referencePlaceholder": "Ej. 12345678",
+    "referenceHint": "Obligatorio para conciliar el pago al final del día.",
+    "confirmAndPrint": "Confirmar e imprimir ticket",
+    "processing": "Procesando...",
+    "yape": "Yape",
+    "plin": "Plin",
+    "card": "Tarjeta"
+  },
+  "tracking": {
+    "brandSubtitle": "Seguimiento de pedidos",
+    "pasteHint": "Pega el link del QR si lo tienes",
+    "indexTitle": "Sigue tu pedido en tiempo real",
+    "indexDesc": "Ingresa tu ticket y mira el avance desde que se recibe hasta que está listo.",
+    "step1Title": "Ingresa tu ticket",
+    "step1Desc": "Ej: TKT-260312-0006",
+    "step2Title": "Mira el progreso",
+    "step2Desc": "Se actualiza en vivo",
+    "step3Title": "Recoge tu pedido",
+    "step3Desc": "Cuando diga “Listo”",
+    "tipTitle": "Tip",
+    "tipText": "Puedes pegar el link del QR (por ejemplo el del API) y el sistema detecta el ticket automáticamente.",
+    "yourTicket": "Tu ticket",
+    "ticketExample": "Ejemplo",
+    "ticketLabel": "Número de ticket",
+    "ticketPlaceholder": "TKT-260312-0006",
+    "ticketError": "Ingresa tu número de ticket (ej: TKT-260312-0006).",
+    "viewStatus": "Ver estado",
+    "footerHint": "Si estás en caja/cocina, usa el ticket que aparece en pantalla.",
+    "searching": "Buscando tu pedido...",
+    "notFoundTitle": "Pedido no encontrado",
+    "notFoundText": "El ticket {ticket} no existe o ya expiró.",
+    "cancelledTitle": "Pedido cancelado",
+    "cancelledText": "El ticket {ticket} fue cancelado.",
+    "orderSummary": "Resumen del pedido",
+    "total": "Total",
+    "placedAt": "Pedido realizado",
+    "deliveredAt": "Entregado",
+    "live": "En vivo",
+    "offline": "Sin conexión",
+    "inProgress": "En curso",
+    "status": {
+      "RECEIVED": "Pedido recibido",
+      "PREPARING": "En preparación",
+      "IN_OVEN": "En el horno",
+      "READY": "Listo para recoger",
+      "DELIVERED": "Entregado",
+      "CANCELLED": "Cancelado"
+    },
+    "steps": {
+      "RECEIVED": {
+        "title": "Pedido recibido",
+        "desc": "Hemos recibido tu pedido."
+      },
+      "PREPARING": {
+        "title": "Preparando",
+        "desc": "Estamos preparando tus ingredientes."
+      },
+      "IN_OVEN": {
+        "title": "En el horno",
+        "desc": "Tu pizza se está horneando a la perfección."
+      },
+      "READY": {
+        "title": "Listo para recoger",
+        "desc": "¡Tu pedido está listo! Acércate al mostrador."
+      },
+      "DELIVERED": {
+        "title": "Entregado",
+        "desc": "¡Listo! Tu pedido fue entregado. Gracias por tu compra."
+      }
+    }
+  },
+  "errors": {
+    "generic": "Ocurrió un error.",
+    "ORDER_NOT_FOUND": "Pedido no encontrado.",
+    "ORDER_ITEMS_REQUIRED": "Agrega al menos un item al pedido.",
+    "TABLE_REQUIRED": "Selecciona una mesa para continuar.",
+    "TABLE_INVALID": "Mesa inválida.",
+    "TABLE_NOT_FOUND": "Mesa no encontrada.",
+    "ORDER_CREATE_FAILED": "No se pudo crear el pedido.",
+    "ORDER_CANNOT_CANCEL_DELIVERED": "No se puede cancelar un pedido entregado.",
+    "PAYMENT_METHOD_UNSUPPORTED": "Método de pago no soportado.",
+    "CASH_RECEIVED_REQUIRED": "Ingresa el monto recibido.",
+    "CASH_INSUFFICIENT": "El monto recibido no es suficiente.",
+    "REFERENCE_REQUIRED": "Ingresa el número de operación/referencia."
   }
 }

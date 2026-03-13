@@ -8,6 +8,7 @@ import { OrdersModule } from './orders/orders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
 import { CashRegisterModule } from './cash-register/cash-register.module';
+import { TablesModule } from './tables/tables.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { CashRegisterModule } from './cash-register/cash-register.module';
     OrdersModule,
     NotificationsModule,
     PaymentsModule,
-    CashRegisterModule
+    CashRegisterModule,
+    TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

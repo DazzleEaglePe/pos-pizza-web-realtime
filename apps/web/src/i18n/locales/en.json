@@ -2,7 +2,13 @@
   "common": {
     "appName": "POS Pizza",
     "version": "Version 1.0.0",
-    "secureAccess": "Secure Access"
+    "secureAccess": "Secure Access",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "loading": "Loading...",
+    "refresh": "Refresh"
   },
   "login": {
     "title": "POS Pizza",
@@ -44,6 +50,21 @@
   "cart": {
     "currentOrder": "Current Order",
     "table": "Table",
+    "dineIn": "Dine-in",
+    "takeout": "Takeout",
+    "customerNameOptional": "Customer name (optional)",
+    "customerNamePlaceholder": "E.g. John",
+    "note": "Note",
+    "itemNoteTitle": "Item note",
+    "itemNotePlaceholder": "E.g. no onion",
+    "edit": "Edit",
+    "add": "Add",
+    "quantity": "Quantity",
+    "variant": "Variant",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "items": "Items",
+    "discount": "Discount",
     "new": "New",
     "noItemSelected": "No Item Selected",
     "selectItems": "Please select items from the menu.",
@@ -56,7 +77,120 @@
     "processing": "Processing...",
     "orderPlaced": "Order Placed!",
     "orderPlacedText": "Ticket: {ticket} has been sent to the kitchen.",
+    "openTracking": "Open tracking",
+    "copyLink": "Copy link",
+    "ticketLabel": "Ticket",
+    "scanQrOrOpenLink": "Scan the QR or open the link.",
+    "qrAlt": "Tracking QR",
+    "changeToGive": "Change to give",
+    "linkCopied": "Link copied",
+    "linkCopyFailed": "Couldn't copy",
     "checkoutFailed": "Checkout Failed",
     "checkoutFailedText": "Failed to submit order to the server. Please try again."
+  },
+  "tables": {
+    "selectTable": "Select a table",
+    "title": "Select table",
+    "loading": "Loading tables...",
+    "empty": "No tables found.",
+    "noZone": "General",
+    "capacity": "Capacity",
+    "statusAvailable": "Available",
+    "statusOccupied": "Occupied",
+    "statusReserved": "Reserved"
+  },
+  "payment": {
+    "title": "Complete payment",
+    "cashTab": "Cash",
+    "digitalTab": "Digital",
+    "cashReceived": "Cash received",
+    "exact": "Exact",
+    "change": "Change",
+    "missingMoney": "Insufficient cash",
+    "referenceLabel": "Operation / Reference number",
+    "referencePlaceholder": "E.g. 12345678",
+    "referenceHint": "Required to reconcile payments at end of day.",
+    "confirmAndPrint": "Confirm & print ticket",
+    "processing": "Processing...",
+    "yape": "Yape",
+    "plin": "Plin",
+    "card": "Card"
+  },
+  "tracking": {
+    "brandSubtitle": "Order tracking",
+    "pasteHint": "Paste the QR link if you have it",
+    "indexTitle": "Track your order in real time",
+    "indexDesc": "Enter your ticket and see the progress from received to ready.",
+    "step1Title": "Enter your ticket",
+    "step1Desc": "E.g. TKT-260312-0006",
+    "step2Title": "Watch the progress",
+    "step2Desc": "Updates live",
+    "step3Title": "Pick up your order",
+    "step3Desc": "When it says “Ready”",
+    "tipTitle": "Tip",
+    "tipText": "You can paste the QR link (even the API link) and the system will detect the ticket automatically.",
+    "yourTicket": "Your ticket",
+    "ticketExample": "Example",
+    "ticketLabel": "Ticket number",
+    "ticketPlaceholder": "TKT-260312-0006",
+    "ticketError": "Enter your ticket number (e.g. TKT-260312-0006).",
+    "viewStatus": "View status",
+    "footerHint": "If you're at the POS/kitchen, use the ticket shown on screen.",
+    "searching": "Looking up your order...",
+    "notFoundTitle": "Order not found",
+    "notFoundText": "Ticket {ticket} doesn't exist or has expired.",
+    "cancelledTitle": "Order cancelled",
+    "cancelledText": "Ticket {ticket} was cancelled.",
+    "orderSummary": "Order summary",
+    "total": "Total",
+    "placedAt": "Placed",
+    "deliveredAt": "Delivered",
+    "live": "Live",
+    "offline": "Offline",
+    "inProgress": "In progress",
+    "status": {
+      "RECEIVED": "Received",
+      "PREPARING": "Preparing",
+      "IN_OVEN": "In the oven",
+      "READY": "Ready",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
+    },
+    "steps": {
+      "RECEIVED": {
+        "title": "Order received",
+        "desc": "We've received your order."
+      },
+      "PREPARING": {
+        "title": "Preparing",
+        "desc": "We're preparing your ingredients."
+      },
+      "IN_OVEN": {
+        "title": "In the oven",
+        "desc": "Your pizza is baking to perfection."
+      },
+      "READY": {
+        "title": "Ready for pickup",
+        "desc": "Your order is ready. Please come to the counter."
+      },
+      "DELIVERED": {
+        "title": "Delivered",
+        "desc": "Done! Thanks for your purchase."
+      }
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong.",
+    "ORDER_NOT_FOUND": "Order not found.",
+    "ORDER_ITEMS_REQUIRED": "Add at least one item to the order.",
+    "TABLE_REQUIRED": "Select a table to continue.",
+    "TABLE_INVALID": "Invalid table.",
+    "TABLE_NOT_FOUND": "Table not found.",
+    "ORDER_CREATE_FAILED": "Couldn't create the order.",
+    "ORDER_CANNOT_CANCEL_DELIVERED": "A delivered order can't be cancelled.",
+    "PAYMENT_METHOD_UNSUPPORTED": "Unsupported payment method.",
+    "CASH_RECEIVED_REQUIRED": "Enter the cash received.",
+    "CASH_INSUFFICIENT": "Cash received is not enough.",
+    "REFERENCE_REQUIRED": "Enter the operation/reference number."
   }
 }

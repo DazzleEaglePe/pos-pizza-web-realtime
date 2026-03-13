@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PaymentDetails, PaymentStrategy } from './strategies/payment.strategy';
 import { CashPaymentStrategy } from './strategies/cash.strategy';
 import { DigitalPaymentStrategy } from './strategies/digital.strategy';
@@ -19,9 +19,15 @@ export class PaymentsService {
 
   async processPayment(tx: any, orderId: string, details: PaymentDetails) {
     const strategy = this.strategies.get(details.method);
-    
+
     if (!strategy) {
-      throw new BadRequestException(`Método de pago no soportado: ${details.method}`);
+      throw new HttpException(
+        {
+          code: 'PAYMENT_METHOD_UNSUPPORTED',
+          details: { method: details.method },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     return await strategy.processPayment(tx, orderId, details);

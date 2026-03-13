@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { db } from '../drizzle/db';
 import {
   orders,
@@ -7,7 +7,7 @@ import {
 } from '../drizzle/schema/orders.schema';
 import { tables } from '../drizzle/schema/tables.schema';
 import { cashRegisters } from '../drizzle/schema/payments.schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray, ne } from 'drizzle-orm';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { PaymentsService } from '../payments/payments.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
@@ -35,20 +35,25 @@ export class OrdersService {
     } = createOrderDto;
 
     if (!items || items.length === 0) {
-      throw new BadRequestException('Order must contain at least one item');
+      throw new HttpException(
+        { code: 'ORDER_ITEMS_REQUIRED' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (!userId) {
-      throw new BadRequestException(
-        'No authenticated user found for order creation',
+      throw new HttpException(
+        { code: 'AUTH_REQUIRED' },
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
     let actualCashRegisterId = cashRegisterId;
 
-    // Resolve tableId from tableNumber (optional)
+    // Resolve tableId from tableNumber/tableId
     let resolvedTableId: string | null = tableId || null;
     let resolvedTableNumber: number | null = null;
+    let resolvedTableZone: string | null = null;
 
     const isDineIn = orderType === 'DINE_IN' || orderType === 'SALON';
     if (
@@ -60,18 +65,48 @@ export class OrdersService {
     ) {
       const num = Number(tableNumber);
       if (!Number.isInteger(num) || num <= 0) {
-        throw new BadRequestException('Numero de mesa invalido');
+        throw new HttpException(
+          { code: 'TABLE_INVALID', details: { tableNumber } },
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const table = await db.query.tables.findFirst({
         where: eq(tables.number, num),
       });
       if (!table) {
-        throw new BadRequestException(`La mesa ${num} no existe`);
+        throw new HttpException(
+          { code: 'TABLE_NOT_FOUND', details: { tableNumber: num } },
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       resolvedTableId = table.id;
       resolvedTableNumber = table.number;
+      resolvedTableZone = table.zone || null;
+    }
+
+    if (isDineIn && resolvedTableId) {
+      const table = await db.query.tables.findFirst({
+        where: eq(tables.id, resolvedTableId),
+      });
+
+      if (!table) {
+        throw new HttpException(
+          { code: 'TABLE_NOT_FOUND', details: { tableId: resolvedTableId } },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      resolvedTableNumber = table.number;
+      resolvedTableZone = table.zone || null;
+    }
+
+    if (isDineIn && !resolvedTableId) {
+      throw new HttpException(
+        { code: 'TABLE_REQUIRED' },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // Auto-resolve Cash Register for the real current user if not provided by frontend
@@ -140,6 +175,13 @@ export class OrdersService {
           })
           .returning();
 
+        if (resolvedTableId) {
+          await tx
+            .update(tables)
+            .set({ status: 'OCCUPIED' })
+            .where(eq(tables.id, resolvedTableId));
+        }
+
         await tx.insert(orderStatusHistory).values({
           orderId: newOrder.id,
           status: newOrder.status,
@@ -177,7 +219,7 @@ export class OrdersService {
           tableId: newOrder.tableId,
           table:
             resolvedTableNumber !== null
-              ? { number: resolvedTableNumber }
+              ? { number: resolvedTableNumber, zone: resolvedTableZone }
               : null,
           customerName: newOrder.customerName,
           subtotal: newOrder.subtotal,
@@ -222,8 +264,14 @@ export class OrdersService {
       return result;
     } catch (error: any) {
       console.error('Failed to create order. Full Error:', error);
-      throw new BadRequestException(
-        error.detail || error.message || 'Failed to process order transaction',
+      throw new HttpException(
+        {
+          code: 'ORDER_CREATE_FAILED',
+          details: {
+            message: error?.detail || error?.message || 'Unknown error',
+          },
+        },
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -257,7 +305,12 @@ export class OrdersService {
         items: true,
       },
     });
-    if (!order) throw new BadRequestException('Order not found');
+    if (!order) {
+      throw new HttpException(
+        { code: 'ORDER_NOT_FOUND', details: { orderId: id } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     return order;
   }
 
@@ -267,10 +320,15 @@ export class OrdersService {
       with: {
         items: true,
         statusHistory: true,
+        table: true,
       },
     });
-    if (!order)
-      throw new BadRequestException('No se encontró el pedido con ese ticket.');
+    if (!order) {
+      throw new HttpException(
+        { code: 'ORDER_NOT_FOUND', details: { ticketNumber } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
 
     const safeItems = Array.isArray((order as any).items)
       ? (order as any).items
@@ -286,6 +344,13 @@ export class OrdersService {
       ticketNumber: order.ticketNumber,
       status: order.status,
       orderType: order.orderType,
+      customerName: order.customerName,
+      table: order.table
+        ? {
+            number: order.table.number,
+            zone: order.table.zone,
+          }
+        : null,
       subtotal: order.subtotal,
       taxAmount: order.taxAmount,
       total: order.total,
@@ -324,7 +389,12 @@ export class OrdersService {
       .where(eq(orders.id, id))
       .returning();
 
-    if (!updatedOrder) throw new BadRequestException('Order not found');
+    if (!updatedOrder) {
+      throw new HttpException(
+        { code: 'ORDER_NOT_FOUND', details: { orderId: id } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
 
     await db.insert(orderStatusHistory).values({
       orderId: updatedOrder.id,
@@ -335,6 +405,29 @@ export class OrdersService {
     // Emit real-time status update
     this.notifications.emitOrderStatusUpdate(id, status, updatedOrder);
 
+    if (
+      updatedOrder.tableId &&
+      (status === 'DELIVERED' || status === 'CANCELLED')
+    ) {
+      const stillActive = await db.query.orders.findFirst({
+        where: and(
+          eq(orders.tableId, updatedOrder.tableId!),
+          ne(orders.id, updatedOrder.id),
+          inArray(orders.status, ['RECEIVED', 'PREPARING', 'IN_OVEN', 'READY']),
+        ),
+        columns: {
+          id: true,
+        },
+      });
+
+      if (!stillActive) {
+        await db
+          .update(tables)
+          .set({ status: 'AVAILABLE' })
+          .where(eq(tables.id, updatedOrder.tableId));
+      }
+    }
+
     return updatedOrder;
   }
 
@@ -343,9 +436,17 @@ export class OrdersService {
       where: eq(orders.id, id),
     });
 
-    if (!existing) throw new BadRequestException('Order not found');
+    if (!existing) {
+      throw new HttpException(
+        { code: 'ORDER_NOT_FOUND', details: { orderId: id } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     if (existing.status === 'DELIVERED') {
-      throw new BadRequestException('No se puede cancelar un pedido entregado');
+      throw new HttpException(
+        { code: 'ORDER_CANNOT_CANCEL_DELIVERED', details: { orderId: id } },
+        HttpStatus.BAD_REQUEST,
+      );
     }
     if (existing.status === 'CANCELLED') return existing;
 
@@ -361,7 +462,12 @@ export class OrdersService {
       .where(eq(orders.id, id))
       .returning();
 
-    if (!updatedOrder) throw new BadRequestException('Order not found');
+    if (!updatedOrder) {
+      throw new HttpException(
+        { code: 'ORDER_NOT_FOUND', details: { orderId: id } },
+        HttpStatus.NOT_FOUND,
+      );
+    }
 
     await db.insert(orderStatusHistory).values({
       orderId: updatedOrder.id,
@@ -372,6 +478,26 @@ export class OrdersService {
 
     this.notifications.emitOrderCancelled(id);
     this.notifications.emitOrderStatusUpdate(id, 'CANCELLED', updatedOrder);
+
+    if (updatedOrder.tableId) {
+      const stillActive = await db.query.orders.findFirst({
+        where: and(
+          eq(orders.tableId, updatedOrder.tableId!),
+          ne(orders.id, updatedOrder.id),
+          inArray(orders.status, ['RECEIVED', 'PREPARING', 'IN_OVEN', 'READY']),
+        ),
+        columns: {
+          id: true,
+        },
+      });
+
+      if (!stillActive) {
+        await db
+          .update(tables)
+          .set({ status: 'AVAILABLE' })
+          .where(eq(tables.id, updatedOrder.tableId));
+      }
+    }
 
     return updatedOrder;
   }

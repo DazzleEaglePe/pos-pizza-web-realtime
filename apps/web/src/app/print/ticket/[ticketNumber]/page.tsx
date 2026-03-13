@@ -4,7 +4,9 @@ import { PrintAuto } from "./print-auto";
 
 type Props = {
   params: { ticketNumber: string } | Promise<{ ticketNumber: string }>;
-  searchParams?: { origin?: string } | Promise<{ origin?: string }>;
+  searchParams?:
+    | { origin?: string; lang?: string }
+    | Promise<{ origin?: string; lang?: string }>;
 };
 
 function safeOrigin(origin?: string) {
@@ -18,11 +20,12 @@ function safeOrigin(origin?: string) {
 }
 
 export default async function PrintTicketPage({ params, searchParams }: Props) {
-  const resolvedParams = await Promise.resolve(params as any);
-  const resolvedSearch = await Promise.resolve((searchParams as any) || {});
+  const resolvedParams = await Promise.resolve(params);
+  const resolvedSearch = await Promise.resolve(searchParams || {});
 
   const ticketNumber = resolvedParams?.ticketNumber;
   if (!ticketNumber) {
+    const msg = "Missing ticket.";
     return (
       <div
         style={{
@@ -30,17 +33,45 @@ export default async function PrintTicketPage({ params, searchParams }: Props) {
           fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
         }}
       >
-        Falta el ticket.
+        {msg}
       </div>
     );
   }
+
+  const lang = resolvedSearch?.lang === "en" ? "en" : "es";
+  const S =
+    lang === "en"
+      ? {
+          missingTicket: "Missing ticket.",
+          orderNotFound: "Order not found.",
+          ticket: "Ticket",
+          status: "Status",
+          total: "TOTAL",
+          follow: "Track your order at:",
+          openTracking: "Open tracking",
+          dineIn: "Dine-in",
+          takeout: "Takeout",
+          table: "Table",
+        }
+      : {
+          missingTicket: "Falta el ticket.",
+          orderNotFound: "No se encontró el pedido.",
+          ticket: "Ticket",
+          status: "Estado",
+          total: "TOTAL",
+          follow: "Sigue tu pedido en:",
+          openTracking: "Abrir tracking",
+          dineIn: "Salón",
+          takeout: "Para llevar",
+          table: "Mesa",
+        };
 
   const origin =
     safeOrigin(resolvedSearch?.origin) ||
     process.env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000";
 
-  const trackingUrl = `${origin.replace(/\/$/, "")}/tracking/${encodeURIComponent(ticketNumber)}`;
+  const trackingUrl = `${origin.replace(/\/$/, "")}/tracking/${encodeURIComponent(ticketNumber)}?lang=${encodeURIComponent(lang)}`;
 
   const res = await fetch(
     `${API_URL}/orders/track/${encodeURIComponent(ticketNumber)}`,
@@ -60,12 +91,26 @@ export default async function PrintTicketPage({ params, searchParams }: Props) {
           fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
         }}
       >
-        No se encontro el pedido.
+        {S.orderNotFound}
       </div>
     );
   }
 
-  const order: any = await res.json();
+  const order = (await res.json()) as {
+    ticketNumber: string;
+    status: string;
+    orderType?: string | null;
+    customerName?: string | null;
+    table?: { number: number; zone?: string | null } | null;
+    createdAt: string;
+    total: number;
+    items?: Array<{
+      productName: string;
+      quantity: number;
+      subtotal: number;
+      variantName?: string | null;
+    }>;
+  };
 
   let qrDataUrl: string | null = null;
   try {
@@ -82,7 +127,6 @@ export default async function PrintTicketPage({ params, searchParams }: Props) {
     <div className="min-h-screen bg-white text-black">
       <PrintAuto />
       <style
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: `
           @media print {
@@ -111,27 +155,39 @@ export default async function PrintTicketPage({ params, searchParams }: Props) {
       <div className="ticket">
         <div className="title">POS Pizza</div>
         <div className="muted" style={{ textAlign: "center", marginTop: 4 }}>
-          Ticket: <span className="bold">{order.ticketNumber}</span>
+          {S.ticket}: <span className="bold">{order.ticketNumber}</span>
         </div>
         <div className="muted" style={{ textAlign: "center", marginTop: 2 }}>
-          {new Date(order.createdAt).toLocaleString("es-PE", {
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {new Date(order.createdAt).toLocaleString(
+            lang === "en" ? "en-US" : "es-PE",
+            {
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            },
+          )}
         </div>
 
         <div className="hr" />
 
         <div className="row muted">
-          <span>Estado</span>
+          <span>{order?.orderType === "DINE_IN" ? S.dineIn : S.takeout}</span>
+          <span className="bold">
+            {order?.table?.number
+              ? `${S.table} ${order.table.number}${order.table.zone ? ` (${order.table.zone})` : ""}`
+              : order?.customerName || ""}
+          </span>
+        </div>
+
+        <div className="row muted">
+          <span>{S.status}</span>
           <span className="bold">{order.status}</span>
         </div>
 
         <div className="items">
           {Array.isArray(order.items) &&
-            order.items.map((it: any, idx: number) => (
+            order.items.map((it, idx: number) => (
               <div className="item" key={idx}>
                 <span>
                   {it.quantity}x {it.productName}
@@ -147,7 +203,7 @@ export default async function PrintTicketPage({ params, searchParams }: Props) {
         <div className="hr" />
 
         <div className="row" style={{ fontSize: 12 }}>
-          <span className="bold">TOTAL</span>
+          <span className="bold">{S.total}</span>
           <span className="bold">S/ {Number(order.total).toFixed(2)}</span>
         </div>
 
@@ -164,7 +220,7 @@ export default async function PrintTicketPage({ params, searchParams }: Props) {
         )}
 
         <div className="foot">
-          Sigue tu pedido en:
+          {S.follow}
           <div style={{ wordBreak: "break-all", marginTop: 4 }}>
             {trackingUrl}
           </div>
@@ -175,7 +231,7 @@ export default async function PrintTicketPage({ params, searchParams }: Props) {
           style={{ marginTop: 16, textAlign: "center" }}
         >
           <a href={trackingUrl} target="_blank" rel="noreferrer">
-            Abrir tracking
+            {S.openTracking}
           </a>
         </div>
       </div>

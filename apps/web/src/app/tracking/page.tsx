@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Pizza, Ticket } from "lucide-react";
+import { useTranslation } from "@/i18n";
 
 function normalizeTicket(input: string) {
   const raw = input.trim();
@@ -17,15 +18,19 @@ function normalizeTicket(input: string) {
 
 export default function TrackingIndexPage() {
   const router = useRouter();
+  const { t, setLocale } = useTranslation();
   const [ticketInput, setTicketInput] = useState("");
   const [touched, setTouched] = useState(false);
 
   const ticket = useMemo(() => normalizeTicket(ticketInput), [ticketInput]);
 
-  const error =
-    touched && !ticket
-      ? "Ingresa tu numero de ticket (ej: TKT-260312-0006)."
-      : null;
+  const error = touched && !ticket ? t("tracking.ticketError") : null;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const lang = new URLSearchParams(window.location.search).get("lang");
+    if (lang === "en" || lang === "es") setLocale(lang);
+  }, [setLocale]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,27 +55,26 @@ export default function TrackingIndexPage() {
             </div>
             <div>
               <div className="font-black text-gray-900 leading-none tracking-tight">
-                POS Pizza
+                {t("common.appName")}
               </div>
               <div className="text-xs font-bold text-gray-500 mt-1">
-                Seguimiento de pedidos
+                {t("tracking.brandSubtitle")}
               </div>
             </div>
           </Link>
 
           <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-gray-500">
-            Pega el link del QR si lo tienes
+            {t("tracking.pasteHint")}
           </div>
         </header>
 
         <main className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12 items-start">
           <section className="lg:col-span-7">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-[1.05]">
-              Sigue tu pedido en tiempo real
+              {t("tracking.indexTitle")}
             </h1>
             <p className="mt-4 text-base sm:text-lg font-medium text-gray-600 max-w-prose">
-              Ingresa tu ticket y mira el avance desde que se recibe hasta que
-              esta listo.
+              {t("tracking.indexDesc")}
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -79,10 +83,10 @@ export default function TrackingIndexPage() {
                   1
                 </div>
                 <div className="mt-3 font-black text-gray-900">
-                  Ingresa tu ticket
+                  {t("tracking.step1Title")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-gray-600">
-                  Ej: TKT-260312-0006
+                  {t("tracking.step1Desc")}
                 </div>
               </div>
 
@@ -91,10 +95,10 @@ export default function TrackingIndexPage() {
                   2
                 </div>
                 <div className="mt-3 font-black text-gray-900">
-                  Mira el progreso
+                  {t("tracking.step2Title")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-gray-600">
-                  Se actualiza en vivo
+                  {t("tracking.step2Desc")}
                 </div>
               </div>
 
@@ -103,21 +107,20 @@ export default function TrackingIndexPage() {
                   3
                 </div>
                 <div className="mt-3 font-black text-gray-900">
-                  Recoge tu pedido
+                  {t("tracking.step3Title")}
                 </div>
                 <div className="mt-1 text-sm font-semibold text-gray-600">
-                  Cuando diga “Listo”
+                  {t("tracking.step3Desc")}
                 </div>
               </div>
             </div>
 
             <div className="mt-8 bg-white/60 border border-gray-100 rounded-[1.75rem] p-6">
               <div className="text-xs font-black uppercase tracking-widest text-gray-500">
-                Tip
+                {t("tracking.tipTitle")}
               </div>
               <div className="mt-3 text-sm font-semibold text-gray-700">
-                Puedes pegar el link del QR (por ejemplo el del API) y el
-                sistema detecta el ticket automaticamente.
+                {t("tracking.tipText")}
               </div>
             </div>
           </section>
@@ -133,10 +136,10 @@ export default function TrackingIndexPage() {
                 </div>
                 <div className="text-left">
                   <p className="font-black text-gray-900 leading-none">
-                    Tu ticket
+                    {t("tracking.yourTicket")}
                   </p>
                   <p className="text-xs text-gray-500 font-semibold mt-1">
-                    Ejemplo:{" "}
+                    {t("tracking.ticketExample")}:{" "}
                     <span className="text-primary">TKT-260312-0006</span>
                   </p>
                 </div>
@@ -147,7 +150,7 @@ export default function TrackingIndexPage() {
                   htmlFor="ticket"
                   className="text-xs font-black uppercase tracking-widest text-gray-500"
                 >
-                  Numero de ticket
+                  {t("tracking.ticketLabel")}
                 </label>
                 <input
                   id="ticket"
@@ -160,7 +163,7 @@ export default function TrackingIndexPage() {
                   spellCheck={false}
                   inputMode="text"
                   enterKeyHint="go"
-                  placeholder="TKT-260312-0006"
+                  placeholder={t("tracking.ticketPlaceholder")}
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? "ticket-error" : undefined}
                   className="mt-2 w-full h-12 px-5 rounded-2xl border border-gray-200 bg-gray-50/70 font-black tracking-wide text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 uppercase"
@@ -180,11 +183,11 @@ export default function TrackingIndexPage() {
                 type="submit"
                 className="mt-6 w-full h-12 rounded-full bg-primary text-white font-black tracking-tight flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
               >
-                Ver estado <ArrowRight className="w-4 h-4" />
+                {t("tracking.viewStatus")} <ArrowRight className="w-4 h-4" />
               </button>
 
               <p className="mt-5 text-xs text-gray-500 font-medium text-center">
-                Si estas en caja/cocina, usa el ticket que aparece en pantalla.
+                {t("tracking.footerHint")}
               </p>
             </form>
           </section>
