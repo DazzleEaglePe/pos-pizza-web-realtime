@@ -51,7 +51,17 @@ export class NotificationsGateway
    * Broadcast an order status change (e.g., RECEIVED → PREPARING → READY).
    */
   emitOrderStatusUpdate(orderId: string, status: string, order?: any) {
-    this.server.emit('order:statusUpdated', { orderId, status, order });
+    const payload: any = { orderId, status };
+    if (order?.updatedAt) payload.updatedAt = order.updatedAt;
+    if (order?.deliveredAt) payload.deliveredAt = order.deliveredAt;
+    const room = `order:${orderId}`;
+
+    // Tracking clients (and any listeners that joined the room)
+    this.server.to(room).emit('order:statusUpdated', payload);
+
+    // Staff screens that didn't join the room
+    this.server.except(room).emit('order:statusUpdated', payload);
+
     this.logger.log(`🔄 Emitted order:statusUpdated → ${orderId} → ${status}`);
   }
 
@@ -76,9 +86,9 @@ export class NotificationsGateway
     this.logger.log(
       `📥 Received order:updateStatus from ${client.id} → ${data.orderId}: ${data.status}`,
     );
-    // Re-broadcast to all clients
-    this.emitOrderStatusUpdate(data.orderId, data.status);
-    return { event: 'order:updateStatus', data: { success: true } };
+    // Intentionally NOT persisting status changes via WS (security).
+    // Kitchen should call PATCH /orders/:id/status with JWT so the change is stored.
+    return { event: 'order:updateStatus', data: { success: false } };
   }
 
   /**

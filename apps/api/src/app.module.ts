@@ -2,13 +2,23 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './infrastructure/database/database.module';
+import { AuthModule } from './auth/auth.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { OrdersModule } from './orders/orders.module';
-import { AuthModule } from './auth/auth.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PaymentsModule } from './payments/payments.module';
+import { CashRegisterModule } from './cash-register/cash-register.module';
 
 @Module({
-  imports: [DatabaseModule, CatalogModule, OrdersModule, AuthModule, NotificationsModule],
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    CatalogModule,
+    OrdersModule,
+    NotificationsModule,
+    PaymentsModule,
+    CashRegisterModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

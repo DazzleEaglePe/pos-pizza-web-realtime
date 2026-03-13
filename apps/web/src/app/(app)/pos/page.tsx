@@ -1,18 +1,19 @@
 import { CartSidebar } from "@/components/pos/cart-sidebar";
 import { MenuDisplay } from "@/components/pos/menu-display";
 import { MobileCartButton } from "@/components/pos/mobile-cart-button";
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
+import { API_URL } from "@/lib/config";
 
 async function getCatalog() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("pos_access_token")?.value;
 
-    const res = await fetch('http://localhost:3001/catalog', { 
-      cache: 'no-store',
+    const res = await fetch(`${API_URL}/catalog`, {
+      cache: "no-store",
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
     if (!res.ok) return [];
     return res.json();
@@ -26,12 +27,12 @@ export default async function POSPage() {
   const catalog = await getCatalog();
 
   return (
-    <div className="flex w-full h-full pb-4 gap-6 relative">
+    <div className="flex w-full h-full gap-6 relative pl-4">
       {/* Left Area - Dynamic POS Grid & Filters */}
       <MenuDisplay catalog={catalog} />
 
       {/* Right Area - Cart Sidebar (Desktop Only) */}
-      <div className="hidden lg:block h-[calc(100%+2.5rem)] -mt-2 -mb-8 w-[380px] -mr-8 overflow-hidden bg-background z-10 shrink-0">
+      <div className="hidden lg:block h-full w-[380px] overflow-hidden bg-background z-10 shrink-0">
         <CartSidebar />
       </div>
 

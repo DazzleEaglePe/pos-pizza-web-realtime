@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { posAlert } from "@/lib/sweetalert";
 import { useTranslation } from "@/i18n";
+import { API_URL } from "@/lib/config";
 
 export function LoginForm() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export function LoginForm() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3001/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -39,19 +40,18 @@ export function LoginForm() {
       localStorage.setItem("pos_access_token", data.access_token);
       localStorage.setItem("pos_user", JSON.stringify(data.user));
 
-      // Store JWT in Cookies so Next.js Server Components (like the POS catalog fetcher) can read it
-      document.cookie = `pos_access_token=${data.access_token}; path=/; max-age=28800; SameSite=Lax`;
+      // Store JWT in Cookies as a Session Cookie (expires when browser closes)
+      document.cookie = `pos_access_token=${data.access_token}; path=/; SameSite=Lax`;
 
       // Route to POS seamlessly
       router.push("/pos");
-      
     } catch (err: any) {
       posAlert.fire({
-        icon: 'error',
+        icon: "error",
         title: t("login.accessDenied"),
         text: err.message || t("login.invalidCredentials"),
-        confirmButtonColor: '#ff5757',
-        confirmButtonText: t("login.tryAgain")
+        confirmButtonColor: "#ff5757",
+        confirmButtonText: t("login.tryAgain"),
       });
     } finally {
       setIsLoading(false);
@@ -61,7 +61,12 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-bold text-sm">{t("login.emailLabel")}</Label>
+        <Label
+          htmlFor="email"
+          className="text-gray-700 dark:text-gray-300 font-bold text-sm"
+        >
+          {t("login.emailLabel")}
+        </Label>
         <Input
           id="email"
           type="email"
@@ -74,7 +79,12 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-gray-700 dark:text-gray-300 font-bold text-sm">{t("login.passwordLabel")}</Label>
+        <Label
+          htmlFor="password"
+          className="text-gray-700 dark:text-gray-300 font-bold text-sm"
+        >
+          {t("login.passwordLabel")}
+        </Label>
         <Input
           id="password"
           type="password"

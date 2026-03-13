@@ -2,18 +2,48 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { API_URL, WS_URL } from "@/lib/config";
+import { getAccessToken } from "@/lib/auth";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001";
-
-interface OrderEvent {
-  orderId: string;
-  ticketNumber?: string;
-  status?: string;
-  total?: number;
-  [key: string]: any;
+export interface RealtimeOrderItem {
+  id: string;
+  productName: string;
+  variantName?: string | null;
+  quantity: number;
+  notes?: string | null;
 }
 
-type OrderEventHandler = (data: OrderEvent) => void;
+export interface RealtimeTable {
+  number: number;
+}
+
+export interface RealtimeOrder {
+  id: string;
+  ticketNumber: string;
+  status: string;
+  orderType?: string;
+  tableId?: string | null;
+  table?: RealtimeTable | null;
+  customerName?: string | null;
+  subtotal?: number;
+  taxAmount?: number;
+  total?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  deliveredAt?: string;
+  items?: RealtimeOrderItem[];
+}
+
+export interface OrderStatusUpdatedEvent {
+  orderId: string;
+  status: string;
+  updatedAt?: string;
+  deliveredAt?: string;
+}
+
+export interface OrderCancelledEvent {
+  orderId: string;
+}
 
 /**
  * useRealtimeOrders — connects to the NestJS WebSocket gateway
@@ -29,9 +59,9 @@ type OrderEventHandler = (data: OrderEvent) => void;
  * ```
  */
 export function useRealtimeOrders(handlers?: {
-  onOrderCreated?: OrderEventHandler;
-  onOrderStatusUpdated?: OrderEventHandler;
-  onOrderCancelled?: OrderEventHandler;
+  onOrderCreated?: (order: RealtimeOrder) => void;
+  onOrderStatusUpdated?: (data: OrderStatusUpdatedEvent) => void;
+  onOrderCancelled?: (data: OrderCancelledEvent) => void;
 }) {
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -55,17 +85,17 @@ export function useRealtimeOrders(handlers?: {
     });
 
     // ─── Order lifecycle events ────────────────────
-    socket.on("order:created", (data: OrderEvent) => {
+    socket.on("order:created", (data: RealtimeOrder) => {
       console.log("📦 order:created", data);
       handlers?.onOrderCreated?.(data);
     });
 
-    socket.on("order:statusUpdated", (data: OrderEvent) => {
+    socket.on("order:statusUpdated", (data: OrderStatusUpdatedEvent) => {
       console.log("🔄 order:statusUpdated", data);
       handlers?.onOrderStatusUpdated?.(data);
     });
 
-    socket.on("order:cancelled", (data: OrderEvent) => {
+    socket.on("order:cancelled", (data: OrderCancelledEvent) => {
       console.log("❌ order:cancelled", data);
       handlers?.onOrderCancelled?.(data);
     });
@@ -78,11 +108,62 @@ export function useRealtimeOrders(handlers?: {
   }, []);
 
   /**
-   * Emit an order status update from the client (e.g., Kitchen updating status).
+   * Persist an order status update via REST (Kitchen workflow).
    */
   const updateOrderStatus = useCallback(
-    (orderId: string, status: string) => {
-      socketRef.current?.emit("order:updateStatus", { orderId, status });
+    async (orderId: string, status: string) => {
+      const token = getAccessToken();
+
+      const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!res.ok) {
+        let message = `Failed to update order (${res.status})`;
+        try {
+          const data = await res.json();
+          message = data?.message || message;
+        } catch {
+          // ignore
+        }
+        throw new Error(message);
+      }
+
+      return res.json();
+    },
+    [],
+  );
+
+  const cancelOrder = useCallback(
+    async (orderId: string, reason?: string | null) => {
+      const token = getAccessToken();
+
+      const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ reason: reason || null }),
+      });
+
+      if (!res.ok) {
+        let message = `Failed to cancel order (${res.status})`;
+        try {
+          const data = await res.json();
+          message = data?.message || message;
+        } catch {
+          // ignore
+        }
+        throw new Error(message);
+      }
+
+      return res.json();
     },
     [],
   );
@@ -98,6 +179,7 @@ export function useRealtimeOrders(handlers?: {
     isConnected,
     socket: socketRef,
     updateOrderStatus,
+    cancelOrder,
     joinOrderRoom,
   };
 }
