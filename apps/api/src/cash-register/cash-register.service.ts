@@ -1,7 +1,17 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { db } from '../drizzle/db';
-import { cashRegisters, ticketSequences } from '../drizzle/schema/payments.schema';
-import { sql, and, eq } from 'drizzle-orm';
+import {
+  cashRegisters,
+  ticketSequences,
+  paymentTransactions,
+} from '../drizzle/schema/payments.schema';
+import { orders } from '../drizzle/schema/orders.schema';
+import { sql, and, eq, sum, count } from 'drizzle-orm';
 
 @Injectable()
 export class CashRegisterService {
@@ -36,7 +46,9 @@ export class CashRegisterService {
         .returning();
 
       if (!sequence) {
-        throw new InternalServerErrorException('Failed to generate ticket sequence');
+        throw new InternalServerErrorException(
+          'Failed to generate ticket sequence',
+        );
       }
 
       const formattedNumber = sequence.lastNumber.toString().padStart(4, '0');
@@ -48,10 +60,109 @@ export class CashRegisterService {
    * Retrieves the current open cash register for a user.
    */
   async getActiveRegister(userId: string) {
-    const [register] = await db.select()
+    const [register] = await db
+      .select()
       .from(cashRegisters)
-      .where(and(eq(cashRegisters.userId, userId), eq(cashRegisters.status, 'OPEN')))
+      .where(
+        and(eq(cashRegisters.userId, userId), eq(cashRegisters.status, 'OPEN')),
+      )
       .limit(1);
     return register;
+  }
+
+  async openRegister(userId: string, openingAmount: number) {
+    const existing = await this.getActiveRegister(userId);
+    if (existing) {
+      throw new HttpException(
+        { code: 'REGISTER_ALREADY_OPEN' },
+        HttpStatus.CONFLICT,
+      );
+    }
+
+    const [register] = await db
+      .insert(cashRegisters)
+      .values({
+        userId,
+        openingAmount,
+        status: 'OPEN',
+      })
+      .returning();
+
+    return register;
+  }
+
+  /**
+   * Computes live sales breakdown for a given register (without closing it).
+   */
+  private async computeSalesData(registerId: string) {
+    const salesData = await db
+      .select({
+        totalSales: sum(paymentTransactions.amount),
+        totalCash: sql<number>`COALESCE(SUM(CASE WHEN ${paymentTransactions.paymentMethod} = 'CASH' THEN ${paymentTransactions.amount} ELSE 0 END), 0)`,
+        totalDigital: sql<number>`COALESCE(SUM(CASE WHEN ${paymentTransactions.paymentMethod} != 'CASH' THEN ${paymentTransactions.amount} ELSE 0 END), 0)`,
+        totalTickets: count(paymentTransactions.id),
+      })
+      .from(paymentTransactions)
+      .innerJoin(orders, eq(paymentTransactions.orderId, orders.id))
+      .where(eq(orders.cashRegisterId, registerId));
+
+    const row = salesData[0];
+    return {
+      totalSales: Number(row?.totalSales ?? 0),
+      totalCashSales: Number(row?.totalCash ?? 0),
+      totalDigitalSales: Number(row?.totalDigital ?? 0),
+      totalTickets: Number(row?.totalTickets ?? 0),
+    };
+  }
+
+  /**
+   * Returns the active register plus a live sales summary.
+   */
+  async getSummary(userId: string) {
+    const register = await this.getActiveRegister(userId);
+    if (!register) return null;
+
+    const sales = await this.computeSalesData(register.id);
+    const expectedCash = register.openingAmount + sales.totalCashSales;
+
+    return {
+      ...register,
+      ...sales,
+      expectedCash,
+    };
+  }
+
+  async closeRegister(userId: string, actualCash: number, notes?: string) {
+    const register = await this.getActiveRegister(userId);
+    if (!register) {
+      throw new HttpException(
+        { code: 'NO_OPEN_REGISTER' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const { totalSales, totalCashSales, totalDigitalSales, totalTickets } =
+      await this.computeSalesData(register.id);
+    const expectedCash = register.openingAmount + totalCashSales;
+    const difference = actualCash - expectedCash;
+
+    const [closed] = await db
+      .update(cashRegisters)
+      .set({
+        status: 'CLOSED',
+        closedAt: new Date(),
+        actualCash,
+        expectedCash,
+        difference,
+        totalSales,
+        totalCashSales,
+        totalDigitalSales,
+        totalTickets,
+        notes: notes || null,
+      })
+      .where(eq(cashRegisters.id, register.id))
+      .returning();
+
+    return closed;
   }
 }

@@ -1,65 +1,33 @@
 "use client";
 
-import { Pencil, Trash2, ShoppingBag, Minus, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Pencil, Trash2, ShoppingBag, Minus, Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useCart } from "@/hooks/useCart";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { posAlert } from "@/lib/sweetalert";
 import { useTranslation } from "@/i18n";
 import { PaymentDialog } from "./payment-dialog";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Input } from "@/components/ui/input";
-import QRCode from "qrcode";
-import Swal from "sweetalert2";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-async function copyToClipboard(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      const ok = document.execCommand("copy");
-      document.body.removeChild(textarea);
-      return ok;
-    } catch {
-      return false;
-    }
-  }
-}
-
-type Table = {
-  id: string;
-  number: number;
-  capacity: number;
-  zone?: string | null;
-  status: "AVAILABLE" | "OCCUPIED" | "RESERVED" | (string & {});
-};
-
-type CreateOrderResult = {
-  ticketNumber: string;
-  payment?: { changeAmount?: number } | null;
-};
+import type { CreateOrderResult } from "./types";
+import { getStatusBorder } from "./table-utils";
+import { TableBoardDialog } from "./table-board-dialog";
+import { useTableManagement, errorKeyByCode } from "./use-table-management";
+import { CashRegisterBar } from "./cash-register-bar";
+import { useCashRegister } from "@/hooks/useCashRegister";
 
 export function CartSidebar() {
   const { items, getTotals, removeItem, updateQuantity, clearCart } = useCart();
   const updateNotes = useCart((s) => s.updateNotes);
-  const tableId = useCart((s) => s.tableId);
-  const setTableId = useCart((s) => s.setTableId);
   const { subtotal, tax, total } = getTotals();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
@@ -67,72 +35,39 @@ export function CartSidebar() {
   const [customerName, setCustomerName] = useState("");
   const { t, locale } = useTranslation();
 
-  const [isTableDialogOpen, setIsTableDialogOpen] = useState(false);
-  const [tablesLoading, setTablesLoading] = useState(false);
-  const [tables, setTables] = useState<Table[]>([]);
-  const [tableTouched, setTableTouched] = useState(false);
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [noteDialogItemId, setNoteDialogItemId] = useState<string | null>(null);
+  const [noteDialogValue, setNoteDialogValue] = useState("");
 
-  const errorKeyByCode = {
-    ORDER_NOT_FOUND: "errors.ORDER_NOT_FOUND",
-    ORDER_ITEMS_REQUIRED: "errors.ORDER_ITEMS_REQUIRED",
-    TABLE_REQUIRED: "errors.TABLE_REQUIRED",
-    TABLE_INVALID: "errors.TABLE_INVALID",
-    TABLE_NOT_FOUND: "errors.TABLE_NOT_FOUND",
-    ORDER_CREATE_FAILED: "errors.ORDER_CREATE_FAILED",
-    ORDER_CANNOT_CANCEL_DELIVERED: "errors.ORDER_CANNOT_CANCEL_DELIVERED",
-    PAYMENT_METHOD_UNSUPPORTED: "errors.PAYMENT_METHOD_UNSUPPORTED",
-    CASH_RECEIVED_REQUIRED: "errors.CASH_RECEIVED_REQUIRED",
-    CASH_INSUFFICIENT: "errors.CASH_INSUFFICIENT",
-    REFERENCE_REQUIRED: "errors.REFERENCE_REQUIRED",
-  } as const;
-
-  const selectedTable = useMemo(() => {
-    if (!tableId) return null;
-    return tables.find((t) => t.id === tableId) || null;
-  }, [tableId, tables]);
-
-  const tablesByZone = useMemo(() => {
-    const map = new Map<string, Table[]>();
-    for (const tb of tables) {
-      const key = (tb.zone || "").trim() || t("tables.noZone");
-      const arr = map.get(key) || [];
-      arr.push(tb);
-      map.set(key, arr);
-    }
-    return Array.from(map.entries()).sort((a, b) =>
-      a[0].localeCompare(b[0], undefined, { sensitivity: "base" }),
-    );
-  }, [tables, t]);
-
-  const getTableStatusLabel = (status: string) => {
-    const s = String(status || "").toUpperCase();
-    if (s === "AVAILABLE") return t("tables.statusAvailable");
-    if (s === "OCCUPIED") return t("tables.statusOccupied");
-    if (s === "RESERVED") return t("tables.statusReserved");
-    return s;
-  };
-
-  const isTableSelectable = (status: string) =>
-    String(status || "").toUpperCase() === "AVAILABLE";
-
-  const loadTables = async () => {
-    setTablesLoading(true);
+  const [userRole] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
     try {
-      const data = await apiFetch<Table[]>("/tables");
-      setTables(Array.isArray(data) ? data : []);
+      const raw = window.localStorage.getItem("pos_user");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { role?: unknown };
+      const role = parsed?.role ? String(parsed.role) : "";
+      return role ? role.toUpperCase() : null;
     } catch {
-      setTables([]);
-    } finally {
-      setTablesLoading(false);
+      return null;
     }
+  });
+  const isAdmin = userRole === "ADMIN";
+
+  const tm = useTableManagement(orderType, isAdmin);
+  const cr = useCashRegister();
+
+  const openNoteDialog = (itemId: string, currentNote: string | null) => {
+    setNoteDialogItemId(itemId);
+    setNoteDialogValue(currentNote ?? "");
+    setNoteDialogOpen(true);
   };
 
-  useEffect(() => {
-    if (orderType !== "DINE_IN") return;
-    if (tables.length > 0) return;
-    void loadTables();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderType]);
+  const saveNote = () => {
+    if (!noteDialogItemId) return;
+    const trimmed = noteDialogValue.trim();
+    updateNotes(noteDialogItemId, trimmed || null);
+    setNoteDialogOpen(false);
+  };
 
   const handleCheckout = async (paymentDetails: {
     paymentMethod: string;
@@ -143,16 +78,26 @@ export function CartSidebar() {
     setIsSubmitting(true);
 
     try {
-      if (orderType === "DINE_IN" && !tableId) {
-        setTableTouched(true);
+      if (!cr.register) {
+        await posAlert.fire({
+          icon: "warning",
+          title: t("cashRegister.requiredTitle"),
+          text: t("cashRegister.requiredText"),
+          confirmButtonText: t("cashRegister.openAction"),
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (orderType === "DINE_IN" && !tm.tableId) {
+        tm.setTableTouched(true);
         throw new Error("TABLE_REQUIRED");
       }
 
       const payload = {
         orderType,
-        tableId: orderType === "DINE_IN" ? tableId : null,
-        customerName:
-          orderType === "TAKEOUT" ? customerName.trim() || null : null,
+        tableId: orderType === "DINE_IN" ? tm.tableId : null,
+        customerName: orderType === "TAKEOUT" ? customerName.trim() || null : null,
         items: items.map((item) => ({
           productId: item.productId,
           variantId: item.variantId || null,
@@ -161,6 +106,7 @@ export function CartSidebar() {
           price: item.price,
           variantName: item.variantName,
           notes: item.notes,
+          modifiers: item.modifiers ?? [],
         })),
         ...paymentDetails,
       };
@@ -172,10 +118,6 @@ export function CartSidebar() {
 
       clearCart();
       setIsPaymentDialogOpen(false);
-
-      const trackingUrl = `${window.location.origin}/tracking/${encodeURIComponent(
-        result.ticketNumber,
-      )}?lang=${encodeURIComponent(locale)}`;
 
       try {
         window.open(
@@ -189,79 +131,44 @@ export function CartSidebar() {
         // ignore
       }
 
-      let qrDataUrl: string | null = null;
-      try {
-        qrDataUrl = await QRCode.toDataURL(trackingUrl, {
-          width: 220,
-          margin: 1,
-          errorCorrectionLevel: "M",
-        });
-      } catch {
-        qrDataUrl = null;
-      }
-
       const changeAmount = Number(result.payment?.changeAmount || 0);
+      const hasChange = changeAmount > 0;
 
-      const modal = await posAlert.fire({
+      await posAlert.fire({
         icon: "success",
         title: t("cart.orderPlaced"),
-        iconColor: "#00BFA6",
-        confirmButtonText: t("cart.openTracking"),
-        showCancelButton: true,
-        cancelButtonText: t("cart.copyLink"),
+        iconColor: "var(--primary)",
+        confirmButtonText: t("cart.done"),
+        showCancelButton: false,
+        timer: hasChange ? 6000 : 3500,
+        timerProgressBar: true,
         html: `
-          <div style="text-align:left;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:8px;">
-              <div>
-                <div style="font-weight:800; color:#111827; font-size:13px;">${t("cart.ticketLabel")}</div>
-                <div style="font-weight:900; color:#00BFA6; font-size:22px; letter-spacing:-0.02em;">${result.ticketNumber}</div>
-                <div style="margin-top:6px; font-size:12px; color:#6b7280; font-weight:600;">${t("cart.scanQrOrOpenLink")}</div>
-              </div>
-              ${
-                qrDataUrl
-                  ? `<img src="${qrDataUrl}" alt="${t("cart.qrAlt")}" style="width:140px; height:140px; border-radius:16px; border:1px solid rgba(0,0,0,0.06); background:#fff;" />`
-                  : ""
-              }
-            </div>
-
-            <div style="margin-top:14px; padding:10px 12px; border:1px solid rgba(0,0,0,0.06); border-radius:14px; background:#f9fafb; font-size:12px; color:#111827; word-break:break-all;">
-              ${trackingUrl}
-            </div>
-
-              ${
-                changeAmount > 0
-                  ? `<div style="margin-top:14px; padding:12px 14px; border-radius:14px; border:1px dashed rgba(239,68,68,0.35); background:rgba(239,68,68,0.06);">
-                    <div style="font-weight:900; color:#991b1b; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">${t("cart.changeToGive")}</div>
-                    <div style="font-weight:900; color:#b91c1c; font-size:26px; margin-top:4px;">S/ ${changeAmount.toFixed(2)}</div>
+          <div style="text-align:center;">
+            <div style="font-weight:700; color:var(--muted-foreground); font-size:10px; text-transform:uppercase; letter-spacing:0.07em;">${t("cart.ticketLabel")}</div>
+            <div style="font-weight:900; color:var(--primary); font-size:22px; letter-spacing:-0.03em; margin-top:4px; line-height:1;">${result.ticketNumber}</div>
+            <div style="margin-top:8px; font-size:12px; color:var(--muted-foreground); font-weight:500;">${t("cart.sentToKitchen")}</div>
+            ${
+              hasChange
+                ? `<div style="margin-top:16px; padding:14px 16px; border-radius:14px; border:1px solid var(--primary); background:color-mix(in oklch, var(--primary) 8%, transparent);">
+                    <div style="font-weight:800; color:var(--primary); font-size:10px; text-transform:uppercase; letter-spacing:0.08em;">${t("cart.changeToGive")}</div>
+                    <div style="font-weight:900; color:var(--primary); font-size:28px; margin-top:4px; line-height:1;">S/ ${changeAmount.toFixed(2)}</div>
                   </div>`
-                  : ""
-              }
+                : ""
+            }
           </div>
         `,
       });
-
-      if (modal.isConfirmed) {
-        window.open(trackingUrl, "_blank", "noopener,noreferrer");
-      } else if (modal.dismiss === Swal.DismissReason.cancel) {
-        const ok = await copyToClipboard(trackingUrl);
-        posAlert.fire({
-          toast: true,
-          position: "top-end",
-          timer: 1800,
-          showConfirmButton: false,
-          icon: ok ? "success" : "error",
-          title: ok ? t("cart.linkCopied") : t("cart.linkCopyFailed"),
-        });
-      }
     } catch (error: unknown) {
-      console.error("Order submission failed", error);
-
       const code =
         error instanceof ApiError
           ? error.code
           : error instanceof Error
             ? error.message
             : null;
+
+      if (!Object.prototype.hasOwnProperty.call(errorKeyByCode, code ?? "")) {
+        console.error("Order submission failed", error);
+      }
       const message =
         code && Object.prototype.hasOwnProperty.call(errorKeyByCode, code)
           ? t(errorKeyByCode[code as keyof typeof errorKeyByCode])
@@ -271,7 +178,6 @@ export function CartSidebar() {
         icon: "error",
         title: t("cart.checkoutFailed"),
         text: message || t("cart.checkoutFailedText"),
-        confirmButtonColor: "#ff5757",
       });
     } finally {
       setIsSubmitting(false);
@@ -279,28 +185,44 @@ export function CartSidebar() {
   };
 
   return (
-    <aside className="w-full lg:w-[380px] h-full min-h-0 bg-background border-l border-border flex flex-col relative z-10 transition-all duration-500 shrink-0">
-      {/* Header Info */}
-      <div className="p-6 pb-4 border-b border-border/50 flex flex-col gap-4 bg-card text-card-foreground">
+    <aside className="w-full lg:w-95 h-full min-h-0 bg-sidebar border-l border-sidebar-border flex flex-col relative z-10 shrink-0">
+      {/* ── Cash Register Status ── */}
+      <CashRegisterBar
+        register={cr.register}
+        loading={cr.loading}
+        onOpen={cr.openRegister}
+        onClose={cr.closeRegister}
+        onFetchSummary={cr.fetchSummary}
+      />
+
+      {/* ── Header ── */}
+      <div className="px-5 pt-5 pb-4 border-b border-sidebar-border flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold tracking-tight">
+          <h2 className="text-[15px] font-bold tracking-tight text-foreground">
             {t("cart.currentOrder")}
           </h2>
+          {items.length > 0 && (
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary leading-none">
+              {items.reduce((acc, i) => acc + i.quantity, 0)}
+            </span>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        {/* Segmented control */}
+        <div className="flex bg-muted/60 rounded-xl p-0.5 gap-0.5">
           <button
             type="button"
             onClick={() => {
               setOrderType("DINE_IN");
               setCustomerName("");
-              setTableTouched(false);
+              tm.setTableTouched(false);
             }}
-            className={`h-10 rounded-xl border text-xs font-black uppercase tracking-wider transition-colors ${
+            className={cn(
+              "flex-1 h-8 rounded-[10px] text-xs font-semibold uppercase tracking-wide transition-all",
               orderType === "DINE_IN"
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-background text-muted-foreground hover:bg-accent/60"
-            }`}
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
           >
             {t("cart.dineIn")}
           </button>
@@ -308,78 +230,94 @@ export function CartSidebar() {
             type="button"
             onClick={() => {
               setOrderType("TAKEOUT");
-              setTableId(null);
-              setTableTouched(false);
+              tm.setTableId(null);
+              tm.setTableTouched(false);
             }}
-            className={`h-10 rounded-xl border text-xs font-black uppercase tracking-wider transition-colors ${
+            className={cn(
+              "flex-1 h-8 rounded-[10px] text-xs font-semibold uppercase tracking-wide transition-all",
               orderType === "TAKEOUT"
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-background text-muted-foreground hover:bg-accent/60"
-            }`}
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
           >
             {t("cart.takeout")}
           </button>
         </div>
 
+        {/* Table selector */}
         {orderType === "DINE_IN" && (
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground ml-1">
-              {t("cart.table")}
-            </label>
             <button
               type="button"
-              onClick={() => {
-                setIsTableDialogOpen(true);
-                if (!tablesLoading && tables.length === 0) void loadTables();
-              }}
-              className={`w-full h-11 px-4 rounded-xl border bg-background flex items-center justify-between gap-3 transition-colors ${
-                tableTouched && !tableId
+              onClick={tm.openTableDialog}
+              className={cn(
+                "w-full px-3.5 py-2.5 rounded-xl border bg-background/60 flex items-center gap-3 transition-colors",
+                tm.tableTouched && !tm.tableId
                   ? "border-destructive/50 bg-destructive/5"
-                  : "border-border hover:bg-accent/40"
-              }`}
+                  : tm.selectedTable
+                    ? cn(getStatusBorder(tm.selectedTable.status), "hover:bg-accent/40")
+                    : "border-border hover:bg-accent/40",
+              )}
             >
-              <span className="font-black text-sm text-foreground">
-                {selectedTable
-                  ? `${t("cart.table")} ${selectedTable.number}`
-                  : t("tables.selectTable")}
-              </span>
-              <span className="text-xs font-bold text-muted-foreground truncate">
-                {selectedTable?.zone || ""}
-              </span>
+              {tm.selectedTable ? (
+                <>
+                  <span
+                    className={cn(
+                      "w-8 h-8 rounded-lg border-2 flex items-center justify-center shrink-0",
+                      getStatusBorder(tm.selectedTable.status),
+                    )}
+                  >
+                    <span className="text-xs font-black text-foreground">
+                      {tm.selectedTable.number}
+                    </span>
+                  </span>
+                  <div className="flex flex-col items-start min-w-0 flex-1">
+                    <span className="font-semibold text-sm text-foreground">
+                      {t("cart.table")} {tm.selectedTable.number}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground truncate">
+                      {tm.selectedTable.zone || ""}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                </>
+              ) : (
+                <>
+                  <span className="flex-1 text-sm text-muted-foreground text-left">
+                    {t("tables.selectTable")}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                </>
+              )}
             </button>
-
-            {tableTouched && !tableId && (
-              <p className="text-xs font-semibold text-destructive">
+            {tm.tableTouched && !tm.tableId && (
+              <p className="text-xs text-destructive ml-1">
                 {t("errors.TABLE_REQUIRED")}
               </p>
             )}
           </div>
         )}
 
+        {/* Customer name for takeout */}
         {orderType === "TAKEOUT" && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground ml-1">
-              {t("cart.customerNameOptional")}
-            </label>
-            <Input
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder={t("cart.customerNamePlaceholder")}
-              className="h-11 bg-background border-border rounded-xl font-semibold"
-            />
-          </div>
+          <Input
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder={t("cart.customerNamePlaceholder")}
+            className="h-10 rounded-xl bg-background/60 border-border"
+          />
         )}
       </div>
 
-      {/* Cart Items List */}
-      <ScrollArea className="flex-1 px-6 pb-4 bg-card">
-        <div className="space-y-6 pt-6 flex flex-col h-full">
+      {/* ── Cart items ── */}
+      <ScrollArea className="flex-1 px-4 bg-sidebar">
+        <div className="py-4 space-y-2">
           {items.length === 0 ? (
-            <div className="text-center text-muted-foreground flex flex-col items-center gap-3 py-16 m-auto">
-              <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-2">
-                <ShoppingBag className="w-8 h-8 text-muted-foreground/50" />
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <div className="w-14 h-14 bg-muted/50 rounded-2xl flex items-center justify-center">
+                <ShoppingBag className="w-7 h-7 text-muted-foreground/40" />
               </div>
-              <p className="font-semibold text-foreground text-base">
+              <p className="font-semibold text-foreground text-sm">
                 {t("cart.noItemSelected")}
               </p>
             </div>
@@ -387,54 +325,41 @@ export function CartSidebar() {
             items.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col gap-1.5 group relative"
+                className="bg-background/60 border border-border/60 rounded-xl px-3.5 py-3 flex flex-col gap-2"
               >
-                <div className="flex justify-between items-start">
-                  <h4 className="font-bold text-foreground leading-tight text-sm pr-4">
-                    {item.name}
-                  </h4>
-                  <span className="font-bold text-primary text-sm whitespace-nowrap">
-                    S/{(item.price * item.quantity).toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{t("cart.note")}</span>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const modal = await posAlert.fire({
-                        title: t("cart.itemNoteTitle"),
-                        text: item.name,
-                        input: "text",
-                        inputValue: item.notes || "",
-                        inputPlaceholder: t("cart.itemNotePlaceholder"),
-                        showCancelButton: true,
-                        confirmButtonText: t("common.save"),
-                        cancelButtonText: t("common.cancel"),
-                      });
-
-                      if (!modal.isConfirmed) return;
-                      const value =
-                        typeof modal.value === "string" ? modal.value : "";
-                      updateNotes(item.id, value.trim() ? value.trim() : null);
-                    }}
-                    className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:underline"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    {item.notes ? t("cart.edit") : t("cart.add")}
-                  </button>
-                </div>
-
-                {item.notes && (
-                  <div className="text-[12px] font-bold text-red-600 bg-red-500/5 border border-red-500/10 rounded-2xl px-3 py-2">
-                    {item.notes}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-foreground leading-tight">
+                      {item.name}
+                    </p>
+                    {item.variantName && (
+                      <span className="text-[11px] text-muted-foreground">
+                        {item.variantName}
+                      </span>
+                    )}
+                    {item.modifiers && item.modifiers.length > 0 && (
+                      <span className="text-[11px] text-muted-foreground">
+                        + {item.modifiers.map((m) => m.name).join(", ")}
+                      </span>
+                    )}
                   </div>
-                )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="font-bold text-sm text-primary">
+                      S/{((item.price + (item.modifiersCost || 0)) * item.quantity).toFixed(2)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      className="w-6 h-6 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>{t("cart.quantity")}</span>
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() =>
@@ -442,187 +367,163 @@ export function CartSidebar() {
                           ? removeItem(item.id)
                           : updateQuantity(item.id, item.quantity - 1)
                       }
-                      className="w-8 h-8 rounded-full border border-border bg-background hover:bg-accent/50 transition-colors flex items-center justify-center"
+                      className="w-7 h-7 rounded-lg border border-border bg-muted/40 hover:bg-accent flex items-center justify-center transition-colors"
                       aria-label={t("cart.decrease")}
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="font-black text-foreground w-6 text-center">
+                    <span className="font-bold text-foreground w-5 text-center text-sm tabular-nums">
                       {item.quantity}
                     </span>
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-8 h-8 rounded-full border border-border bg-background hover:bg-accent/50 transition-colors flex items-center justify-center"
+                      className="w-7 h-7 rounded-lg border border-border bg-muted/40 hover:bg-accent flex items-center justify-center transition-colors"
                       aria-label={t("cart.increase")}
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => openNoteDialog(item.id, item.notes ?? null)}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    {item.notes ? t("cart.edit") : t("cart.add")} {t("cart.note").toLowerCase()}
+                  </button>
                 </div>
 
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>{t("cart.variant")}</span>
-                  <span className="font-medium text-foreground">
-                    {item.variantName || t("cart.regular")}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="absolute -left-4 top-0 bottom-0 flex items-center justify-center text-muted-foreground/50 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 className="w-3.5 h-3.5 -ml-2" />
-                </button>
+                {item.notes && (
+                  <div className="text-[11px] font-medium text-destructive bg-destructive/5 border border-destructive/15 rounded-lg px-2.5 py-1.5 leading-snug">
+                    {item.notes}
+                  </div>
+                )}
               </div>
             ))
           )}
         </div>
       </ScrollArea>
 
-      {/* Checkout Section Footer */}
-      <div className="bg-card px-6 pb-6 pt-4 border-t border-border/50 space-y-4 mt-auto z-20">
-        <div className="space-y-3">
+      {/* ── Footer totals + CTA ── */}
+      <div className="border-t border-sidebar-border px-5 pt-4 pb-5 space-y-3 bg-sidebar">
+        <div className="space-y-2">
           <div className="flex justify-between text-[13px] text-muted-foreground">
             <span>{t("cart.items")}</span>
             <span className="text-foreground font-medium">{items.length}</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
             <span>{t("cart.subtotal")}</span>
-            <span className="text-foreground font-medium">
-              S/{subtotal.toFixed(2)}
-            </span>
+            <span className="text-foreground font-medium">S/{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
             <span>{t("cart.discount")}</span>
-            <span className="text-primary font-medium">- S/0.00</span>
+            <span className="font-medium text-primary">- S/0.00</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
             <span>{t("cart.tax")} (18%)</span>
-            <span className="text-foreground font-medium">
-              S/{tax.toFixed(2)}
-            </span>
-          </div>
-
-          <div className="pt-4 mt-2 flex justify-between items-center">
-            <span className="text-sm font-bold text-foreground uppercase">
-              {t("cart.total")}
-            </span>
-            <span className="text-2xl font-black text-primary tracking-tight">
-              S/{total.toFixed(2)}
-            </span>
+            <span className="text-foreground font-medium">S/{tax.toFixed(2)}</span>
           </div>
         </div>
 
-        <div className="pt-2">
-          <Button
-            onClick={() => setIsPaymentDialogOpen(true)}
-            disabled={items.length === 0 || isSubmitting}
-            className="h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm w-full rounded-full transition-all active:scale-[0.98] disabled:opacity-50"
-          >
-            {t("cart.placeOrder")}
-          </Button>
+        <div className="flex justify-between items-center pt-3 border-t border-border/60">
+          <span className="text-sm font-bold text-foreground uppercase tracking-wide">
+            {t("cart.total")}
+          </span>
+          <span className="text-2xl font-black text-primary tracking-tight">
+            S/{total.toFixed(2)}
+          </span>
         </div>
+
+        <Button
+          onClick={() => setIsPaymentDialogOpen(true)}
+          disabled={items.length === 0 || isSubmitting}
+          className="h-12 w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
+        >
+          {t("cart.placeOrder")}
+        </Button>
       </div>
+
+      {/* ── Note Dialog ── */}
+      <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+        <DialogContent className="sm:max-w-sm rounded-2xl border border-border bg-sidebar p-0 gap-0 overflow-hidden">
+          <DialogHeader className="px-5 pt-5 pb-3 border-b border-border">
+            <DialogTitle className="text-[15px] font-bold text-foreground">
+              {t("cart.itemNoteTitle")}
+            </DialogTitle>
+            {noteDialogItemId && (() => {
+              const item = items.find(i => i.id === noteDialogItemId);
+              return item ? (
+                <p className="text-[13px] text-muted-foreground mt-0.5">{item.name}</p>
+              ) : null;
+            })()}
+          </DialogHeader>
+
+          <div className="px-5 py-4">
+            <Input
+              autoFocus
+              value={noteDialogValue}
+              onChange={(e) => setNoteDialogValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && saveNote()}
+              placeholder={t("cart.itemNotePlaceholder")}
+              className="h-10 rounded-xl bg-background/60 border-border text-sm"
+            />
+          </div>
+
+          <DialogFooter className="px-5 pb-5 pt-0 flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 h-10 rounded-xl text-sm"
+              onClick={() => setNoteDialogOpen(false)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              className="flex-1 h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm"
+              onClick={saveNote}
+            >
+              {t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <PaymentDialog
         isOpen={isPaymentDialogOpen}
         onOpenChange={setIsPaymentDialogOpen}
+        items={items}
+        subtotal={subtotal}
+        tax={tax}
         totalAmount={total}
         onConfirm={handleCheckout}
         isSubmitting={isSubmitting}
       />
 
-      <Dialog open={isTableDialogOpen} onOpenChange={setIsTableDialogOpen}>
-        <DialogContent className="sm:max-w-[560px]">
-          <DialogHeader>
-            <DialogTitle className="font-black tracking-tight">
-              {t("tables.title")}
-            </DialogTitle>
-            <DialogDescription>
-              {orderType === "DINE_IN" ? t("cart.dineIn") : t("cart.takeout")}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-xs font-bold text-muted-foreground">
-              {tablesLoading ? t("tables.loading") : ""}
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void loadTables()}
-              disabled={tablesLoading}
-            >
-              {t("common.refresh")}
-            </Button>
-          </div>
-
-          {tables.length === 0 && !tablesLoading ? (
-            <div className="rounded-xl border border-dashed p-6 text-center text-sm font-semibold text-muted-foreground">
-              {t("tables.empty")}
-            </div>
-          ) : (
-            <div className="max-h-[60vh] overflow-auto pr-1">
-              <div className="space-y-5">
-                {tablesByZone.map(([zone, zoneTables]) => (
-                  <div key={zone}>
-                    <div className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">
-                      {zone}
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {zoneTables.map((tb) => {
-                        const selectable = isTableSelectable(tb.status);
-                        const status = String(tb.status || "").toUpperCase();
-                        const tone =
-                          status === "AVAILABLE"
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-                            : status === "RESERVED"
-                              ? "border-amber-200 bg-amber-50 text-amber-900"
-                              : "border-red-200 bg-red-50 text-red-900";
-
-                        return (
-                          <button
-                            key={tb.id}
-                            type="button"
-                            disabled={!selectable}
-                            onClick={() => {
-                              setTableId(tb.id);
-                              setTableTouched(false);
-                              setIsTableDialogOpen(false);
-                            }}
-                            className={`rounded-xl border p-3 text-left transition-colors ${tone} ${
-                              selectable
-                                ? "hover:brightness-[0.98]"
-                                : "opacity-60 cursor-not-allowed"
-                            }`}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="font-black text-sm">
-                                {t("cart.table")} {tb.number}
-                              </div>
-                              <div className="text-[11px] font-black uppercase tracking-widest">
-                                {getTableStatusLabel(tb.status)}
-                              </div>
-                            </div>
-
-                            <div className="mt-1 text-xs font-semibold opacity-80">
-                              {tb.capacity
-                                ? `${t("tables.capacity")}: ${tb.capacity}`
-                                : ""}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <TableBoardDialog
+        isOpen={tm.isTableDialogOpen}
+        onOpenChange={(open) => {
+          tm.setIsTableDialogOpen(open);
+          if (open) {
+            tm.openTableDialog();
+          }
+        }}
+        tables={tm.tables}
+        filteredTables={tm.filteredTables}
+        zoneOptions={tm.zoneOptions}
+        zoneFilter={tm.zoneFilter}
+        onZoneFilterChange={tm.setZoneFilter}
+        statusFilter={tm.statusFilter}
+        onStatusFilterChange={tm.setStatusFilter}
+        tablesLoading={tm.tablesLoading}
+        activeOrdersLoading={tm.activeOrdersLoading}
+        dialogTableId={tm.dialogTableId}
+        onDialogTableIdChange={tm.setDialogTableId}
+        dialogSelectedTable={tm.dialogSelectedTable}
+        activeOrdersByTableId={tm.activeOrdersByTableId}
+        onRefresh={tm.refreshTables}
+        onConfirmSelect={tm.handleSelectTableFromDialog}
+        onReleaseTable={tm.handleReleaseTable}
+      />
     </aside>
   );
 }
