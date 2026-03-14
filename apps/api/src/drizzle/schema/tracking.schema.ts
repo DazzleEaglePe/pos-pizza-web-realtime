@@ -1,4 +1,5 @@
 import { uuid,  timestamp,  pgTable, text, integer   } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { orders } from "./orders.schema";
 
 export const orderTracking = pgTable("order_tracking", {
@@ -10,3 +11,10 @@ export const orderTracking = pgTable("order_tracking", {
   expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
 });
+
+export const orderTrackingRelations = relations(orderTracking, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderTracking.orderId],
+    references: [orders.id],
+  }),
+}));

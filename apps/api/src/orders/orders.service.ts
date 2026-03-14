@@ -12,6 +12,7 @@ import { eq } from 'drizzle-orm';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { PaymentsService } from '../payments/payments.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
+import { TrackingService } from '../tracking/tracking.service';
 
 @Injectable()
 export class OrdersService {
@@ -19,6 +20,7 @@ export class OrdersService {
     private readonly notifications: NotificationsGateway,
     private readonly payments: PaymentsService,
     private readonly cashRegister: CashRegisterService,
+    private readonly tracking: TrackingService,
   ) {}
   async create(createOrderDto: any) {
     const {
@@ -238,6 +240,17 @@ export class OrdersService {
           },
         );
 
+        // 4. Generate Tracking (code + QR + estimated time)
+        const productIds = orderItemsPayload.map(
+          (item: any) => item.productId as string | null,
+        );
+        const trackingResult = await this.tracking.createTracking(
+          tx,
+          newOrder.id,
+          newOrder.ticketNumber,
+          productIds,
+        );
+
         const realtimeOrder = {
           id: newOrder.id,
           ticketNumber: newOrder.ticketNumber,
@@ -253,6 +266,7 @@ export class OrdersService {
           taxAmount: newOrder.taxAmount,
           total: newOrder.total,
           createdAt: newOrder.createdAt,
+          trackingCode: trackingResult.trackingCode,
           items: insertedItems.map((item: any, idx: number) => ({
             id: item.id,
             productName: item.productName,
@@ -269,6 +283,10 @@ export class OrdersService {
           success: true,
           orderId: newOrder.id,
           ticketNumber: newOrder.ticketNumber,
+          trackingCode: trackingResult.trackingCode,
+          trackingUrl: trackingResult.trackingUrl,
+          qrData: trackingResult.qrData,
+          estimatedMinutes: trackingResult.estimatedMinutes,
           total: newOrder.total,
           payment: paymentResult,
           order: realtimeOrder,
@@ -341,7 +359,19 @@ export class OrdersService {
         HttpStatus.NOT_FOUND,
       );
     }
-    return order;
+
+    const trackingRecord = await this.tracking.findByOrderId(id);
+
+    return {
+      ...order,
+      tracking: trackingRecord
+        ? {
+            code: trackingRecord.trackingCode,
+            qrData: trackingRecord.qrData,
+            estimatedMinutes: trackingRecord.estimatedMinutes,
+          }
+        : null,
+    };
   }
 
   async findByTicketNumber(ticketNumber: string) {
@@ -359,6 +389,8 @@ export class OrdersService {
         HttpStatus.NOT_FOUND,
       );
     }
+
+    const trackingRecord = await this.tracking.findByOrderId(order.id);
 
     const safeItems = Array.isArray((order as any).items)
       ? (order as any).items
@@ -387,6 +419,13 @@ export class OrdersService {
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
       deliveredAt: order.deliveredAt,
+      tracking: trackingRecord
+        ? {
+            code: trackingRecord.trackingCode,
+            estimatedMinutes: trackingRecord.estimatedMinutes,
+            qrData: trackingRecord.qrData,
+          }
+        : null,
       items: safeItems.map((item: any) => ({
         productName: item.productName,
         quantity: item.quantity,

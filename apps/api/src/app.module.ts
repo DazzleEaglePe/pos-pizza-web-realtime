@@ -10,6 +10,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { CashRegisterModule } from './cash-register/cash-register.module';
 import { TablesModule } from './tables/tables.module';
 import { PromotionsModule } from './promotions/promotions.module';
+import { TrackingModule } from './tracking/tracking.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PromotionsModule } from './promotions/promotions.module';
     CashRegisterModule,
     TablesModule,
     PromotionsModule,
+    TrackingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
