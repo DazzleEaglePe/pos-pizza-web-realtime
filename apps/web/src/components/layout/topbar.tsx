@@ -21,7 +21,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="flex items-center justify-between px-6 h-14 bg-background border-b border-border w-full">
+    <header className="flex items-center justify-between px-6 h-16 bg-background border-b border-border w-full">
       <MobileNav />
 
       <div className="flex items-center gap-2 ml-auto">

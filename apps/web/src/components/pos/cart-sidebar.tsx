@@ -201,7 +201,7 @@ export function CartSidebar() {
         </div>
 
         {/* Segmented control */}
-        <div className="flex bg-muted/60 rounded-xl p-0.5 gap-0.5">
+        <div className="flex bg-muted/60 rounded-sm p-0.5 gap-0.5">
           <button
             type="button"
             onClick={() => {
@@ -210,7 +210,7 @@ export function CartSidebar() {
               tm.setTableTouched(false);
             }}
             className={cn(
-              "flex-1 h-8 rounded-[10px] text-xs font-semibold uppercase tracking-wide transition-all",
+              "flex-1 h-8 rounded-[7px] text-xs font-semibold uppercase tracking-wide transition-all",
               orderType === "DINE_IN"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
@@ -317,7 +317,7 @@ export function CartSidebar() {
             items.map((item) => (
               <div
                 key={item.id}
-                className="bg-background/60 border border-border/60 rounded-xl px-3.5 py-3 flex flex-col gap-2"
+                className="bg-background/60 border border-border/60 rounded-sm px-3.5 py-3 flex flex-col gap-2"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -439,7 +439,7 @@ export function CartSidebar() {
           <Button
             onClick={() => setIsPaymentDialogOpen(true)}
             disabled={items.length === 0 || isSubmitting || cr.loading}
-            className="h-12 w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
+            className="h-12 w-full rounded-sm bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
           >
             {t("cart.placeOrder")}
           </Button>

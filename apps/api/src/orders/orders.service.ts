@@ -13,6 +13,7 @@ import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { PaymentsService } from '../payments/payments.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
 import { TrackingService } from '../tracking/tracking.service';
+import { InventoryService } from '../inventory/inventory.service';
 
 @Injectable()
 export class OrdersService {
@@ -21,6 +22,7 @@ export class OrdersService {
     private readonly payments: PaymentsService,
     private readonly cashRegister: CashRegisterService,
     private readonly tracking: TrackingService,
+    private readonly inventory: InventoryService,
   ) {}
   async create(createOrderDto: any) {
     const {
@@ -240,7 +242,18 @@ export class OrdersService {
           },
         );
 
-        // 4. Generate Tracking (code + QR + estimated time)
+        // 4. Deduct Inventory (automatic stock reduction)
+        await this.inventory.deductByOrder(
+          tx,
+          newOrder.id,
+          orderItemsPayload.map((item: any) => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+          })),
+        );
+
+        // 5. Generate Tracking (code + QR + estimated time)
         const productIds = orderItemsPayload.map(
           (item: any) => item.productId as string | null,
         );
@@ -480,6 +493,7 @@ export class OrdersService {
   async cancelOrder(id: string, reason: string | null, cancelledBy?: string) {
     const existing = await db.query.orders.findFirst({
       where: eq(orders.id, id),
+      with: { items: true },
     });
 
     if (!existing) {
@@ -521,6 +535,20 @@ export class OrdersService {
       changedBy: cancelledBy || null,
       notes: reason || null,
     });
+
+    // Restore inventory on cancellation
+    const orderItemsList = (existing as any).items || [];
+    if (orderItemsList.length > 0) {
+      await this.inventory.restoreByOrder(
+        id,
+        orderItemsList.map((item: any) => ({
+          productId: item.productId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+        })),
+        cancelledBy,
+      );
+    }
 
     this.notifications.emitOrderCancelled(id);
     this.notifications.emitOrderStatusUpdate(id, 'CANCELLED', updatedOrder);

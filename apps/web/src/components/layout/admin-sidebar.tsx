@@ -14,6 +14,11 @@ import {
   Search,
   Pizza,
   Gift,
+  Package,
+  AlertTriangle,
+  BookOpen,
+  ArrowDownUp,
+  PackagePlus,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,6 +31,12 @@ const navigation = [
   { name: "Customers", href: "/admin/customers", icon: Users },
   { section: "CATÁLOGO" },
   { name: "Combos & Promos", href: "/admin/promotions", icon: Gift },
+  { section: "INVENTARIO" },
+  { name: "Insumos", href: "/admin/inventory", icon: Package },
+  { name: "Recetas", href: "/admin/inventory/recipes", icon: BookOpen },
+  { name: "Reposición", href: "/admin/inventory/restock", icon: PackagePlus },
+  { name: "Movimientos", href: "/admin/inventory/movements", icon: ArrowDownUp },
+  { name: "Alertas Stock", href: "/admin/inventory/alerts", icon: AlertTriangle },
   { section: "SETTINGS" },
   { name: "Messages", href: "/admin/messages", icon: MessageSquare },
   { name: "Customer Reviews", href: "/admin/reviews", icon: Star },

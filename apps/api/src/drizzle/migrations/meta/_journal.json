@@ -22,6 +22,13 @@
       "when": 1773450848771,
       "tag": "0002_flaky_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773457098485,
+      "tag": "0003_next_eternity",
+      "breakpoints": true
     }
   ]
 }

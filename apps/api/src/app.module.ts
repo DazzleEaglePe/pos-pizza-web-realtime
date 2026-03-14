@@ -11,6 +11,7 @@ import { CashRegisterModule } from './cash-register/cash-register.module';
 import { TablesModule } from './tables/tables.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { TrackingModule } from './tracking/tracking.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TrackingModule } from './tracking/tracking.module';
     TablesModule,
     PromotionsModule,
     TrackingModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

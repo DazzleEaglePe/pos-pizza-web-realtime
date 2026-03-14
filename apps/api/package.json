@@ -22,7 +22,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:seed": "ts-node src/drizzle/seed.ts",
-    "db:seed-prep-times": "ts-node src/drizzle/seed-prep-times.ts"
+    "db:seed-prep-times": "ts-node src/drizzle/seed-prep-times.ts",
+    "db:seed-inventory": "ts-node src/drizzle/seed-inventory.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
