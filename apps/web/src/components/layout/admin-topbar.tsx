@@ -5,6 +5,24 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
+type AdminRouteMeta = {
+  href: string;
+  title: string;
+  context: string[];
+};
+
+const ADMIN_ROUTE_META: AdminRouteMeta[] = [
+  { href: "/admin", title: "Dashboard Admin", context: ["Gestión"] },
+  { href: "/admin/menu", title: "Menú", context: ["Gestión", "Catálogo"] },
+  { href: "/admin/promotions", title: "Combos & Promos", context: ["Gestión", "Catálogo"] },
+  { href: "/admin/inventory", title: "Insumos", context: ["Gestión", "Stock"] },
+  { href: "/admin/inventory/recipes", title: "Recetas", context: ["Gestión", "Stock", "Insumos"] },
+  { href: "/admin/inventory/restock", title: "Reposición", context: ["Gestión", "Stock", "Insumos"] },
+  { href: "/admin/inventory/movements", title: "Movimientos", context: ["Gestión", "Stock", "Insumos"] },
+  { href: "/admin/inventory/alerts", title: "Alertas Stock", context: ["Gestión", "Stock", "Insumos"] },
+  { href: "/admin/settings", title: "Negocio", context: ["Gestión", "Configuración"] },
+];
+
 export function AdminTopbar({
   rightPanelCollapsed,
   onToggleRightPanel,
@@ -14,28 +32,15 @@ export function AdminTopbar({
 }) {
   const pathname = usePathname();
 
-  const segmentLabel: Record<string, string> = {
-    admin: "Dashboard Admin",
-    menu: "Menú",
-    promotions: "Combos & Promos",
-    inventory: "Insumos",
-    recipes: "Recetas",
-    restock: "Reposición",
-    movements: "Movimientos",
-    alerts: "Alertas Stock",
-    settings: "Negocio",
-  };
+  const activeRoute =
+    ADMIN_ROUTE_META
+      .slice()
+      .sort((left, right) => right.href.length - left.href.length)
+      .find((route) => pathname === route.href || pathname.startsWith(`${route.href}/`)) ??
+    ADMIN_ROUTE_META[0];
 
-  const segments = pathname.split("/").filter(Boolean);
-  const adminIndex = segments.indexOf("admin");
-  const adminSegments = adminIndex >= 0 ? segments.slice(adminIndex) : ["admin"];
-
-  const breadcrumb = adminSegments.map((segment, index) => {
-    if (index === 0) return "Gestión";
-    return segmentLabel[segment] ?? segment;
-  });
-
-  const title = breadcrumb[breadcrumb.length - 1] ?? "Gestión";
+  const contextLabel = activeRoute.context.join(" / ");
+  const title = activeRoute.title;
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -49,10 +54,12 @@ export function AdminTopbar({
         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
           <Globe className="w-4 h-4 text-primary" />
         </div>
-        <span className="text-muted-foreground text-sm font-semibold">
-          {breadcrumb.join(" / ")}
-        </span>
-        <span className="text-foreground text-sm font-bold">{title}</span>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.18em]">
+            {contextLabel}
+          </span>
+          <span className="text-foreground text-base font-bold tracking-tight">{title}</span>
+        </div>
       </div>
 
       {/* Actions */}
