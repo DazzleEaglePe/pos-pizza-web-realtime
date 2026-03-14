@@ -1,7 +1,6 @@
 "use client";
 
-import { Search, Bell, Menu, Sun, Moon, Languages } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell, Sun, Moon, Languages } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useTranslation, locales, localeNames, type Locale } from "@/i18n";
@@ -12,7 +11,6 @@ export function Topbar() {
   const { t, locale, setLocale } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch by waiting until component mounts
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -23,24 +21,10 @@ export function Topbar() {
   };
 
   return (
-    <header className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-background border-b border-border w-full gap-4">
-      <div className="flex items-center w-full sm:w-auto gap-4">
-        {/* Mobile Navigation Toggle */}
-        <MobileNav />
+    <header className="flex items-center justify-between px-6 h-14 bg-background border-b border-border w-full">
+      <MobileNav />
 
-        {/* Search Bar */}
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder={t("topbar.searchPlaceholder")}
-            className="w-full pl-9 pr-4 py-2 h-10 bg-background border-input rounded-md text-sm focus-visible:ring-1 focus-visible:ring-ring transition-all placeholder:text-muted-foreground"
-          />
-        </div>
-      </div>
-
-      {/* Profile & Notifications */}
-      <div className="flex items-center gap-2 sm:ml-auto">
+      <div className="flex items-center gap-2 ml-auto">
         {mounted && (
           <>
             {/* Language Toggle */}

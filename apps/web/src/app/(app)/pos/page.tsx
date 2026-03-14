@@ -32,7 +32,7 @@ export default async function POSPage() {
       <MenuDisplay catalog={catalog} />
 
       {/* Right Area - Cart Sidebar (Desktop Only) */}
-      <div className="hidden lg:block h-full w-[380px] overflow-hidden bg-background z-10 shrink-0">
+      <div className="hidden lg:block h-full w-95 overflow-hidden bg-background z-10 shrink-0">
         <CartSidebar />
       </div>
 

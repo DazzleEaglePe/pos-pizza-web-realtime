@@ -1,15 +1,24 @@
 import { create } from "zustand";
 
+export interface CartModifier {
+  id: string;
+  name: string;
+  price: number;
+  groupId: string;
+}
+
 export interface CartItem {
   id: string; // unique ID for the cart row
   productId: string;
   variantId?: string | null;
   name: string;
-  price: number;
+  price: number; // base/variant unit price (without modifiers)
   quantity: number;
   imageUrl?: string | null;
   notes?: string;
   variantName?: string;
+  modifiers?: CartModifier[];
+  modifiersCost?: number; // sum of modifier prices per unit
 }
 
 interface CartState {
@@ -30,15 +39,21 @@ export const useCart = create<CartState>((set, get) => ({
 
   addItem: (item) =>
     set((state) => {
-      console.log("addItem triggered with payload:", item);
-      // Basic implementation: if exact same product/variant, increment qty
+      // Two items merge only when same product/variant AND same modifiers
+      const newModIds = (item.modifiers || [])
+        .map((m) => m.id)
+        .sort()
+        .join(",");
       const existing = state.items.find(
         (i) =>
           i.productId === item.productId &&
-          (i.variantId || null) === (item.variantId || null),
+          (i.variantId || null) === (item.variantId || null) &&
+          (i.modifiers || [])
+            .map((m) => m.id)
+            .sort()
+            .join(",") === newModIds,
       );
       if (existing) {
-        console.log("Item exists, incrementing quantity.");
         return {
           items: state.items.map((i) =>
             i.id === existing.id
@@ -47,7 +62,6 @@ export const useCart = create<CartState>((set, get) => ({
           ),
         };
       }
-      console.log("New item added to cart.");
       return { items: [...state.items, { ...item, id: crypto.randomUUID() }] };
     }),
 
@@ -77,7 +91,8 @@ export const useCart = create<CartState>((set, get) => ({
   getTotals: () => {
     const { items } = get();
     const subtotal = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) =>
+        sum + (item.price + (item.modifiersCost || 0)) * item.quantity,
       0,
     );
     const taxRate = 0.18; // 18% SUNAT Peru

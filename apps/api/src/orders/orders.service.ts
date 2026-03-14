@@ -3,11 +3,12 @@ import { db } from '../drizzle/db';
 import {
   orders,
   orderItems,
+  orderItemModifiers,
   orderStatusHistory,
 } from '../drizzle/schema/orders.schema';
 import { tables } from '../drizzle/schema/tables.schema';
 import { cashRegisters } from '../drizzle/schema/payments.schema';
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { PaymentsService } from '../payments/payments.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
@@ -130,7 +131,11 @@ export class OrdersService {
     // Recalculate totals
     let subtotal = 0;
     const orderItemsPayload = items.map((item: any) => {
-      const itemSubtotal = item.price * item.quantity;
+      const itemModifiersTotal = (item.modifiers || []).reduce(
+        (s: number, m: any) => s + Number(m.price || 0),
+        0,
+      );
+      const itemSubtotal = (item.price + itemModifiersTotal) * item.quantity;
       subtotal += itemSubtotal;
       return {
         productId: item.productId,
@@ -138,9 +143,15 @@ export class OrdersService {
         productName: item.name,
         quantity: item.quantity,
         unitPrice: item.price,
+        modifiersTotal: itemModifiersTotal,
         subtotal: itemSubtotal,
         notes: item.notes || null,
         variantName: item.variantName || null,
+        _modifiers: (item.modifiers || []) as Array<{
+          id: string;
+          name: string;
+          price: number;
+        }>,
       };
     });
 
@@ -188,16 +199,31 @@ export class OrdersService {
           changedBy: userId,
         });
 
-        // 2. Insert Order Items
-        const orderItemsToInsert = orderItemsPayload.map((item: any) => ({
-          ...item,
-          orderId: newOrder.id,
-        }));
+        // 2. Insert Order Items (strip internal _modifiers field)
+        const orderItemsToInsert = orderItemsPayload.map((item: any) => {
+          const { _modifiers: _, ...rest } = item;
+          return { ...rest, orderId: newOrder.id };
+        });
 
         const insertedItems = await tx
           .insert(orderItems)
           .values(orderItemsToInsert)
           .returning();
+
+        // 2b. Insert selected modifiers per item
+        for (let i = 0; i < orderItemsPayload.length; i++) {
+          const mods = orderItemsPayload[i]._modifiers;
+          if (mods.length > 0) {
+            await tx.insert(orderItemModifiers).values(
+              mods.map((m: { id: string; name: string; price: number }) => ({
+                orderItemId: insertedItems[i].id,
+                modifierId: m.id,
+                modifierName: m.name,
+                price: Number(m.price || 0),
+              })),
+            );
+          }
+        }
 
         // 3. Process Payment via Strategy Pattern
         const paymentResult = await this.payments.processPayment(
@@ -226,12 +252,15 @@ export class OrdersService {
           taxAmount: newOrder.taxAmount,
           total: newOrder.total,
           createdAt: newOrder.createdAt,
-          items: insertedItems.map((item: any) => ({
+          items: insertedItems.map((item: any, idx: number) => ({
             id: item.id,
             productName: item.productName,
             variantName: item.variantName,
             quantity: item.quantity,
             notes: item.notes,
+            modifierNames: orderItemsPayload[idx]._modifiers.map(
+              (m: any) => m.name,
+            ),
           })),
         };
 
@@ -405,29 +434,6 @@ export class OrdersService {
     // Emit real-time status update
     this.notifications.emitOrderStatusUpdate(id, status, updatedOrder);
 
-    if (
-      updatedOrder.tableId &&
-      (status === 'DELIVERED' || status === 'CANCELLED')
-    ) {
-      const stillActive = await db.query.orders.findFirst({
-        where: and(
-          eq(orders.tableId, updatedOrder.tableId!),
-          ne(orders.id, updatedOrder.id),
-          inArray(orders.status, ['RECEIVED', 'PREPARING', 'IN_OVEN', 'READY']),
-        ),
-        columns: {
-          id: true,
-        },
-      });
-
-      if (!stillActive) {
-        await db
-          .update(tables)
-          .set({ status: 'AVAILABLE' })
-          .where(eq(tables.id, updatedOrder.tableId));
-      }
-    }
-
     return updatedOrder;
   }
 
@@ -478,26 +484,6 @@ export class OrdersService {
 
     this.notifications.emitOrderCancelled(id);
     this.notifications.emitOrderStatusUpdate(id, 'CANCELLED', updatedOrder);
-
-    if (updatedOrder.tableId) {
-      const stillActive = await db.query.orders.findFirst({
-        where: and(
-          eq(orders.tableId, updatedOrder.tableId!),
-          ne(orders.id, updatedOrder.id),
-          inArray(orders.status, ['RECEIVED', 'PREPARING', 'IN_OVEN', 'READY']),
-        ),
-        columns: {
-          id: true,
-        },
-      });
-
-      if (!stillActive) {
-        await db
-          .update(tables)
-          .set({ status: 'AVAILABLE' })
-          .where(eq(tables.id, updatedOrder.tableId));
-      }
-    }
 
     return updatedOrder;
   }

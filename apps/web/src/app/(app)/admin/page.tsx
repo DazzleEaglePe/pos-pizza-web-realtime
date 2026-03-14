@@ -4,8 +4,8 @@ export default function AdminOverview() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-white tracking-tight">Overview</h1>
-        <div className="bg-[#1c1c1c] border border-white/5 rounded-lg px-4 py-2 text-sm text-gray-400 cursor-pointer hover:text-white transition-colors">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Overview</h1>
+        <div className="bg-card border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
           Today <span className="ml-2 text-[10px]">▼</span>
         </div>
       </div>
@@ -15,17 +15,17 @@ export default function AdminOverview() {
         <MetricCard title="Net revenue" value="$3,131,021" percent="0.4%" isUp={true} />
         <MetricCard title="ARR" value="$1,511,121" percent="32%" isUp={true} />
         
-        <div className="bg-[#242426] rounded-2xl p-5 border border-white/5 flex flex-col justify-between hover:border-white/10 transition-colors">
-           <h3 className="text-gray-400 font-medium text-sm">Quarterly revenue goal</h3>
+        <div className="bg-muted rounded-2xl p-5 border border-border flex flex-col justify-between hover:border-border transition-colors">
+           <h3 className="text-muted-foreground font-medium text-sm">Quarterly revenue goal</h3>
            <div className="flex items-center justify-between mt-4">
               <div className="flex flex-col">
-                 <span className="text-3xl font-black text-white">71%</span>
-                 <span className="text-xs text-gray-500 font-medium">Goal: $1.1M</span>
+                 <span className="text-3xl font-black text-foreground">71%</span>
+                 <span className="text-xs text-muted-foreground font-medium">Goal: $1.1M</span>
               </div>
               <div className="relative w-14 h-14">
                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                     <path
-                       className="text-gray-700"
+                       className="text-muted-foreground"
                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                        fill="none"
                        stroke="currentColor"
@@ -50,10 +50,10 @@ export default function AdminOverview() {
       {/* Main Analytics Section row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          {/* Circular Sales Chart (Mocked) */}
-         <div className="bg-[#242426] rounded-2xl p-6 border border-white/5 lg:col-span-2 relative overflow-hidden group">
+         <div className="bg-muted rounded-2xl p-6 border border-border lg:col-span-2 relative overflow-hidden group">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white tracking-tight">Sales Overview</h3>
-                <MoreHorizontal className="text-gray-500 w-5 h-5 cursor-pointer hover:text-white" />
+                <h3 className="text-lg font-bold text-foreground tracking-tight">Sales Overview</h3>
+                <MoreHorizontal className="text-muted-foreground w-5 h-5 cursor-pointer hover:text-foreground" />
             </div>
             
             <div className="flex gap-16 items-center">
@@ -87,8 +87,8 @@ export default function AdminOverview() {
                     />
                   </svg>
                   <div className="absolute flex flex-col items-center">
-                     <span className="text-2xl font-black text-white">102k</span>
-                     <span className="text-[10px] text-gray-400">Weekly Visits</span>
+                  <span className="text-2xl font-black text-foreground">102k</span>
+                     <span className="text-[10px] text-muted-foreground">Weekly Visits</span>
                   </div>
                </div>
 
@@ -98,8 +98,8 @@ export default function AdminOverview() {
                         <span className="font-bold text-lg">$</span>
                      </div>
                      <div>
-                        <p className="text-sm text-gray-400">Number of Sales</p>
-                        <p className="text-2xl font-black text-white">$71,020</p>
+                        <p className="text-sm text-muted-foreground">Number of Sales</p>
+                        <p className="text-2xl font-black text-foreground">$71,020</p>
                      </div>
                   </div>
                   <div className="grid grid-cols-2 gap-y-4 gap-x-8">
@@ -115,28 +115,28 @@ export default function AdminOverview() {
          {/* Small Blocks */}
          <div className="space-y-6 flex flex-col">
             <div className="grid grid-cols-2 gap-4">
-               <div className="bg-[#242426] rounded-2xl p-5 border border-white/5 cursor-pointer hover:bg-[#2a2a2c] transition-colors">
+               <div className="bg-muted rounded-2xl p-5 border border-border cursor-pointer hover:bg-accent transition-colors">
                   <div className="bg-primary/20 w-8 h-8 rounded-full flex items-center justify-center mb-3">
                      <UserPlus className="w-4 h-4 text-primary" />
                   </div>
-                  <p className="text-xs text-gray-400">New customers:</p>
-                  <p className="text-xl font-bold text-white">862 <span className="text-red-500 text-xs">-8%</span></p>
-                  <p className="text-[10px] text-gray-500 mt-1">Last Week</p>
+                  <p className="text-xs text-muted-foreground">New customers:</p>
+                  <p className="text-xl font-bold text-foreground">862 <span className="text-red-500 text-xs">-8%</span></p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Last Week</p>
                </div>
-               <div className="bg-[#242426] rounded-2xl p-5 border border-white/5 cursor-pointer hover:bg-[#2a2a2c] transition-colors">
+               <div className="bg-muted rounded-2xl p-5 border border-border cursor-pointer hover:bg-accent transition-colors">
                   <div className="bg-primary/20 w-8 h-8 rounded-full flex items-center justify-center mb-3">
                      <TrendingUp className="w-4 h-4 text-primary" />
                   </div>
-                  <p className="text-xs text-gray-400">Total profit:</p>
-                  <p className="text-xl font-bold text-white">$25.6k <span className="text-primary text-xs">+42%</span></p>
-                  <p className="text-[10px] text-gray-500 mt-1">Weekly Profit</p>
+                  <p className="text-xs text-muted-foreground">Total profit:</p>
+                  <p className="text-xl font-bold text-foreground">$25.6k <span className="text-primary text-xs">+42%</span></p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Weekly Profit</p>
                </div>
             </div>
 
-            <div className="bg-[#242426] rounded-2xl p-5 border border-white/5 flex-1 relative overflow-hidden flex flex-col justify-between group">
+            <div className="bg-muted rounded-2xl p-5 border border-border flex-1 relative overflow-hidden flex flex-col justify-between group">
                <div className="z-10 relative">
-                  <h4 className="text-white text-sm font-bold">Total Profit:</h4>
-                  <p className="text-3xl font-black text-white mt-1">$136,755.77</p>
+                  <h4 className="text-foreground text-sm font-bold">Total Profit:</h4>
+                  <p className="text-3xl font-black text-foreground mt-1">$136,755.77</p>
                </div>
                
                {/* Decorative Area Chart svg */}
@@ -152,14 +152,14 @@ export default function AdminOverview() {
 
       {/* Lists Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         <div className="bg-[#242426] rounded-2xl p-6 border border-white/5 lg:col-span-2">
+         <div className="bg-muted rounded-2xl p-6 border border-border lg:col-span-2">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white tracking-tight">Customer list</h3>
-                <MoreHorizontal className="text-gray-500 w-5 h-5 cursor-pointer hover:text-white" />
+                <h3 className="text-lg font-bold text-foreground tracking-tight">Customer list</h3>
+                <MoreHorizontal className="text-muted-foreground w-5 h-5 cursor-pointer hover:text-foreground" />
             </div>
             <table className="w-full text-left border-collapse">
                <thead>
-                  <tr className="border-b border-white/5 text-gray-500 text-xs">
+                  <tr className="border-b border-border text-muted-foreground text-xs">
                      <th className="pb-3 font-medium">Name <span className="opacity-50 inline-block rotate-180">▲</span></th>
                      <th className="pb-3 font-medium">Deals <span className="opacity-50 inline-block rotate-180">▲</span></th>
                      <th className="pb-3 font-medium text-right">Total Deal Value <span className="opacity-50 inline-block rotate-180">▲</span></th>
@@ -174,7 +174,7 @@ export default function AdminOverview() {
          </div>
 
          {/* Premium Ad Card */}
-         <div className="rounded-2xl p-6 border border-white/10 relative overflow-hidden bg-gradient-to-br from-[#1c3a2a] to-[#0a1a12]">
+         <div className="rounded-2xl p-6 border border-border relative overflow-hidden bg-linear-to-br from-primary/20 to-primary/5">
              <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
              
              <div className="flex justify-between items-start mb-6 relative z-10">
@@ -186,16 +186,16 @@ export default function AdminOverview() {
 
              <div className="relative z-10 flex flex-col h-full justify-between pb-8">
                 <div>
-                   <div className="flex items-end gap-2 text-white">
+                   <div className="flex items-end gap-2 text-foreground">
                       <span className="text-5xl font-black">$30</span>
-                      <span className="text-xs text-gray-400 mb-1 leading-tight border-l border-white/10 pl-2">Per Month<br/>Per User</span>
+                      <span className="text-xs text-muted-foreground mb-1 leading-tight border-l border-border pl-2">Per Month<br/>Per User</span>
                    </div>
-                   <p className="text-sm text-gray-300 mt-6 leading-relaxed w-[80%]">
+                   <p className="text-sm text-foreground/80 mt-6 leading-relaxed w-[80%]">
                       Improve your workplace, view and analyze your profits and losses
                    </p>
                 </div>
 
-                <button className="bg-gradient-to-r from-primary to-[#48bb78] w-full py-4 mt-8 rounded-xl font-bold text-gray-900 shadow-[0_0_20px_rgba(var(--primary),0.3)] hover:scale-[1.02] transition-transform">
+                <button className="bg-linear-to-r from-primary to-[#48bb78] w-full py-4 mt-8 rounded-xl font-bold text-primary-foreground shadow-[0_0_20px_rgba(var(--primary),0.3)] hover:scale-[1.02] transition-transform">
                    Get Started
                 </button>
              </div>
@@ -207,13 +207,13 @@ export default function AdminOverview() {
 
 function MetricCard({ title, value, percent, isUp }: any) {
    return (
-      <div className="bg-[#242426] rounded-2xl p-5 border border-white/5 flex flex-col hover:border-white/10 transition-colors">
-         <h3 className="text-gray-400 font-medium text-sm">{title}</h3>
-         <p className="text-3xl font-black text-white mt-3 mb-1">{value}</p>
+      <div className="bg-muted rounded-2xl p-5 border border-border flex flex-col hover:border-border transition-colors">
+         <h3 className="text-muted-foreground font-medium text-sm">{title}</h3>
+         <p className="text-3xl font-black text-foreground mt-3 mb-1">{value}</p>
          <div className="flex items-center gap-1">
             <TrendingUp className={`w-3 h-3 ${isUp ? 'text-primary' : 'text-red-500'} ${isUp ? '' : 'transform rotate-180'}`} />
             <span className={`text-xs font-bold ${isUp ? 'text-primary' : 'text-red-500'}`}>{percent}</span>
-            <span className="text-xs text-gray-500 ml-1">vs last month</span>
+            <span className="text-xs text-muted-foreground ml-1">vs last month</span>
          </div>
       </div>
    );
@@ -222,31 +222,31 @@ function MetricCard({ title, value, percent, isUp }: any) {
 function LegendItem({ color, label, value }: any) {
    return (
       <div className="flex items-center justify-between">
-         <div className="flex items-center gap-2 text-sm text-gray-400">
+         <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className={`w-2 h-2 rounded-full ${color}`}></span>
             {label}
          </div>
-         <span className="text-sm font-semibold text-white">{value}</span>
+         <span className="text-sm font-semibold text-foreground">{value}</span>
       </div>
    );
 }
 
 function CustomerRow({ name, email, deals, value }: any) {
    return (
-      <tr className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+      <tr className="border-b border-border last:border-0 hover:bg-accent/20 transition-colors">
          <td className="py-4">
             <div className="flex items-center gap-3">
-               <div className="w-8 h-8 rounded-full bg-gray-600 overflow-hidden">
+               <div className="w-8 h-8 rounded-full bg-muted overflow-hidden">
                   <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${name}`} alt={name} />
                </div>
                <div className="flex flex-col">
-                  <span className="font-bold text-white">{name}</span>
-                  <span className="text-xs text-gray-500">{email}</span>
+                  <span className="font-bold text-foreground">{name}</span>
+                  <span className="text-xs text-muted-foreground">{email}</span>
                </div>
             </div>
          </td>
-         <td className="py-4 text-gray-300 font-medium">{deals}</td>
-         <td className="py-4 text-right font-bold text-white">{value}</td>
+         <td className="py-4 text-foreground/70 font-medium">{deals}</td>
+         <td className="py-4 text-right font-bold text-foreground">{value}</td>
       </tr>
    );
 }

@@ -50,7 +50,6 @@ export function LoginForm() {
         icon: "error",
         title: t("login.accessDenied"),
         text: err.message || t("login.invalidCredentials"),
-        confirmButtonColor: "#ff5757",
         confirmButtonText: t("login.tryAgain"),
       });
     } finally {
@@ -63,7 +62,7 @@ export function LoginForm() {
       <div className="space-y-2">
         <Label
           htmlFor="email"
-          className="text-gray-700 dark:text-gray-300 font-bold text-sm"
+          className="text-foreground font-bold text-sm"
         >
           {t("login.emailLabel")}
         </Label>
@@ -73,7 +72,7 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-12 bg-gray-50/50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl focus-visible:ring-primary text-gray-900 dark:text-white placeholder:text-gray-400"
+          className="h-12 bg-muted/50 border-border rounded-xl focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
           placeholder="admin@pospizza.com"
         />
       </div>
@@ -81,7 +80,7 @@ export function LoginForm() {
       <div className="space-y-2">
         <Label
           htmlFor="password"
-          className="text-gray-700 dark:text-gray-300 font-bold text-sm"
+          className="text-foreground font-bold text-sm"
         >
           {t("login.passwordLabel")}
         </Label>
@@ -91,7 +90,7 @@ export function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-12 bg-gray-50/50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl focus-visible:ring-primary text-gray-900 dark:text-white placeholder:text-gray-400"
+          className="h-12 bg-muted/50 border-border rounded-xl focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
           placeholder="••••••••"
         />
       </div>
@@ -99,7 +98,7 @@ export function LoginForm() {
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+        className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-colors flex items-center justify-center gap-2"
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         {isLoading ? t("login.authenticating") : t("login.signIn")}

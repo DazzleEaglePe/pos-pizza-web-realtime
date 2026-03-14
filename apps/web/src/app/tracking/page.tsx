@@ -40,9 +40,9 @@ export default function TrackingIndexPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#f5f7f9] text-slate-800 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[560px] h-[560px] bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[460px] h-[460px] bg-primary/5 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3 pointer-events-none" />
+    <div className="min-h-dvh w-full bg-background text-foreground relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-140 h-140 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-115 h-115 bg-primary/5 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 sm:py-12">
         <header className="flex items-center justify-between">
@@ -50,76 +50,76 @@ export default function TrackingIndexPage() {
             href="/tracking"
             className="flex items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
           >
-            <div className="w-11 h-11 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center">
+            <div className="w-11 h-11 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center">
               <Pizza className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <div className="font-black text-gray-900 leading-none tracking-tight">
+              <div className="font-black text-foreground leading-none tracking-tight">
                 {t("common.appName")}
               </div>
-              <div className="text-xs font-bold text-gray-500 mt-1">
+              <div className="text-xs font-bold text-muted-foreground mt-1">
                 {t("tracking.brandSubtitle")}
               </div>
             </div>
           </Link>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-gray-500">
+          <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-muted-foreground">
             {t("tracking.pasteHint")}
           </div>
         </header>
 
         <main className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12 items-start">
           <section className="lg:col-span-7">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-[1.05]">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-[1.05]">
               {t("tracking.indexTitle")}
             </h1>
-            <p className="mt-4 text-base sm:text-lg font-medium text-gray-600 max-w-prose">
+            <p className="mt-4 text-base sm:text-lg font-medium text-muted-foreground max-w-prose">
               {t("tracking.indexDesc")}
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="bg-white/70 border border-gray-100 rounded-[1.5rem] p-5">
+              <div className="bg-card/70 border border-border rounded-[1.5rem] p-5">
                 <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary font-black flex items-center justify-center">
                   1
                 </div>
-                <div className="mt-3 font-black text-gray-900">
+                <div className="mt-3 font-black text-foreground">
                   {t("tracking.step1Title")}
                 </div>
-                <div className="mt-1 text-sm font-semibold text-gray-600">
+                <div className="mt-1 text-sm font-semibold text-muted-foreground">
                   {t("tracking.step1Desc")}
                 </div>
               </div>
 
-              <div className="bg-white/70 border border-gray-100 rounded-[1.5rem] p-5">
+              <div className="bg-card/70 border border-border rounded-[1.5rem] p-5">
                 <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary font-black flex items-center justify-center">
                   2
                 </div>
-                <div className="mt-3 font-black text-gray-900">
+                <div className="mt-3 font-black text-foreground">
                   {t("tracking.step2Title")}
                 </div>
-                <div className="mt-1 text-sm font-semibold text-gray-600">
+                <div className="mt-1 text-sm font-semibold text-muted-foreground">
                   {t("tracking.step2Desc")}
                 </div>
               </div>
 
-              <div className="bg-white/70 border border-gray-100 rounded-[1.5rem] p-5">
+              <div className="bg-card/70 border border-border rounded-[1.5rem] p-5">
                 <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary font-black flex items-center justify-center">
                   3
                 </div>
-                <div className="mt-3 font-black text-gray-900">
+                <div className="mt-3 font-black text-foreground">
                   {t("tracking.step3Title")}
                 </div>
-                <div className="mt-1 text-sm font-semibold text-gray-600">
+                <div className="mt-1 text-sm font-semibold text-muted-foreground">
                   {t("tracking.step3Desc")}
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 bg-white/60 border border-gray-100 rounded-[1.75rem] p-6">
-              <div className="text-xs font-black uppercase tracking-widest text-gray-500">
+            <div className="mt-8 bg-card/60 border border-border rounded-[1.75rem] p-6">
+              <div className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                 {t("tracking.tipTitle")}
               </div>
-              <div className="mt-3 text-sm font-semibold text-gray-700">
+              <div className="mt-3 text-sm font-semibold text-foreground/70">
                 {t("tracking.tipText")}
               </div>
             </div>
@@ -128,17 +128,17 @@ export default function TrackingIndexPage() {
           <section className="lg:col-span-5">
             <form
               onSubmit={onSubmit}
-              className="bg-white rounded-[2rem] p-6 sm:p-7 shadow-[0_18px_55px_-28px_rgba(0,0,0,0.18)] w-full border border-gray-100 max-w-xl mx-auto lg:max-w-none"
+              className="bg-card rounded-[2rem] p-6 sm:p-7 shadow-[0_18px_55px_-28px_rgba(0,0,0,0.18)] w-full border border-border max-w-xl mx-auto lg:max-w-none"
             >
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center">
                   <Ticket className="w-5 h-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="font-black text-gray-900 leading-none">
+                  <p className="font-black text-foreground leading-none">
                     {t("tracking.yourTicket")}
                   </p>
-                  <p className="text-xs text-gray-500 font-semibold mt-1">
+                  <p className="text-xs text-muted-foreground font-semibold mt-1">
                     {t("tracking.ticketExample")}:{" "}
                     <span className="text-primary">TKT-260312-0006</span>
                   </p>
@@ -148,7 +148,7 @@ export default function TrackingIndexPage() {
               <div className="mt-6">
                 <label
                   htmlFor="ticket"
-                  className="text-xs font-black uppercase tracking-widest text-gray-500"
+                  className="text-xs font-black uppercase tracking-widest text-muted-foreground"
                 >
                   {t("tracking.ticketLabel")}
                 </label>
@@ -166,7 +166,7 @@ export default function TrackingIndexPage() {
                   placeholder={t("tracking.ticketPlaceholder")}
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? "ticket-error" : undefined}
-                  className="mt-2 w-full h-12 px-5 rounded-2xl border border-gray-200 bg-gray-50/70 font-black tracking-wide text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 uppercase"
+                  className="mt-2 w-full h-12 px-5 rounded-2xl border border-border bg-muted/70 font-black tracking-wide text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 uppercase"
                 />
 
                 {error && (
@@ -181,12 +181,12 @@ export default function TrackingIndexPage() {
 
               <button
                 type="submit"
-                className="mt-6 w-full h-12 rounded-full bg-primary text-white font-black tracking-tight flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
+                className="mt-6 w-full h-12 rounded-full bg-primary text-primary-foreground font-black tracking-tight flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
               >
                 {t("tracking.viewStatus")} <ArrowRight className="w-4 h-4" />
               </button>
 
-              <p className="mt-5 text-xs text-gray-500 font-medium text-center">
+              <p className="mt-5 text-xs text-muted-foreground font-medium text-center">
                 {t("tracking.footerHint")}
               </p>
             </form>

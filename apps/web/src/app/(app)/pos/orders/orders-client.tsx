@@ -134,7 +134,7 @@ function OrderCard({
           <button
             type="button"
             onClick={() => onDelivered(order.id)}
-            className="h-10 px-4 rounded-full bg-emerald-500 text-white font-black text-xs uppercase tracking-wider hover:opacity-95 transition-opacity"
+            className="h-10 px-4 rounded-full bg-emerald-500 text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-95 transition-opacity"
           >
             Marcar entregado
           </button>
@@ -249,7 +249,6 @@ export function OrdersClient({
       showCancelButton: true,
       confirmButtonText: "Cancelar",
       cancelButtonText: "Volver",
-      confirmButtonColor: "#ff5757",
     });
 
     if (!modal.isConfirmed) return;
@@ -306,7 +305,7 @@ export function OrdersClient({
             <span className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${
-                  isConnected ? "bg-emerald-400" : "bg-gray-300"
+                  isConnected ? "bg-emerald-400" : "bg-muted-foreground/30"
                 }`}
                 aria-hidden
               />

@@ -16,6 +16,8 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
+type AuthUser = { id: string; role: string; email: string };
+
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
@@ -46,7 +48,10 @@ export class OrdersController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'CAJERO')
-  create(@Body() createOrderDto: any, @CurrentUser() user: any) {
+  create(
+    @Body() createOrderDto: Record<string, unknown>,
+    @CurrentUser() user: AuthUser,
+  ) {
     createOrderDto.userId = user.id;
     return this.ordersService.create(createOrderDto);
   }
@@ -78,7 +83,7 @@ export class OrdersController {
   updateStatus(
     @Param('id') id: string,
     @Body() body: { status: string },
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
   ) {
     return this.ordersService.updateStatus(id, body.status, user?.id);
   }
@@ -89,7 +94,7 @@ export class OrdersController {
   cancel(
     @Param('id') id: string,
     @Body() body: { reason?: string },
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
   ) {
     return this.ordersService.cancelOrder(id, body?.reason || null, user?.id);
   }

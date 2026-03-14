@@ -1,89 +1,79 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  Pizza,
-  Coffee,
-  CupSoda,
-  Croissant,
   Utensils,
-  IceCream,
-  type LucideIcon,
+  Search,
+  X,
+  Plus,
+  Minus,
+  LayoutGrid,
 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useTranslation } from "@/i18n";
+import { ProductDetailDialog } from "./product-detail-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-
-// Map string icon names from DB to actual lucide-react components
-const ICON_MAP: Record<string, LucideIcon> = {
-  Pizza,
-  Coffee,
-  CupSoda,
-  Croissant,
-  Utensils,
-  IceCream,
-};
-
-type ProductVariant = {
-  id: string;
-  name: string;
-  price: number;
-  displayOrder?: number;
-};
-
-type CatalogProduct = {
-  id: string;
-  name: string;
-  description?: string | null;
-  basePrice: number;
-  imageUrl?: string | null;
-  hasVariants?: boolean;
-  variants?: ProductVariant[];
-};
-
-type CatalogCategory = {
-  id: string;
-  name: string;
-  icon?: string | null;
-  products?: CatalogProduct[];
-};
+  ICON_MAP,
+  gridContainer,
+  gridItem,
+  type CatalogProduct,
+  type CatalogCategory,
+} from "./menu-types";
 
 export function MenuDisplay({ catalog }: { catalog: CatalogCategory[] }) {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    catalog[0]?.id || null,
+  const allCategory: CatalogCategory = useMemo(
+    () => ({
+      id: "__all__",
+      name: "Todos",
+      icon: null,
+      products: catalog.flatMap((c) => c.products || []),
+    }),
+    [catalog],
   );
-  const [variantProduct, setVariantProduct] = useState<CatalogProduct | null>(
-    null,
-  );
-  const addItem = useCart((state) => state.addItem);
+  const categories = useMemo(() => [allCategory, ...catalog], [allCategory, catalog]);
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("__all__");
+  const [variantProduct, setVariantProduct] = useState<CatalogProduct | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"default" | "name" | "price-asc" | "price-desc">("default");
+
+  const searchRef = useRef<HTMLInputElement>(null);
+  const cartItems = useCart((s) => s.items);
+  const addItem = useCart((s) => s.addItem);
+  const updateQuantity = useCart((s) => s.updateQuantity);
+  const removeItem = useCart((s) => s.removeItem);
   const { t } = useTranslation();
 
-  const activeCategory = catalog.find((c) => c.id === selectedCategoryId);
-  const products = activeCategory?.products || [];
+  const activeCategory = categories.find((c) => c.id === selectedCategoryId);
 
-  const variantsForDialog = useMemo(() => {
-    const variants = Array.isArray(variantProduct?.variants)
-      ? [...variantProduct!.variants]
-      : [];
-    variants.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
-    return variants;
-  }, [variantProduct]);
+  const products = useMemo(() => {
+    const raw = activeCategory?.products || [];
+    let filtered = raw;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = raw.filter((p) => p.name.toLowerCase().includes(q));
+    }
+    if (sortBy === "name") return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === "price-asc") return [...filtered].sort((a, b) => Number(a.basePrice) - Number(b.basePrice));
+    if (sortBy === "price-desc") return [...filtered].sort((a, b) => Number(b.basePrice) - Number(a.basePrice));
+    return filtered;
+  }, [activeCategory, searchQuery, sortBy]);
+
+  const getCartItem = (productId: string) =>
+    cartItems.find((i) => i.productId === productId && !i.variantId);
 
   const addProduct = (product: CatalogProduct) => {
     const variants = Array.isArray(product.variants) ? product.variants : [];
-    if (product.hasVariants && variants.length > 0) {
+    const hasModGroups = (product.modifierGroups || []).length > 0;
+    if ((product.hasVariants && variants.length > 0) || hasModGroups) {
       setVariantProduct(product);
       return;
     }
-
     addItem({
       productId: product.id,
       variantId: null,
@@ -94,52 +84,37 @@ export function MenuDisplay({ catalog }: { catalog: CatalogCategory[] }) {
     });
   };
 
-  const addVariant = (variant: ProductVariant) => {
-    if (!variantProduct) return;
-    addItem({
-      productId: variantProduct.id,
-      variantId: variant.id,
-      name: variantProduct.name,
-      price: Number(variant.price),
-      quantity: 1,
-      imageUrl: variantProduct.imageUrl,
-      variantName: variant.name,
-    });
-    setVariantProduct(null);
+  const clearSearch = () => {
+    setSearchQuery("");
+    searchRef.current?.focus();
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground mb-6">
-        {t("pos.categories")}
-      </h1>
-
-      {/* Categories Bar */}
-      <ScrollArea className="w-full whitespace-nowrap mb-6 pb-2">
-        <div className="flex w-max space-x-3 px-1">
-          {catalog.map((category) => {
-            const Icon = (category.icon && ICON_MAP[category.icon]) || Utensils;
+    <div className="flex-1 flex flex-col min-w-0 pt-1">
+      {/* ── Category chips ── */}
+      <ScrollArea className="w-full whitespace-nowrap mb-4">
+        <div className="flex w-max gap-2 pb-1">
+          {categories.map((category) => {
+            const Icon =
+              category.id === "__all__"
+                ? LayoutGrid
+                : (category.icon && ICON_MAP[category.icon]) || Utensils;
             const isActive = category.id === selectedCategoryId;
             return (
               <button
                 key={category.id}
-                onClick={() => setSelectedCategoryId(category.id)}
-                className={`flex flex-col items-center justify-center gap-3 w-[100px] h-[110px] rounded-[18px] transition-all duration-200 border shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 shrink-0 ${
+                onClick={() => {
+                  setSelectedCategoryId(category.id);
+                  setSearchQuery("");
+                }}
+                className={`inline-flex items-center gap-2 h-10 px-5 rounded-full text-sm font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 border ${
                   isActive
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-border/80 hover:bg-accent/50"
+                    ? "bg-foreground text-background border-foreground"
+                    : "bg-background text-foreground border-border hover:bg-accent"
                 }`}
               >
-                <div
-                  className={`p-2.5 rounded-full ${isActive ? "bg-primary/10" : "bg-muted/50"}`}
-                >
-                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-                </div>
-                <span
-                  className={`text-[13px] tracking-tight ${isActive ? "font-bold" : "font-semibold"}`}
-                >
-                  {category.name}
-                </span>
+                <Icon className="w-4 h-4" />
+                {category.name}
               </button>
             );
           })}
@@ -147,120 +122,185 @@ export function MenuDisplay({ catalog }: { catalog: CatalogCategory[] }) {
         <ScrollBar orientation="horizontal" className="invisible" />
       </ScrollArea>
 
-      <div className="flex items-center justify-between mb-4 mt-2">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground">
-          {activeCategory?.name || t("pos.menu")}
-        </h2>
-        <span className="text-sm font-medium text-muted-foreground">
-          {t("pos.showingItems", { count: products.length })}
+      {/* ── Search ── */}
+      <div className="relative mb-2">
+        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+        <input
+          ref={searchRef}
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t("pos.searchProducts")}
+          className="h-11 w-full rounded-2xl bg-muted/60 pl-11 pr-10 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 outline-none focus:bg-muted/80 transition-colors"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/30 flex items-center justify-center transition-colors"
+          >
+            <X className="h-3 w-3 text-foreground/70" />
+          </button>
+        )}
+      </div>
+
+      {/* ── Sort row ── */}
+      <div className="flex items-center justify-end gap-0 mb-4">
+        <span className="text-[11px] font-medium text-muted-foreground/50 mr-2">
+          ordenar:
         </span>
-      </div>
-
-      {/* Product Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-5 pb-24">
-        {products.map((product) => {
-          const v = Array.isArray(product.variants) ? product.variants : [];
-          const minVariantPrice = v.length
-            ? Math.min(...v.map((x) => Number(x.price)))
-            : null;
-          const displayPrice =
-            minVariantPrice !== null
-              ? minVariantPrice
-              : Number(product.basePrice);
-
-          return (
-            <div
-              key={product.id}
-              className="group bg-card rounded-[20px] p-4 border border-border shadow-sm hover:shadow-md hover:border-border/80 transition-all text-left flex flex-col"
-            >
-              {/* Top Info: Image + Title/Price */}
-              <div className="flex items-start gap-4 mb-3">
-                <div className="w-[85px] h-[85px] shrink-0 rounded-2xl overflow-hidden relative bg-muted/30">
-                  <img
-                    src={
-                      product.imageUrl ||
-                      "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400&h=400&fit=crop"
-                    }
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
-                <div className="flex flex-col flex-1 pt-1">
-                  <h3 className="font-bold text-foreground text-sm leading-snug line-clamp-2">
-                    {product.name}
-                  </h3>
-                  <span className="text-xs text-muted-foreground mt-1">
-                    {product.hasVariants && v.length > 0
-                      ? `${v.length} tamaños`
-                      : t("pos.freshlyMade")}
-                  </span>
-                  <span className="text-lg font-black text-foreground mt-auto pt-2">
-                    {minVariantPrice !== null ? "Desde " : ""}S/
-                    {Number(displayPrice).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Spacer to push button down if titles vary in height */}
-              <div className="flex-1" />
-
-              {/* Action Button */}
-              <button
-                onClick={() => addProduct(product)}
-                className="mt-4 w-full bg-primary/10 hover:bg-primary text-primary hover:text-white font-bold py-3 rounded-full transition-colors duration-200 flex items-center justify-center gap-2 active:scale-[0.98]"
-              >
-                {t("cart.addCheck")}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      <Dialog
-        open={Boolean(variantProduct)}
-        onOpenChange={(open) => {
-          if (!open) setVariantProduct(null);
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-black tracking-tight">
-              Selecciona tamano
-            </DialogTitle>
-            <div className="text-sm font-semibold text-muted-foreground">
-              {variantProduct?.name}
-            </div>
-          </DialogHeader>
-
-          <div className="mt-2 space-y-2">
-            {variantsForDialog.map((variant) => (
-              <Button
-                key={variant.id}
-                type="button"
-                variant="outline"
-                onClick={() => addVariant(variant)}
-                className="w-full justify-between rounded-2xl h-12"
-              >
-                <span className="font-black">{variant.name}</span>
-                <span className="font-black text-primary">
-                  S/ {Number(variant.price).toFixed(2)}
-                </span>
-              </Button>
-            ))}
-          </div>
-
-          <DialogFooter className="sm:justify-between">
-            <Button
+        {([
+          { key: "default",    label: "Default" },
+          { key: "name",       label: "A–Z"     },
+          { key: "price-asc",  label: "$ ↑"     },
+          { key: "price-desc", label: "$ ↓"     },
+        ] as const).map(({ key, label }, i, arr) => (
+          <span key={key} className="flex items-center">
+            <button
               type="button"
-              variant="ghost"
-              onClick={() => setVariantProduct(null)}
-              className="rounded-full"
+              onClick={() => setSortBy(key)}
+              className={`text-[11px] font-semibold px-1.5 py-0.5 rounded transition-colors ${
+                sortBy === key
+                  ? "text-foreground"
+                  : "text-muted-foreground/50 hover:text-muted-foreground"
+              }`}
             >
-              Cancelar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {label}
+            </button>
+            {i < arr.length - 1 && (
+              <span className="text-border text-[10px]">·</span>
+            )}
+          </span>
+        ))}
+      </div>
+
+      {/* ── Product grid ── */}
+      <AnimatePresence mode="wait">
+        {products.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center flex-1 py-20 text-center"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mb-4">
+              <Search className="w-6 h-6 text-muted-foreground/60" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">
+              {searchQuery ? t("pos.noResults") : t("pos.emptyCategory")}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key={selectedCategoryId}
+            variants={gridContainer}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20"
+          >
+            {products.map((product) => {
+              const v = Array.isArray(product.variants) ? product.variants : [];
+              const minPrice = v.length ? Math.min(...v.map((x) => Number(x.price))) : null;
+              const price = minPrice ?? Number(product.basePrice);
+              const inCart = getCartItem(product.id);
+
+              return (
+                <motion.div key={product.id} variants={gridItem}>
+                  <Card size="sm" className="overflow-hidden py-0 gap-0 h-full flex flex-col">
+                    <div className="relative aspect-4/3 overflow-hidden bg-muted/30">
+                      <img
+                        src={
+                          product.imageUrl ||
+                          "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600&h=400&fit=crop"
+                        }
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                      />
+                      {product.hasVariants && v.length > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="absolute top-2.5 right-2.5 bg-background/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wide"
+                        >
+                          {v.length} opc.
+                        </Badge>
+                      )}
+                    </div>
+
+                    <CardContent className="flex flex-col flex-1 px-4 pt-3 pb-4 gap-1">
+                      <h3 className="text-sm font-bold leading-snug text-card-foreground line-clamp-1">
+                        {product.name}
+                      </h3>
+                      {product.description && (
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1">
+                          {product.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between mt-auto pt-2">
+                        <span className="text-base font-bold tracking-tight text-card-foreground">
+                          {minPrice !== null && (
+                            <span className="text-[10px] font-medium text-muted-foreground mr-0.5">
+                              desde{" "}
+                            </span>
+                          )}
+                          S/{price.toFixed(2)}
+                        </span>
+
+                        {inCart ? (
+                          <div className="flex items-center gap-0">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 rounded-l-lg rounded-r-none"
+                              onClick={() => {
+                                if (inCart.quantity <= 1) removeItem(inCart.id);
+                                else updateQuantity(inCart.id, inCart.quantity - 1);
+                              }}
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </Button>
+                            <div className="h-8 min-w-8 flex items-center justify-center border-y border-border text-sm font-bold tabular-nums bg-background px-1">
+                              {inCart.quantity}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 rounded-r-lg rounded-l-none"
+                              onClick={() => updateQuantity(inCart.id, inCart.quantity + 1)}
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-8 rounded-lg text-xs font-semibold gap-1"
+                            onClick={() => addProduct(product)}
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            {t("pos.add")}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Product detail dialog ── */}
+      <ProductDetailDialog
+        product={variantProduct}
+        onClose={() => setVariantProduct(null)}
+      />
     </div>
   );
 }

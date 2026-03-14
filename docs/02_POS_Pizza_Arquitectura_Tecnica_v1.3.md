@@ -8,25 +8,27 @@ Sistema de Punto de Venta Especializado para Pizzerias
 
 Fase 2: Arquitectura Tecnica, Patrones de Diseno y Modelado de BD
 
-  ------------------------ ----------------------------------------------------
-  **Proyecto**             POS Pizza - Sistema de Punto de Venta
+---
 
-  **Documento**            Arquitectura Tecnica - Fase 2 de 2
+**Proyecto** POS Pizza - Sistema de Punto de Venta
 
-  **Prerequisito**         **Documento de Analisis de Negocio v1.2 (Fase 1)**
+**Documento** Arquitectura Tecnica - Fase 2 de 2
 
-  **Autor**                Bruno Alvarez
+**Prerequisito** **Documento de Analisis de Negocio v1.2 (Fase 1)**
 
-  **Rol**                  Full Stack Developer / Lider de Proyecto
+**Autor** Bruno Alvarez
 
-  **Version**              1.3
+**Rol** Full Stack Developer / Lider de Proyecto
 
-  **Fecha**                Marzo 2026
+**Version** 1.3
 
-  **Estado**               En Revision
+**Fecha** Marzo 2026
 
-  **Clasificacion**        Documento Interno - Confidencial
-  ------------------------ ----------------------------------------------------
+**Estado** En Revision
+
+**Clasificacion** Documento Interno - Confidencial
+
+---
 
 **TABLA DE CONTENIDOS**
 
@@ -36,57 +38,61 @@ Las siguientes decisiones fueron evaluadas y aprobadas durante la fase de analis
 
 ## 1.1 Stack Tecnologico
 
-  --------------------- ------------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------
-  **CAPA**              **TECNOLOGIA**                        **JUSTIFICACION**
+---
 
-  **Frontend**          Next.js 14+ (App Router)              React ecosystem, SSR/SSG, optimizacion automatica, rutas basadas en archivos, gran comunidad
+**CAPA** **TECNOLOGIA** **JUSTIFICACION**
 
-  **UI**                Tailwind CSS + shadcn/ui              Desarrollo rapido, componentes accesibles y profesionales, customizable, tree-shaking nativo
+**Frontend** Next.js 14+ (App Router) React ecosystem, SSR/SSG, optimizacion automatica, rutas basadas en archivos, gran comunidad
 
-  **Backend**           NestJS (TypeScript)                   Estructura modular (Modules, Controllers, Services), DI nativa, Guards para roles, WebSocket Gateway integrado, inspirado en Angular/Spring Boot
+**UI** Tailwind CSS + shadcn/ui Desarrollo rapido, componentes accesibles y profesionales, customizable, tree-shaking nativo
 
-  **ORM**               Drizzle ORM                           Type-safe, SQL-first (queries eficientes), sin runtime engine (mejor en serverless), ideal para multi-tenant futuro
+**Backend** NestJS (TypeScript) Estructura modular (Modules, Controllers, Services), DI nativa, Guards para roles, WebSocket Gateway integrado, inspirado en Angular/Spring Boot
 
-  **Base de Datos**     PostgreSQL (Supabase)                 Relacional robusto, RLS nativo, JSON support, extensiones (pg_cron, pg_net), hosting gestionado con free tier generoso
+**ORM** Drizzle ORM Type-safe, SQL-first (queries eficientes), sin runtime engine (mejor en serverless), ideal para multi-tenant futuro
 
-  **Tiempo Real**       Supabase Realtime                     WebSocket gestionado, suscripciones a cambios en DB, ideal para pantalla cocina y order tracking
+**Base de Datos** PostgreSQL (Supabase) Relacional robusto, RLS nativo, JSON support, extensiones (pg_cron, pg_net), hosting gestionado con free tier generoso
 
-  **Autenticacion**     JWT (NestJS Passport)                 Stateless, escalable, compatible con multi-tenant, roles embebidos en token
+**Tiempo Real** Supabase Realtime WebSocket gestionado, suscripciones a cambios en DB, ideal para pantalla cocina y order tracking
 
-  **Validacion**        class-validator + class-transformer   DTOs tipados con decoradores, validacion automatica via NestJS Pipes
+**Autenticacion** JWT (NestJS Passport) Stateless, escalable, compatible con multi-tenant, roles embebidos en token
 
-  **Monorepo**          Turborepo                             Build caching, scripts paralelos, packages compartidos (tipos/DTOs), un solo repositorio
+**Validacion** class-validator + class-transformer DTOs tipados con decoradores, validacion automatica via NestJS Pipes
 
-  **Deploy Frontend**   Vercel                                Zero config para Next.js, CDN global, SSL automatico, preview deployments
+**Monorepo** Turborepo Build caching, scripts paralelos, packages compartidos (tipos/DTOs), un solo repositorio
 
-  **Deploy Backend**    Railway o Render                      Deploy simple para NestJS, auto-scaling, free tier para MVP, PostgreSQL compatible
+**Deploy Frontend** Vercel Zero config para Next.js, CDN global, SSL automatico, preview deployments
 
-  **Deploy DB**         Supabase Cloud                        PostgreSQL gestionado, 500MB free tier, dashboard visual, backups automaticos
+**Deploy Backend** Railway o Render Deploy simple para NestJS, auto-scaling, free tier para MVP, PostgreSQL compatible
 
-  **Impresion**         WebUSB + ESC/POS                      Impresion directa desde navegador a impresora termica USB, sin drivers adicionales
+**Deploy DB** Supabase Cloud PostgreSQL gestionado, 500MB free tier, dashboard visual, backups automaticos
 
-  **QR Generation**     qrcode (npm)                          Generacion de QR para tickets de tracking, ligero, sin dependencias externas
-  --------------------- ------------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------
+**Impresion** WebUSB + ESC/POS Impresion directa desde navegador a impresora termica USB, sin drivers adicionales
+
+**QR Generation** qrcode (npm) Generacion de QR para tickets de tracking, ligero, sin dependencias externas
+
+---
 
 ## 1.2 Decisiones de Arquitectura
 
-  ----------------------------- ------------------------------------------------- -------------------------------------------------------------------------------------------------
-  **DECISION**                  **OPCION ELEGIDA**                                **ALTERNATIVA DESCARTADA**
+---
 
-  **Arquitectura general**      Frontend + Backend separados (Next.js + NestJS)   *Monolito Next.js (Server Actions + API Routes). Descartado: dificil separar para multi-tenant*
+**DECISION** **OPCION ELEGIDA** **ALTERNATIVA DESCARTADA**
 
-  **Lenguaje backend**          TypeScript (NestJS)                               *Java (Spring Boot). Descartado: tipos no compartidos con frontend, mas boilerplate para MVP*
+**Arquitectura general** Frontend + Backend separados (Next.js + NestJS) _Monolito Next.js (Server Actions + API Routes). Descartado: dificil separar para multi-tenant_
 
-  **ORM**                       Drizzle (SQL-first, sin runtime engine)           *Prisma (runtime engine, overhead en serverless). Supabase client (sin type-safety)*
+**Lenguaje backend** TypeScript (NestJS) _Java (Spring Boot). Descartado: tipos no compartidos con frontend, mas boilerplate para MVP_
 
-  **Estructura de repo**        Monorepo (Turborepo)                              *Repos separados. Descartado: overhead de publicar paquetes compartidos para un solo dev*
+**ORM** Drizzle (SQL-first, sin runtime engine) _Prisma (runtime engine, overhead en serverless). Supabase client (sin type-safety)_
 
-  **Autenticacion**             JWT con Passport (NestJS)                         *Supabase Auth. Descartado: mas control con JWT propio, compatible con backend separado*
+**Estructura de repo** Monorepo (Turborepo) _Repos separados. Descartado: overhead de publicar paquetes compartidos para un solo dev_
 
-  **Comunicacion front-back**   REST API + Supabase Realtime                      *GraphQL. Descartado: complejidad innecesaria para el MVP, REST es suficiente*
+**Autenticacion** JWT con Passport (NestJS) _Supabase Auth. Descartado: mas control con JWT propio, compatible con backend separado_
 
-  **Estado frontend**           Zustand (ligero) o React Query                    *Redux. Descartado: excesivo para esta aplicacion, Zustand es mas simple*
-  ----------------------------- ------------------------------------------------- -------------------------------------------------------------------------------------------------
+**Comunicacion front-back** REST API + Supabase Realtime _GraphQL. Descartado: complejidad innecesaria para el MVP, REST es suficiente_
+
+**Estado frontend** Zustand (ligero) o React Query _Redux. Descartado: excesivo para esta aplicacion, Zustand es mas simple_
+
+---
 
 # 2. PATRONES DE ARQUITECTURA Y DISENO
 
@@ -95,46 +101,48 @@ Las siguientes decisiones fueron evaluadas y aprobadas durante la fase de analis
 El sistema sigue una arquitectura de dos capas separadas (frontend + backend) comunicandose via REST API, con un canal de tiempo real complementario via Supabase Realtime.
 
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **DIAGRAMA DE ARQUITECTURA**                                                                                                                                                          |
-|                                                                                                                                                                                       |
+| **DIAGRAMA DE ARQUITECTURA** |
+| |
 | CLIENTES (Navegador) \--\> \[Next.js - Vercel\] \--\> REST API \--\> \[NestJS - Railway\] \--\> \[PostgreSQL - Supabase\] \<\-- Supabase Realtime \--\> \[Next.js - Cocina/Tracking\] |
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ### Flujo de Comunicacion
 
--   **POS (Cajero):** Next.js hace llamadas REST al backend NestJS para crear pedidos, cobrar, gestionar productos
+- **POS (Cajero):** Next.js hace llamadas REST al backend NestJS para crear pedidos, cobrar, gestionar productos
 
--   **Cocina (Kitchen Display):** Next.js se suscribe a Supabase Realtime para recibir pedidos nuevos y cambios de estado en tiempo real
+- **Cocina (Kitchen Display):** Next.js se suscribe a Supabase Realtime para recibir pedidos nuevos y cambios de estado en tiempo real
 
--   **Order Tracking (Cliente):** Pagina publica Next.js se suscribe a Supabase Realtime para el estado de un pedido especifico
+- **Order Tracking (Cliente):** Pagina publica Next.js se suscribe a Supabase Realtime para el estado de un pedido especifico
 
--   **Admin:** Next.js hace llamadas REST al backend NestJS para CRUD de productos, usuarios, inventario, reportes
+- **Admin:** Next.js hace llamadas REST al backend NestJS para CRUD de productos, usuarios, inventario, reportes
 
--   **Backend (NestJS):** Recibe requests REST, ejecuta logica de negocio, persiste en PostgreSQL via Drizzle, y al mutar estados de pedidos, los cambios se propagan automaticamente via Supabase Realtime
+- **Backend (NestJS):** Recibe requests REST, ejecuta logica de negocio, persiste en PostgreSQL via Drizzle, y al mutar estados de pedidos, los cambios se propagan automaticamente via Supabase Realtime
 
 ## 2.2 Patrones de Diseno Aplicados
 
-  ------------------------ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **PATRON**               **APLICACION EN POS PIZZA**
+---
 
-  **Repository Pattern**   Capa de acceso a datos aislada del servicio. Cada entidad (orders, products, inventory) tiene su repositorio con Drizzle. Facilita cambiar de DB o agregar caching sin tocar la logica de negocio.
+**PATRON** **APLICACION EN POS PIZZA**
 
-  **Service Layer**        Toda la logica de negocio vive en Services de NestJS (OrdersService, ProductsService, InventoryService). Los Controllers solo reciben requests y delegan al Service.
+**Repository Pattern** Capa de acceso a datos aislada del servicio. Cada entidad (orders, products, inventory) tiene su repositorio con Drizzle. Facilita cambiar de DB o agregar caching sin tocar la logica de negocio.
 
-  **DTO Pattern**          Data Transfer Objects tipados para cada operacion (CreateOrderDto, UpdateProductDto). Validacion automatica con class-validator. Los DTOs se comparten entre front y back via el package shared del monorepo.
+**Service Layer** Toda la logica de negocio vive en Services de NestJS (OrdersService, ProductsService, InventoryService). Los Controllers solo reciben requests y delegan al Service.
 
-  **Guard Pattern**        NestJS Guards para autenticacion (JwtAuthGuard) y autorizacion por roles (RolesGuard). Se aplican con decoradores: \@UseGuards(JwtAuthGuard, RolesGuard) \@Roles(\'ADMIN\').
+**DTO Pattern** Data Transfer Objects tipados para cada operacion (CreateOrderDto, UpdateProductDto). Validacion automatica con class-validator. Los DTOs se comparten entre front y back via el package shared del monorepo.
 
-  **Observer Pattern**     Supabase Realtime implementa el patron Observer: la pantalla de cocina y el tracking del cliente se suscriben a cambios en la tabla orders. Cuando el backend muta un pedido, todos los suscriptores reciben la notificacion.
+**Guard Pattern** NestJS Guards para autenticacion (JwtAuthGuard) y autorizacion por roles (RolesGuard). Se aplican con decoradores: \@UseGuards(JwtAuthGuard, RolesGuard) \@Roles(\'ADMIN\').
 
-  **Module Pattern**       NestJS organiza el codigo en modulos autocontenidos: OrdersModule, ProductsModule, InventoryModule, AuthModule, ReportsModule. Cada modulo encapsula su controller, service, repository y DTOs.
+**Observer Pattern** Supabase Realtime implementa el patron Observer: la pantalla de cocina y el tracking del cliente se suscriben a cambios en la tabla orders. Cuando el backend muta un pedido, todos los suscriptores reciben la notificacion.
 
-  **Strategy Pattern**     Para metodos de pago: CashPaymentStrategy y YapePlinPaymentStrategy implementan la misma interfaz pero con logica diferente (calculo de vuelto vs. confirmacion directa). Extensible para futuros metodos.
+**Module Pattern** NestJS organiza el codigo en modulos autocontenidos: OrdersModule, ProductsModule, InventoryModule, AuthModule, ReportsModule. Cada modulo encapsula su controller, service, repository y DTOs.
 
-  **Factory Pattern**      Para generacion de tickets: TicketFactory genera el formato del ticket (texto + QR + detalle) independientemente del medio de impresion (termica ESC/POS o navegador como fallback).
+**Strategy Pattern** Para metodos de pago: CashPaymentStrategy y YapePlinPaymentStrategy implementan la misma interfaz pero con logica diferente (calculo de vuelto vs. confirmacion directa). Extensible para futuros metodos.
 
-  **Middleware Pattern**   Para multi-tenant futuro: TenantMiddleware extraera el tenant_id del JWT o del subdomain y lo inyectara en el contexto de cada request. Se configura una vez, aplica globalmente.
-  ------------------------ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+**Factory Pattern** Para generacion de tickets: TicketFactory genera el formato del ticket (texto + QR + detalle) independientemente del medio de impresion (termica ESC/POS o navegador como fallback).
+
+**Middleware Pattern** Para multi-tenant futuro: TenantMiddleware extraera el tenant_id del JWT o del subdomain y lo inyectara en el contexto de cada request. Se configura una vez, aplica globalmente.
+
+---
 
 ## 2.3 Arquitectura por Capas (Backend NestJS)
 
@@ -366,81 +374,85 @@ shared/src/
 
 La siguiente tabla muestra la alineacion completa entre las 3 capas del sistema:
 
-  ------------------- --------------------------------------------------------------------------------------- ------------------------------------------
-  **MODULO NESTJS**   **TABLAS BD (29)**                                                                      **RUTAS NEXT.JS**
+---
 
-  **auth**            users, sessions                                                                         (auth)/login
+**MODULO NESTJS** **TABLAS BD (29)** **RUTAS NEXT.JS**
 
-  **users**           users                                                                                   (admin)/users
+**auth** users, sessions (auth)/login
 
-  **products**        categories, products, product_variants, modifier_groups, modifiers, product_modifiers   (admin)/menu/\*, (pos)/new-order
+**users** users (admin)/users
 
-  **promotions**      promotions, promotion_items                                                             (admin)/menu/promotions, (pos)/new-order
+**products** categories, products, product_variants, modifier_groups, modifiers, product_modifiers (admin)/menu/\*, (pos)/new-order
 
-  **tables**          tables                                                                                  (admin)/tables, (pos)/dashboard
+**promotions** promotions, promotion_items (admin)/menu/promotions, (pos)/new-order
 
-  **orders**          orders, order_items, order_item_modifiers, order_status_history, order_promotions       (pos)/\*, (kitchen)/
+**tables** tables (admin)/tables, (pos)/dashboard
 
-  **payments**        payment_transactions                                                                    (pos)/checkout
+**orders** orders, order_items, order_item_modifiers, order_status_history, order_promotions (pos)/\*, (kitchen)/
 
-  **cash-register**   cash_registers, ticket_sequences                                                        (pos)/cash-register/\*
+**payments** payment_transactions (pos)/checkout
 
-  **tracking**        order_tracking                                                                          (tracking)/\[code\]
+**cash-register** cash_registers, ticket_sequences (pos)/cash-register/\*
 
-  **inventory**       inventory_items, product_ingredients, inventory_movements                               (admin)/inventory/\*
+**tracking** order_tracking (tracking)/\[code\]
 
-  **reports**         daily_summaries (+ queries a orders, payments)                                          (admin)/reports/\*
+**inventory** inventory_items, product_ingredients, inventory_movements (admin)/inventory/\*
 
-  **notifications**   notifications                                                                           Componente NotificationBell (global)
+**reports** daily_summaries (+ queries a orders, payments) (admin)/reports/\*
 
-  **printer**         printer_configs                                                                         (admin)/printers
+**notifications** notifications Componente NotificationBell (global)
 
-  **(interceptor)**   audit_logs                                                                              (admin)/audit
-  ------------------- --------------------------------------------------------------------------------------- ------------------------------------------
+**printer** printer_configs (admin)/printers
+
+**(interceptor)** audit_logs (admin)/audit
+
+---
 
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **ESTRUCTURA COMPLETA DISPONIBLE**                                                                                                                                                                                                  |
-|                                                                                                                                                                                                                                     |
+| **ESTRUCTURA COMPLETA DISPONIBLE** |
+| |
 | La estructura detallada a nivel de archivos individuales (cada controller, service, repository, component, hook, etc.) esta disponible en el archivo POS_Pizza_Estructura_Proyecto.md entregado como complemento de este documento. |
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 # 4. MODELADO DE BASE DE DATOS
 
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **DOCUMENTO SEPARADO: MODELADO DE BD v1.0**                                                                                                                                                                                                                                                                 |
-|                                                                                                                                                                                                                                                                                                             |
+| **DOCUMENTO SEPARADO: MODELADO DE BD v1.0** |
+| |
 | El modelado completo de la base de datos se encuentra en el documento dedicado \'POS_Pizza_Modelado_BD_v1.0.docx\'. Este incluye las 29 tablas detalladas campo por campo, organizadas en 8 dominios, con diagrama ER completo (Mermaid), indices de rendimiento, y estrategia de migracion a multi-tenant. |
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ## 4.1 Resumen: 29 Tablas en 8 Dominios
 
-  ------------------------------ --------------------------------------------------------------------------------------- -------------------
-  **DOMINIO**                    **TABLAS**                                                                              **\# TABLAS**
+---
 
-  **Autenticacion y Usuarios**   users, sessions, audit_logs                                                             **3**
+**DOMINIO** **TABLAS** **\# TABLAS**
 
-  **Catalogo / Menu**            categories, products, product_variants, modifier_groups, modifiers, product_modifiers   **6**
+**Autenticacion y Usuarios** users, sessions, audit_logs **3**
 
-  **Promociones**                promotions, promotion_items                                                             **2**
+**Catalogo / Menu** categories, products, product_variants, modifier_groups, modifiers, product_modifiers **6**
 
-  **Salon**                      tables                                                                                  **1**
+**Promociones** promotions, promotion_items **2**
 
-  **Pedidos (Core)**             orders, order_items, order_item_modifiers, order_status_history, order_promotions       **5**
+**Salon** tables **1**
 
-  **Pagos y Caja**               payment_transactions, cash_registers, ticket_sequences                                  **3**
+**Pedidos (Core)** orders, order_items, order_item_modifiers, order_status_history, order_promotions **5**
 
-  **Order Tracking**             order_tracking                                                                          **1**
+**Pagos y Caja** payment_transactions, cash_registers, ticket_sequences **3**
 
-  **Inventario**                 inventory_items, product_ingredients, inventory_movements                               **3**
+**Order Tracking** order_tracking **1**
 
-  **Configuracion**              business_config, product_prep_times, printer_configs                                    **3**
+**Inventario** inventory_items, product_ingredients, inventory_movements **3**
 
-  **Reportes**                   daily_summaries                                                                         **1**
+**Configuracion** business_config, product_prep_times, printer_configs **3**
 
-  **Notificaciones**             notifications                                                                           **1**
+**Reportes** daily_summaries **1**
 
-  **TOTAL**                                                                                                              **29**
-  ------------------------------ --------------------------------------------------------------------------------------- -------------------
+**Notificaciones** notifications **1**
+
+**TOTAL** **29**
+
+---
 
 ## 4.2 Relaciones Principales
 
@@ -462,13 +474,13 @@ inventory_items \--\> inventory_movements (historial completo)
 
 ## 4.3 Preparacion Multi-Tenant
 
--   **Estrategia:** Shared schema + Row-Level Isolation (tenant_id por fila)
+- **Estrategia:** Shared schema + Row-Level Isolation (tenant_id por fila)
 
--   **Seguridad:** PostgreSQL RLS policies filtran por tenant_id del JWT
+- **Seguridad:** PostgreSQL RLS policies filtran por tenant_id del JWT
 
--   **Drizzle:** Filtro global .where(eq(table.tenantId, ctx.tenantId)) en repository base
+- **Drizzle:** Filtro global .where(eq(table.tenantId, ctx.tenantId)) en repository base
 
--   **Migracion estimada:** 2-3 semanas para agregar tenant_id + RLS + middleware NestJS
+- **Migracion estimada:** 2-3 semanas para agregar tenant_id + RLS + middleware NestJS
 
 # 5. DISENO DE API (REST)
 
@@ -476,333 +488,371 @@ API REST completa del backend NestJS. Todos los endpoints (excepto auth y tracki
 
 ## 5.1 Autenticacion y Sesiones
 
-  ------------ ---------------------------- ------------- ------------------------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **POST**     /api/auth/login              Publico       Login con email + password, retorna access + refresh token
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **POST**     /api/auth/refresh            Auth          Renovar access token con refresh token
+**POST** /api/auth/login Publico Login con email + password, retorna access + refresh token
 
-  **POST**     /api/auth/logout             Auth          Revocar sesion actual (invalida refresh token)
+**POST** /api/auth/refresh Auth Renovar access token con refresh token
 
-  **GET**      /api/auth/me                 Auth          Datos del usuario autenticado + rol
-  ------------ ---------------------------- ------------- ------------------------------------------------------------
+**POST** /api/auth/logout Auth Revocar sesion actual (invalida refresh token)
+
+**GET** /api/auth/me Auth Datos del usuario autenticado + rol
+
+---
 
 ## 5.2 Usuarios
 
-  ------------ ---------------------------- ------------- ----------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/users                   ADMIN         Listar usuarios (filtros: rol, activo)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/users/:id               ADMIN         Detalle de un usuario
+**GET** /api/users ADMIN Listar usuarios (filtros: rol, activo)
 
-  **POST**     /api/users                   ADMIN         Crear usuario (email, nombre, rol, password)
+**GET** /api/users/:id ADMIN Detalle de un usuario
 
-  **PATCH**    /api/users/:id               ADMIN         Editar usuario (nombre, email, rol)
+**POST** /api/users ADMIN Crear usuario (email, nombre, rol, password)
 
-  **PATCH**    /api/users/:id/toggle        ADMIN         Activar/desactivar usuario (soft delete)
+**PATCH** /api/users/:id ADMIN Editar usuario (nombre, email, rol)
 
-  **PATCH**    /api/users/:id/password      ADMIN         Cambiar contrasena de un usuario
-  ------------ ---------------------------- ------------- ----------------------------------------------
+**PATCH** /api/users/:id/toggle ADMIN Activar/desactivar usuario (soft delete)
+
+**PATCH** /api/users/:id/password ADMIN Cambiar contrasena de un usuario
+
+---
 
 ## 5.3 Categorias
 
-  ------------ ---------------------------- ------------- ---------------------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/categories              Auth          Listar categorias activas (ordenadas por display_order)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/categories/:id          Auth          Detalle de categoria con sus productos
+**GET** /api/categories Auth Listar categorias activas (ordenadas por display_order)
 
-  **POST**     /api/categories              ADMIN         Crear categoria (nombre, icono, orden)
+**GET** /api/categories/:id Auth Detalle de categoria con sus productos
 
-  **PATCH**    /api/categories/:id          ADMIN         Editar categoria
+**POST** /api/categories ADMIN Crear categoria (nombre, icono, orden)
 
-  **PATCH**    /api/categories/:id/toggle   ADMIN         Activar/desactivar categoria
+**PATCH** /api/categories/:id ADMIN Editar categoria
 
-  **PATCH**    /api/categories/reorder      ADMIN         Reordenar categorias (array de ids con nuevo orden)
-  ------------ ---------------------------- ------------- ---------------------------------------------------------
+**PATCH** /api/categories/:id/toggle ADMIN Activar/desactivar categoria
+
+**PATCH** /api/categories/reorder ADMIN Reordenar categorias (array de ids con nuevo orden)
+
+---
 
 ## 5.4 Productos y Variantes
 
-  ------------ --------------------------------------- ------------- ------------------------------------------------------------
-  **METODO**   **ENDPOINT**                            **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/products                           Auth          Listar productos (filtros: category_id, is_active, search)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/products/:id                       Auth          Detalle producto con variantes, modifier_groups y receta
+**GET** /api/products Auth Listar productos (filtros: category_id, is_active, search)
 
-  **POST**     /api/products                           ADMIN         Crear producto (nombre, precio, categoria, imagen)
+**GET** /api/products/:id Auth Detalle producto con variantes, modifier_groups y receta
 
-  **PATCH**    /api/products/:id                       ADMIN         Editar producto
+**POST** /api/products ADMIN Crear producto (nombre, precio, categoria, imagen)
 
-  **PATCH**    /api/products/:id/toggle                ADMIN         Activar/desactivar producto
+**PATCH** /api/products/:id ADMIN Editar producto
 
-  **POST**     /api/products/:id/variants              ADMIN         Agregar variante (nombre, precio)
+**PATCH** /api/products/:id/toggle ADMIN Activar/desactivar producto
 
-  **PATCH**    /api/products/:id/variants/:variantId   ADMIN         Editar variante
+**POST** /api/products/:id/variants ADMIN Agregar variante (nombre, precio)
 
-  **DELETE**   /api/products/:id/variants/:variantId   ADMIN         Eliminar variante
-  ------------ --------------------------------------- ------------- ------------------------------------------------------------
+**PATCH** /api/products/:id/variants/:variantId ADMIN Editar variante
+
+**DELETE** /api/products/:id/variants/:variantId ADMIN Eliminar variante
+
+---
 
 ## 5.5 Grupos de Modificadores y Modificadores
 
-  ------------ -------------------------------------------- ------------- --------------------------------------------
-  **METODO**   **ENDPOINT**                                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/modifier-groups                         Auth          Listar grupos con sus modificadores
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **POST**     /api/modifier-groups                         ADMIN         Crear grupo (nombre, min/max selecciones)
+**GET** /api/modifier-groups Auth Listar grupos con sus modificadores
 
-  **PATCH**    /api/modifier-groups/:id                     ADMIN         Editar grupo
+**POST** /api/modifier-groups ADMIN Crear grupo (nombre, min/max selecciones)
 
-  **DELETE**   /api/modifier-groups/:id                     ADMIN         Eliminar grupo (si no esta en uso)
+**PATCH** /api/modifier-groups/:id ADMIN Editar grupo
 
-  **POST**     /api/modifier-groups/:id/modifiers           ADMIN         Agregar modificador al grupo
+**DELETE** /api/modifier-groups/:id ADMIN Eliminar grupo (si no esta en uso)
 
-  **PATCH**    /api/modifiers/:id                           ADMIN         Editar modificador
+**POST** /api/modifier-groups/:id/modifiers ADMIN Agregar modificador al grupo
 
-  **DELETE**   /api/modifiers/:id                           ADMIN         Eliminar modificador
+**PATCH** /api/modifiers/:id ADMIN Editar modificador
 
-  **POST**     /api/products/:id/modifier-groups            ADMIN         Vincular grupo de modificadores a producto
+**DELETE** /api/modifiers/:id ADMIN Eliminar modificador
 
-  **DELETE**   /api/products/:id/modifier-groups/:groupId   ADMIN         Desvincular grupo de producto
-  ------------ -------------------------------------------- ------------- --------------------------------------------
+**POST** /api/products/:id/modifier-groups ADMIN Vincular grupo de modificadores a producto
+
+**DELETE** /api/products/:id/modifier-groups/:groupId ADMIN Desvincular grupo de producto
+
+---
 
 ## 5.6 Recetas (Product Ingredients)
 
-  ------------ --------------------------------------------- ------------- ----------------------------------------------------
-  **METODO**   **ENDPOINT**                                  **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/products/:id/ingredients                 ADMIN         Listar receta (insumos + cantidades por variante)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **POST**     /api/products/:id/ingredients                 ADMIN         Agregar insumo a receta (item_id, qty, variant_id)
+**GET** /api/products/:id/ingredients ADMIN Listar receta (insumos + cantidades por variante)
 
-  **PATCH**    /api/products/:id/ingredients/:ingredientId   ADMIN         Editar cantidad en receta
+**POST** /api/products/:id/ingredients ADMIN Agregar insumo a receta (item_id, qty, variant_id)
 
-  **DELETE**   /api/products/:id/ingredients/:ingredientId   ADMIN         Quitar insumo de receta
-  ------------ --------------------------------------------- ------------- ----------------------------------------------------
+**PATCH** /api/products/:id/ingredients/:ingredientId ADMIN Editar cantidad en receta
+
+**DELETE** /api/products/:id/ingredients/:ingredientId ADMIN Quitar insumo de receta
+
+---
 
 ## 5.7 Tiempos de Preparacion
 
-  ------------ ------------------------------ ------------- -----------------------------------------------
-  **METODO**   **ENDPOINT**                   **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/products/:id/prep-times   ADMIN         Listar tiempos estimados por variante
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **POST**     /api/products/:id/prep-times   ADMIN         Definir tiempo estimado (variant_id, minutos)
+**GET** /api/products/:id/prep-times ADMIN Listar tiempos estimados por variante
 
-  **PATCH**    /api/prep-times/:id            ADMIN         Editar tiempo estimado
+**POST** /api/products/:id/prep-times ADMIN Definir tiempo estimado (variant_id, minutos)
 
-  **DELETE**   /api/prep-times/:id            ADMIN         Eliminar tiempo estimado
-  ------------ ------------------------------ ------------- -----------------------------------------------
+**PATCH** /api/prep-times/:id ADMIN Editar tiempo estimado
+
+**DELETE** /api/prep-times/:id ADMIN Eliminar tiempo estimado
+
+---
 
 ## 5.8 Promociones y Combos
 
-  ------------ ----------------------------------- ------------- -------------------------------------------------------
-  **METODO**   **ENDPOINT**                        **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/promotions                     Auth          Listar promociones activas y vigentes (con items)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/promotions/:id                 Auth          Detalle con sus items
+**GET** /api/promotions Auth Listar promociones activas y vigentes (con items)
 
-  **POST**     /api/promotions                     ADMIN         Crear promocion (nombre, precio, vigencia, items\[\])
+**GET** /api/promotions/:id Auth Detalle con sus items
 
-  **PATCH**    /api/promotions/:id                 ADMIN         Editar promocion
+**POST** /api/promotions ADMIN Crear promocion (nombre, precio, vigencia, items\[\])
 
-  **DELETE**   /api/promotions/:id                 ADMIN         Desactivar promocion
+**PATCH** /api/promotions/:id ADMIN Editar promocion
 
-  **POST**     /api/promotions/:id/items           ADMIN         Agregar producto al combo
+**DELETE** /api/promotions/:id ADMIN Desactivar promocion
 
-  **DELETE**   /api/promotions/:id/items/:itemId   ADMIN         Quitar producto del combo
-  ------------ ----------------------------------- ------------- -------------------------------------------------------
+**POST** /api/promotions/:id/items ADMIN Agregar producto al combo
+
+**DELETE** /api/promotions/:id/items/:itemId ADMIN Quitar producto del combo
+
+---
 
 ## 5.9 Mesas
 
-  ------------ ---------------------------- ------------- ------------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/tables                  Auth          Listar mesas con estado actual
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/tables/:id              Auth          Detalle mesa (con pedido activo si tiene)
+**GET** /api/tables Auth Listar mesas con estado actual
 
-  **POST**     /api/tables                  ADMIN         Crear mesa (numero, capacidad, zona)
+**GET** /api/tables/:id Auth Detalle mesa (con pedido activo si tiene)
 
-  **PATCH**    /api/tables/:id              ADMIN         Editar mesa
+**POST** /api/tables ADMIN Crear mesa (numero, capacidad, zona)
 
-  **PATCH**    /api/tables/:id/status       CAJERO        Cambiar estado (AVAILABLE, OCCUPIED, RESERVED)
+**PATCH** /api/tables/:id ADMIN Editar mesa
 
-  **PATCH**    /api/tables/:id/toggle       ADMIN         Activar/desactivar mesa
-  ------------ ---------------------------- ------------- ------------------------------------------------
+**PATCH** /api/tables/:id/status CAJERO Cambiar estado (AVAILABLE, OCCUPIED, RESERVED)
+
+**PATCH** /api/tables/:id/toggle ADMIN Activar/desactivar mesa
+
+---
 
 ## 5.10 Pedidos (Orders) - Core
 
-  ------------ -------------------------------- ------------- --------------------------------------------------------------
-  **METODO**   **ENDPOINT**                     **ROL**       **DESCRIPCION**
+---
 
-  **POST**     /api/orders                      CAJERO        Crear pedido completo (items + pago + tracking + inventario)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/orders                      CAJERO        Listar pedidos (filtros: fecha, estado, tipo, mesa, cajero)
+**POST** /api/orders CAJERO Crear pedido completo (items + pago + tracking + inventario)
 
-  **GET**      /api/orders/:id                  CAJERO        Detalle con items, modificadores, pago, tracking
+**GET** /api/orders CAJERO Listar pedidos (filtros: fecha, estado, tipo, mesa, cajero)
 
-  **GET**      /api/orders/active               CAJERO        Pedidos activos (no entregados ni cancelados)
+**GET** /api/orders/:id CAJERO Detalle con items, modificadores, pago, tracking
 
-  **GET**      /api/orders/:id/status-history   Auth          Historial cambios de estado del pedido
+**GET** /api/orders/active CAJERO Pedidos activos (no entregados ni cancelados)
 
-  **PATCH**    /api/orders/:id/status           COCINA        Avanzar estado (PREPARING, IN_OVEN, READY)
+**GET** /api/orders/:id/status-history Auth Historial cambios de estado del pedido
 
-  **PATCH**    /api/orders/:id/deliver          CAJERO        Marcar entregado (libera mesa si aplica)
+**PATCH** /api/orders/:id/status COCINA Avanzar estado (PREPARING, IN_OVEN, READY)
 
-  **PATCH**    /api/orders/:id/cancel           ADMIN         Cancelar (motivo obligatorio, refund, reponer inventario)
-  ------------ -------------------------------- ------------- --------------------------------------------------------------
+**PATCH** /api/orders/:id/deliver CAJERO Marcar entregado (no libera mesa; liberacion manual via mesas)
+
+**PATCH** /api/orders/:id/cancel ADMIN Cancelar (motivo obligatorio, refund, reponer inventario)
+
+---
 
 ## 5.11 Pagos (Payment Transactions)
 
-  ------------ ------------------------------ ------------- -------------------------------------------------------
-  **METODO**   **ENDPOINT**                   **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/payments                  ADMIN         Listar transacciones (filtros: metodo, fecha, estado)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/payments/:id              ADMIN         Detalle de transaccion
+**GET** /api/payments ADMIN Listar transacciones (filtros: metodo, fecha, estado)
 
-  **GET**      /api/payments/order/:orderId   CAJERO        Transaccion asociada a un pedido
+**GET** /api/payments/:id ADMIN Detalle de transaccion
 
-  **POST**     /api/payments/:id/refund       ADMIN         Registrar devolucion (con motivo)
-  ------------ ------------------------------ ------------- -------------------------------------------------------
+**GET** /api/payments/order/:orderId CAJERO Transaccion asociada a un pedido
+
+**POST** /api/payments/:id/refund ADMIN Registrar devolucion (con motivo)
+
+---
 
 ## 5.12 Caja (Cash Register)
 
-  ------------ -------------------------------- ------------- ----------------------------------------------
-  **METODO**   **ENDPOINT**                     **ROL**       **DESCRIPCION**
+---
 
-  **POST**     /api/cash-register/open          CAJERO        Abrir sesion de caja (monto inicial)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/cash-register/current       CAJERO        Sesion activa del usuario actual
+**POST** /api/cash-register/open CAJERO Abrir sesion de caja (monto inicial)
 
-  **POST**     /api/cash-register/close         CAJERO        Cerrar caja (monto real contado)
+**GET** /api/cash-register/current CAJERO Sesion activa del usuario actual
 
-  **GET**      /api/cash-register/:id/summary   ADMIN         Resumen detallado de una sesion
+**POST** /api/cash-register/close CAJERO Cerrar caja (monto real contado)
 
-  **GET**      /api/cash-register/history       ADMIN         Historial sesiones (filtros: usuario, fecha)
-  ------------ -------------------------------- ------------- ----------------------------------------------
+**GET** /api/cash-register/:id/summary ADMIN Resumen detallado de una sesion
+
+**GET** /api/cash-register/history ADMIN Historial sesiones (filtros: usuario, fecha)
+
+---
 
 ## 5.13 Order Tracking (Publico)
 
-  ------------ ---------------------------- ------------- -------------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/tracking/:code          Publico       Estado actual del pedido por codigo de tracking
-  ------------ ---------------------------- ------------- -------------------------------------------------
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
+
+**GET** /api/tracking/:code Publico Estado actual del pedido por codigo de tracking
+
+---
 
 ## 5.14 Inventario
 
-  ------------ ---------------------------- ------------- ------------------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/inventory               ADMIN         Listar insumos (filtros: activo, stock bajo, search)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/inventory/:id           ADMIN         Detalle con movimientos recientes
+**GET** /api/inventory ADMIN Listar insumos (filtros: activo, stock bajo, search)
 
-  **POST**     /api/inventory               ADMIN         Crear insumo (nombre, unidad, stock, min, costo)
+**GET** /api/inventory/:id ADMIN Detalle con movimientos recientes
 
-  **PATCH**    /api/inventory/:id           ADMIN         Editar insumo
+**POST** /api/inventory ADMIN Crear insumo (nombre, unidad, stock, min, costo)
 
-  **POST**     /api/inventory/:id/restock   ADMIN         Registrar entrada (cantidad, proveedor, costo)
+**PATCH** /api/inventory/:id ADMIN Editar insumo
 
-  **POST**     /api/inventory/:id/adjust    ADMIN         Ajuste manual de stock (cantidad, motivo)
+**POST** /api/inventory/:id/restock ADMIN Registrar entrada (cantidad, proveedor, costo)
 
-  **GET**      /api/inventory/low-stock     ADMIN         Insumos por debajo del stock minimo
+**POST** /api/inventory/:id/adjust ADMIN Ajuste manual de stock (cantidad, motivo)
 
-  **GET**      /api/inventory/movements     ADMIN         Historial movimientos (filtros: insumo, tipo, fecha)
-  ------------ ---------------------------- ------------- ------------------------------------------------------
+**GET** /api/inventory/low-stock ADMIN Insumos por debajo del stock minimo
+
+**GET** /api/inventory/movements ADMIN Historial movimientos (filtros: insumo, tipo, fecha)
+
+---
 
 ## 5.15 Reportes
 
-  ------------ -------------------------------------- ------------- -----------------------------------------------
-  **METODO**   **ENDPOINT**                           **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/reports/sales/today               CAJERO        Ventas del dia actual (resumen rapido)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/reports/sales                     ADMIN         Ventas por rango fechas (?from=&to=)
+**GET** /api/reports/sales/today CAJERO Ventas del dia actual (resumen rapido)
 
-  **GET**      /api/reports/sales/by-category         ADMIN         Ventas agrupadas por categoria
+**GET** /api/reports/sales ADMIN Ventas por rango fechas (?from=&to=)
 
-  **GET**      /api/reports/sales/by-type             ADMIN         Ventas salon vs para llevar
+**GET** /api/reports/sales/by-category ADMIN Ventas agrupadas por categoria
 
-  **GET**      /api/reports/sales/by-payment-method   ADMIN         Ventas por metodo de pago
+**GET** /api/reports/sales/by-type ADMIN Ventas salon vs para llevar
 
-  **GET**      /api/reports/top-products              ADMIN         Ranking productos mas vendidos (?limit=)
+**GET** /api/reports/sales/by-payment-method ADMIN Ventas por metodo de pago
 
-  **GET**      /api/reports/cash-register/:id         ADMIN         Reporte detallado cierre de caja
+**GET** /api/reports/top-products ADMIN Ranking productos mas vendidos (?limit=)
 
-  **GET**      /api/reports/inventory/low-stock       ADMIN         Reporte insumos bajo stock
+**GET** /api/reports/cash-register/:id ADMIN Reporte detallado cierre de caja
 
-  **GET**      /api/reports/cancellations             ADMIN         Pedidos cancelados (?from=&to=)
+**GET** /api/reports/inventory/low-stock ADMIN Reporte insumos bajo stock
 
-  **GET**      /api/reports/prep-times                ADMIN         Tiempos promedio preparacion por producto
+**GET** /api/reports/cancellations ADMIN Pedidos cancelados (?from=&to=)
 
-  **GET**      /api/reports/daily-summary             ADMIN         Resumenes diarios pre-calculados (?from=&to=)
-  ------------ -------------------------------------- ------------- -----------------------------------------------
+**GET** /api/reports/prep-times ADMIN Tiempos promedio preparacion por producto
+
+**GET** /api/reports/daily-summary ADMIN Resumenes diarios pre-calculados (?from=&to=)
+
+---
 
 ## 5.16 Configuracion del Negocio
 
-  ------------ ---------------------------- ------------- --------------------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/config                  ADMIN         Obtener configuracion completa
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **PATCH**    /api/config                  ADMIN         Actualizar (nombre, RUC, impuesto, tracking URL, etc.)
-  ------------ ---------------------------- ------------- --------------------------------------------------------
+**GET** /api/config ADMIN Obtener configuracion completa
+
+**PATCH** /api/config ADMIN Actualizar (nombre, RUC, impuesto, tracking URL, etc.)
+
+---
 
 ## 5.17 Notificaciones
 
-  ------------ --------------------------------- ------------- ---------------------------------------------
-  **METODO**   **ENDPOINT**                      **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/notifications                Auth          Listar notificaciones del usuario (por rol)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/notifications/unread-count   Auth          Cantidad no leidas (badge campanita)
+**GET** /api/notifications Auth Listar notificaciones del usuario (por rol)
 
-  **PATCH**    /api/notifications/:id/read       Auth          Marcar como leida
+**GET** /api/notifications/unread-count Auth Cantidad no leidas (badge campanita)
 
-  **PATCH**    /api/notifications/read-all       Auth          Marcar todas como leidas
-  ------------ --------------------------------- ------------- ---------------------------------------------
+**PATCH** /api/notifications/:id/read Auth Marcar como leida
+
+**PATCH** /api/notifications/read-all Auth Marcar todas como leidas
+
+---
 
 **WebSocket:** NotificationsGateway emite eventos push via WebSocket para actualizar campanita en tiempo real sin polling.
 
 ## 5.18 Impresoras
 
-  ------------ ---------------------------- ------------- -------------------------------------------------------
-  **METODO**   **ENDPOINT**                 **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/printers                ADMIN         Listar impresoras configuradas
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **POST**     /api/printers                ADMIN         Registrar impresora (nombre, ubicacion, conexion, IP)
+**GET** /api/printers ADMIN Listar impresoras configuradas
 
-  **PATCH**    /api/printers/:id            ADMIN         Editar configuracion
+**POST** /api/printers ADMIN Registrar impresora (nombre, ubicacion, conexion, IP)
 
-  **DELETE**   /api/printers/:id            ADMIN         Eliminar impresora
+**PATCH** /api/printers/:id ADMIN Editar configuracion
 
-  **PATCH**    /api/printers/:id/default    ADMIN         Marcar como default de su ubicacion
-  ------------ ---------------------------- ------------- -------------------------------------------------------
+**DELETE** /api/printers/:id ADMIN Eliminar impresora
+
+**PATCH** /api/printers/:id/default ADMIN Marcar como default de su ubicacion
+
+---
 
 ## 5.19 Auditoria
 
-  ------------ --------------------------------------- ------------- ----------------------------------------------------------
-  **METODO**   **ENDPOINT**                            **ROL**       **DESCRIPCION**
+---
 
-  **GET**      /api/audit-logs                         ADMIN         Log auditoria (filtros: usuario, accion, entidad, fecha)
+**METODO** **ENDPOINT** **ROL** **DESCRIPCION**
 
-  **GET**      /api/audit-logs/:entityType/:entityId   ADMIN         Historial cambios de una entidad
-  ------------ --------------------------------------- ------------- ----------------------------------------------------------
+**GET** /api/audit-logs ADMIN Log auditoria (filtros: usuario, accion, entidad, fecha)
+
+**GET** /api/audit-logs/:entityType/:entityId ADMIN Historial cambios de una entidad
+
+---
 
 **Nota:** audit_logs se generan via AuditInterceptor global. Son inmutables: no hay endpoints para crear/editar/eliminar.
 
 +---------------------------------------------------------------------------------------------------------------------------------------------+
-| **TOTAL: \~85 ENDPOINTS EN 19 GRUPOS**                                                                                                      |
-|                                                                                                                                             |
+| **TOTAL: \~85 ENDPOINTS EN 19 GRUPOS** |
+| |
 | Cada endpoint mapeado a un RF, una tabla BD y un modulo NestJS. Documentacion interactiva via Swagger UI en /api/docs una vez implementado. |
 +---------------------------------------------------------------------------------------------------------------------------------------------+
 
@@ -812,33 +862,35 @@ El desarrollo del MVP se estructura en sprints de 1 semana, con un total estimad
 
 ## 6.1 Cronograma por Sprints
 
-  --------------- ------------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---------------
-  **SPRINT**      **SEMANA**   **ENTREGABLES**                                                                                                                                                        **PRIORIDAD**
+---
 
-  **Sprint 0**    1            Setup monorepo Turborepo + Next.js + NestJS + \@pos-pizza/shared. Config Supabase + Drizzle (29 tablas). Auth basico (JWT + Passport + sessions). Layout base.         Critica
+**SPRINT** **SEMANA** **ENTREGABLES** **PRIORIDAD**
 
-  **Sprint 1**    2            ProductsModule completo: CRUD categorias, productos, variantes, modifier_groups, modifiers. Seed data pizzeria piloto. Frontend admin menu.                            Critica
+**Sprint 0** 1 Setup monorepo Turborepo + Next.js + NestJS + \@pos-pizza/shared. Config Supabase + Drizzle (29 tablas). Auth basico (JWT + Passport + sessions). Layout base. Critica
 
-  **Sprint 2**    3            Pantalla POS: seleccion tipo pedido (salon/llevar), categorias, grid productos, variantes, modificadores, carrito lateral. TablesModule + mapa mesas.                  Critica
+**Sprint 1** 2 ProductsModule completo: CRUD categorias, productos, variantes, modifier_groups, modifiers. Seed data pizzeria piloto. Frontend admin menu. Critica
 
-  **Sprint 3**    4            OrdersModule + PaymentsModule: crear pedido, payment_transactions (Strategy Pattern cash/digital), calculo totales/impuesto, ticket_sequences (correlativo atomico).   Critica
+**Sprint 2** 3 Pantalla POS: seleccion tipo pedido (salon/llevar), categorias, grid productos, variantes, modificadores, carrito lateral. TablesModule + mapa mesas. Critica
 
-  **Sprint 4**    5            CashRegisterModule: apertura/cierre caja, resumen turno. PromotionsModule: CRUD combos, vigencia, aplicar en POS.                                                      Alta
+**Sprint 3** 4 OrdersModule + PaymentsModule: crear pedido, payment_transactions (Strategy Pattern cash/digital), calculo totales/impuesto, ticket_sequences (correlativo atomico). Critica
 
-  **Sprint 5**    6            Pantalla cocina (KDS): order_status_history, estados tematicos, boton transicion secuencial, Supabase Realtime, indicador tiempo.                                      Alta
+**Sprint 4** 5 CashRegisterModule: apertura/cierre caja, resumen turno. PromotionsModule: CRUD combos, vigencia, aplicar en POS. Alta
 
-  **Sprint 6**    7            TrackingModule: generacion codigo + QR, pagina publica responsive (animaciones tematicas), timer aproximado, product_prep_times.                                       Alta
+**Sprint 5** 6 Pantalla cocina (KDS): order_status_history, estados tematicos, boton transicion secuencial, Supabase Realtime, indicador tiempo. Alta
 
-  **Sprint 7**    8            InventoryModule: CRUD insumos, product_ingredients (recetas), descuento automatico por venta, inventory_movements, alertas stock bajo.                                 Alta
+**Sprint 6** 7 TrackingModule: generacion codigo + QR, pagina publica responsive (animaciones tematicas), timer aproximado, product_prep_times. Alta
 
-  **Sprint 8**    9            ReportsModule: ventas dia/periodo, ranking productos, cierre caja, daily_summaries. NotificationsModule: WebSocket Gateway, campanita. AuditInterceptor.               Media
+**Sprint 7** 8 InventoryModule: CRUD insumos, product_ingredients (recetas), descuento automatico por venta, inventory_movements, alertas stock bajo. Alta
 
-  **Sprint 9**    10           PrinterModule: config impresoras. Integracion WebUSB + ESC/POS: ticket con QR + comanda cocina. Testing con impresora real.                                            Alta
+**Sprint 8** 9 ReportsModule: ventas dia/periodo, ranking productos, cierre caja, daily_summaries. NotificationsModule: WebSocket Gateway, campanita. AuditInterceptor. Media
 
-  **Sprint 10**   11           QA completo: testing datos reales, ajustes UX, fix bugs, optimizacion rendimiento, modo offline basico (Service Worker + IndexedDB).                                   Critica
+**Sprint 9** 10 PrinterModule: config impresoras. Integracion WebUSB + ESC/POS: ticket con QR + comanda cocina. Testing con impresora real. Alta
 
-  **Deploy**      12           Deploy produccion: Vercel (web) + Railway (api) + Supabase (DB). Capacitacion presencial al personal. Acompanamiento en vivo 1 semana.                                 Critica
-  --------------- ------------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---------------
+**Sprint 10** 11 QA completo: testing datos reales, ajustes UX, fix bugs, optimizacion rendimiento, modo offline basico (Service Worker + IndexedDB). Critica
+
+**Deploy** 12 Deploy produccion: Vercel (web) + Railway (api) + Supabase (DB). Capacitacion presencial al personal. Acompanamiento en vivo 1 semana. Critica
+
+---
 
 # 7. SCRIPTS, COMANDOS Y PIPELINES
 
@@ -888,91 +940,101 @@ pnpm dev
 
 Comandos globales que ejecutan tareas en todas las apps via Turborepo:
 
-  ------------------------ -------------------------------------------------------------------------
-  **COMANDO**              **DESCRIPCION**
+---
 
-  **pnpm dev**             Levanta TODAS las apps en paralelo (web:3000 + api:3001) con hot reload
+**COMANDO** **DESCRIPCION**
 
-  **pnpm build**           Build de produccion de todas las apps (Next.js + NestJS)
+**pnpm dev** Levanta TODAS las apps en paralelo (web:3000 + api:3001) con hot reload
 
-  **pnpm lint**            Ejecuta ESLint en todas las apps y packages
+**pnpm build** Build de produccion de todas las apps (Next.js + NestJS)
 
-  **pnpm format**          Ejecuta Prettier en todo el proyecto
+**pnpm lint** Ejecuta ESLint en todas las apps y packages
 
-  **pnpm type-check**      Verifica tipos TypeScript en todas las apps y packages
+**pnpm format** Ejecuta Prettier en todo el proyecto
 
-  **pnpm clean**           Elimina node_modules, .next, dist de todas las apps
+**pnpm type-check** Verifica tipos TypeScript en todas las apps y packages
 
-  **pnpm test**            Ejecuta tests unitarios en todas las apps
+**pnpm clean** Elimina node_modules, .next, dist de todas las apps
 
-  **pnpm test:e2e**        Ejecuta tests end-to-end
-  ------------------------ -------------------------------------------------------------------------
+**pnpm test** Ejecuta tests unitarios en todas las apps
+
+**pnpm test:e2e** Ejecuta tests end-to-end
+
+---
 
 ## 7.3 Scripts del Frontend (apps/web/package.json)
 
-  ------------------------------ ----------------------------------------------------------
-  **COMANDO**                    **DESCRIPCION**
+---
 
-  **pnpm \--filter web dev**     Next.js dev server en http://localhost:3000 (hot reload)
+**COMANDO** **DESCRIPCION**
 
-  **pnpm \--filter web build**   Build de produccion Next.js (output: .next/)
+**pnpm \--filter web dev** Next.js dev server en http://localhost:3000 (hot reload)
 
-  **pnpm \--filter web start**   Iniciar build de produccion localmente
+**pnpm \--filter web build** Build de produccion Next.js (output: .next/)
 
-  **pnpm \--filter web lint**    ESLint sobre el codigo frontend
-  ------------------------------ ----------------------------------------------------------
+**pnpm \--filter web start** Iniciar build de produccion localmente
+
+**pnpm \--filter web lint** ESLint sobre el codigo frontend
+
+---
 
 ## 7.4 Scripts del Backend (apps/api/package.json)
 
-  ----------------------------------- ---------------------------------------------------------
-  **COMANDO**                         **DESCRIPCION**
+---
 
-  **pnpm \--filter api dev**          NestJS dev server en http://localhost:3001 (watch mode)
+**COMANDO** **DESCRIPCION**
 
-  **pnpm \--filter api build**        Build de produccion NestJS (output: dist/)
+**pnpm \--filter api dev** NestJS dev server en http://localhost:3001 (watch mode)
 
-  **pnpm \--filter api start:prod**   Iniciar build de produccion (node dist/main.js)
+**pnpm \--filter api build** Build de produccion NestJS (output: dist/)
 
-  **pnpm \--filter api lint**         ESLint sobre el codigo backend
+**pnpm \--filter api start:prod** Iniciar build de produccion (node dist/main.js)
 
-  **pnpm \--filter api test**         Ejecutar tests unitarios (Jest)
+**pnpm \--filter api lint** ESLint sobre el codigo backend
 
-  **pnpm \--filter api test:e2e**     Ejecutar tests end-to-end
+**pnpm \--filter api test** Ejecutar tests unitarios (Jest)
 
-  **pnpm \--filter api test:cov**     Tests con reporte de cobertura
-  ----------------------------------- ---------------------------------------------------------
+**pnpm \--filter api test:e2e** Ejecutar tests end-to-end
+
+**pnpm \--filter api test:cov** Tests con reporte de cobertura
+
+---
 
 ## 7.5 Scripts de Base de Datos (Drizzle ORM)
 
-  ------------------------------------ -------------------------------------------------------------------------------
-  **COMANDO**                          **DESCRIPCION**
+---
 
-  **pnpm \--filter api db:generate**   Genera migracion SQL a partir del schema Drizzle (drizzle-kit generate)
+**COMANDO** **DESCRIPCION**
 
-  **pnpm \--filter api db:migrate**    Ejecuta migraciones pendientes contra la BD (drizzle-kit migrate)
+**pnpm \--filter api db:generate** Genera migracion SQL a partir del schema Drizzle (drizzle-kit generate)
 
-  **pnpm \--filter api db:push**       Push directo del schema a la BD sin generar migracion (dev rapido)
+**pnpm \--filter api db:migrate** Ejecuta migraciones pendientes contra la BD (drizzle-kit migrate)
 
-  **pnpm \--filter api db:studio**     Abre Drizzle Studio (GUI visual para explorar la BD en http://localhost:4983)
+**pnpm \--filter api db:push** Push directo del schema a la BD sin generar migracion (dev rapido)
 
-  **pnpm \--filter api db:seed**       Ejecuta script de seed (datos iniciales: usuarios, menu, mesas, config)
+**pnpm \--filter api db:studio** Abre Drizzle Studio (GUI visual para explorar la BD en http://localhost:4983)
 
-  **pnpm \--filter api db:reset**      Elimina todas las tablas + re-migra + re-seed (CUIDADO: borra todo)
-  ------------------------------------ -------------------------------------------------------------------------------
+**pnpm \--filter api db:seed** Ejecuta script de seed (datos iniciales: usuarios, menu, mesas, config)
+
+**pnpm \--filter api db:reset** Elimina todas las tablas + re-migra + re-seed (CUIDADO: borra todo)
+
+---
 
 ## 7.6 Scripts de Docker (Desarrollo Local)
 
-  --------------------------------------------------------- -----------------------------------------------------
-  **COMANDO**                                               **DESCRIPCION**
+---
 
-  **docker compose -f docker/docker-compose.yml up -d**     Levantar PostgreSQL 15 + pgAdmin 4 en background
+**COMANDO** **DESCRIPCION**
 
-  **docker compose -f docker/docker-compose.yml down**      Detener y remover contenedores
+**docker compose -f docker/docker-compose.yml up -d** Levantar PostgreSQL 15 + pgAdmin 4 en background
 
-  **docker compose -f docker/docker-compose.yml down -v**   Detener + eliminar volumenes (borra datos BD local)
+**docker compose -f docker/docker-compose.yml down** Detener y remover contenedores
 
-  **docker compose -f docker/docker-compose.yml logs -f**   Ver logs en tiempo real
-  --------------------------------------------------------- -----------------------------------------------------
+**docker compose -f docker/docker-compose.yml down -v** Detener + eliminar volumenes (borra datos BD local)
+
+**docker compose -f docker/docker-compose.yml logs -f** Ver logs en tiempo real
+
+---
 
 ## 7.7 Configuracion Turborepo (turbo.json)
 
@@ -1022,25 +1084,27 @@ Turborepo orquesta los scripts del monorepo con caching inteligente y ejecucion 
 
 ## 7.8 Scripts de Deploy
 
-  --------------------------------- ----------------------------------------------------------------------------------------------------------------
-  **PLATAFORMA / COMANDO**          **DESCRIPCION**
+---
 
-  **Vercel (Frontend)**             Auto-deploy desde GitHub. Push a main = deploy produccion. Push a branch = preview deploy.
+**PLATAFORMA / COMANDO** **DESCRIPCION**
 
-  **vercel \--prod**                Deploy manual a produccion (si se necesita)
+**Vercel (Frontend)** Auto-deploy desde GitHub. Push a main = deploy produccion. Push a branch = preview deploy.
 
-  **vercel**                        Deploy manual a preview
+**vercel \--prod** Deploy manual a produccion (si se necesita)
 
-  **Railway (Backend)**             Auto-deploy desde GitHub. Configurar: root directory = apps/api, build = pnpm build, start = node dist/main.js
+**vercel** Deploy manual a preview
 
-  **railway up**                    Deploy manual desde CLI
+**Railway (Backend)** Auto-deploy desde GitHub. Configurar: root directory = apps/api, build = pnpm build, start = node dist/main.js
 
-  **Supabase (BD)**                 Migraciones se ejecutan manualmente via CLI o en CI/CD
+**railway up** Deploy manual desde CLI
 
-  **supabase db push**              Aplicar migraciones a Supabase remoto
+**Supabase (BD)** Migraciones se ejecutan manualmente via CLI o en CI/CD
 
-  **supabase db reset \--linked**   Reset BD remota (SOLO desarrollo, NUNCA produccion)
-  --------------------------------- ----------------------------------------------------------------------------------------------------------------
+**supabase db push** Aplicar migraciones a Supabase remoto
+
+**supabase db reset \--linked** Reset BD remota (SOLO desarrollo, NUNCA produccion)
+
+---
 
 ## 7.9 Flujo de Trabajo Diario del Desarrollador
 
@@ -1092,49 +1156,53 @@ git push origin feature/orders-module
 
 Costos mensuales estimados para mantener el MVP en produccion:
 
-  -------------------------------------- ------------------------------------ -------------------------
-  **SERVICIO**                           **PLAN**                             **COSTO MENSUAL**
+---
 
-  **Vercel (Frontend)**                  Hobby (Free) o Pro (\$20/mes)        \$0 - \$20 USD
+**SERVICIO** **PLAN** **COSTO MENSUAL**
 
-  **Railway (Backend NestJS)**           Starter (\$5/mes) o Developer        \$5 - \$10 USD
+**Vercel (Frontend)** Hobby (Free) o Pro (\$20/mes) \$0 - \$20 USD
 
-  **Supabase (PostgreSQL + Realtime)**   Free Tier (500MB DB, 2GB transfer)   \$0 USD
+**Railway (Backend NestJS)** Starter (\$5/mes) o Developer \$5 - \$10 USD
 
-  **Dominio .com**                       Registro anual \~\$12/ano            \~\$1 USD
+**Supabase (PostgreSQL + Realtime)** Free Tier (500MB DB, 2GB transfer) \$0 USD
 
-  **TOTAL MVP (escenario minimo)**                                            **\$5 - \$6 USD/mes**
+**Dominio .com** Registro anual \~\$12/ano \~\$1 USD
 
-  **TOTAL MVP (escenario Pro)**                                               **\$31 - \$36 USD/mes**
-  -------------------------------------- ------------------------------------ -------------------------
+**TOTAL MVP (escenario minimo)** **\$5 - \$6 USD/mes**
 
-***Nota:** El costo de infraestructura cloud del MVP es de \~\$5-6 USD/mes en el escenario minimo (\~S/. 19-23). Los costos de hardware (impresora, tablet, internet) se detallan en el documento de Analisis de Negocio (Fase 1, seccion 10.5).*
+**TOTAL MVP (escenario Pro)** **\$31 - \$36 USD/mes**
+
+---
+
+**\*Nota:** El costo de infraestructura cloud del MVP es de \~\$5-6 USD/mes en el escenario minimo (\~S/. 19-23). Los costos de hardware (impresora, tablet, internet) se detallan en el documento de Analisis de Negocio (Fase 1, seccion 10.5).\*
 
 # 9. ROADMAP POST-MVP
 
-  ------------- -------------------------------------------------------------------------------------------------------- --------------
-  **FASE**      **FEATURES**                                                                                             **TIMELINE**
+---
 
-  **Fase 2**    Multi-tenant: tenant_id en schema, RLS PostgreSQL, onboarding de nuevos negocios, dashboard por tenant   +6-8 sem
+**FASE** **FEATURES** **TIMELINE**
 
-  **Fase 3**    Modulo delivery: zonas, riders, tracking en ruta, integracion Rappi/PedidosYa                            +4-6 sem
+**Fase 2** Multi-tenant: tenant_id en schema, RLS PostgreSQL, onboarding de nuevos negocios, dashboard por tenant +6-8 sem
 
-  **Fase 4**    Facturacion electronica SUNAT: boleta/factura digital, integracion con OSE                               +3-4 sem
+**Fase 3** Modulo delivery: zonas, riders, tracking en ruta, integracion Rappi/PedidosYa +4-6 sem
 
-  **Fase 5**    App movil cliente: carta digital QR, pedido anticipado, historial                                        +6-8 sem
+**Fase 4** Facturacion electronica SUNAT: boleta/factura digital, integracion con OSE +3-4 sem
 
-  **Fase 6**    Fidelizacion: programa de puntos, cupones, descuentos por frecuencia                                     +3-4 sem
+**Fase 5** App movil cliente: carta digital QR, pedido anticipado, historial +6-8 sem
 
-  **Fase 7**    Adaptacion multi-rubro: generalizacion del POS para pollerias, cafeterias, etc.                          +8-12 sem
-  ------------- -------------------------------------------------------------------------------------------------------- --------------
+**Fase 6** Fidelizacion: programa de puntos, cupones, descuentos por frecuencia +3-4 sem
+
+**Fase 7** Adaptacion multi-rubro: generalizacion del POS para pollerias, cafeterias, etc. +8-12 sem
+
+---
 
 # 10. PROXIMOS PASOS
 
 Con ambos documentos (Analisis de Negocio + Arquitectura Tecnica) validados, los siguientes pasos concretos son:
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **LISTO PARA DESARROLLO**                                                                                                                                                                                                                      |
-|                                                                                                                                                                                                                                                |
+| **LISTO PARA DESARROLLO** |
+| |
 | Ambas fases de documentacion estan completas. El proyecto tiene analisis de negocio, requerimientos, flujos, arquitectura, stack, modelado de BD, API design y plan de sprints. El siguiente paso es iniciar el Sprint 0 (setup del proyecto). |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
@@ -1152,8 +1220,8 @@ Con ambos documentos (Analisis de Negocio + Arquitectura Tecnica) validados, los
 
 **7.** Obtener datos reales de la pizzeria piloto: carta completa, precios, combos, cantidad de mesas.
 
-*Documento preparado por Bruno Alvarez - Full Stack Developer*
+_Documento preparado por Bruno Alvarez - Full Stack Developer_
 
-*POS Pizza - Arquitectura Tecnica v1.3 - Marzo 2026*
+_POS Pizza - Arquitectura Tecnica v1.3 - Marzo 2026_
 
-*Documento Interno - Confidencial*
+_Documento Interno - Confidencial_
