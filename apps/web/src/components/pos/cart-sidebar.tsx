@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Pencil, Trash2, ShoppingBag, Minus, Plus, ChevronDown } from "lucide-react";
+import { Pencil, Trash2, ShoppingBag, Minus, Plus, ChevronDown, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -55,6 +55,7 @@ export function CartSidebar() {
 
   const tm = useTableManagement(orderType, isAdmin);
   const cr = useCashRegister();
+  const [registerOpenTrigger, setRegisterOpenTrigger] = useState(0);
 
   const openNoteDialog = (itemId: string, currentNote: string | null) => {
     setNoteDialogItemId(itemId);
@@ -74,21 +75,10 @@ export function CartSidebar() {
     cashReceived?: number;
     referenceNumber?: string;
   }) => {
-    if (items.length === 0) return;
+    if (items.length === 0 || !cr.register) return;
     setIsSubmitting(true);
 
     try {
-      if (!cr.register) {
-        await posAlert.fire({
-          icon: "warning",
-          title: t("cashRegister.requiredTitle"),
-          text: t("cashRegister.requiredText"),
-          confirmButtonText: t("cashRegister.openAction"),
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       if (orderType === "DINE_IN" && !tm.tableId) {
         tm.setTableTouched(true);
         throw new Error("TABLE_REQUIRED");
@@ -193,6 +183,7 @@ export function CartSidebar() {
         onOpen={cr.openRegister}
         onClose={cr.closeRegister}
         onFetchSummary={cr.fetchSummary}
+        triggerOpen={registerOpenTrigger}
       />
 
       {/* ── Header ── */}
@@ -435,13 +426,23 @@ export function CartSidebar() {
           </span>
         </div>
 
-        <Button
-          onClick={() => setIsPaymentDialogOpen(true)}
-          disabled={items.length === 0 || isSubmitting}
-          className="h-12 w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
-        >
-          {t("cart.placeOrder")}
-        </Button>
+        {!cr.loading && !cr.register ? (
+          <Button
+            onClick={() => setRegisterOpenTrigger((n) => n + 1)}
+            className="h-12 w-full rounded-full font-bold text-sm transition-all active:scale-[0.98] bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/30"
+          >
+            <Lock className="w-4 h-4 mr-2" />
+            {t("cashRegister.openToCharge")}
+          </Button>
+        ) : (
+          <Button
+            onClick={() => setIsPaymentDialogOpen(true)}
+            disabled={items.length === 0 || isSubmitting || cr.loading}
+            className="h-12 w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            {t("cart.placeOrder")}
+          </Button>
+        )}
       </div>
 
       {/* ── Note Dialog ── */}

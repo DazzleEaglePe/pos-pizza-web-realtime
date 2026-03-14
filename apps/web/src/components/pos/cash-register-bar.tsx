@@ -38,6 +38,8 @@ type Props = {
     totalTickets?: number | null;
   }>;
   onFetchSummary: () => Promise<CashRegisterSummary | null>;
+  /** Incrementing this value from the parent forces the open-register dialog to appear */
+  triggerOpen?: number;
 };
 
 function StatRow({ icon, label, value, highlight, className }: { icon: ReactNode; label: string; value: string; highlight?: boolean; className?: string }) {
@@ -58,9 +60,17 @@ function Divider() {
   return <div className="border-t border-border/50 my-1" />;
 }
 
-export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSummary }: Props) {
+export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSummary, triggerOpen }: Props) {
   const { t } = useTranslation();
   const [dialogMode, setDialogMode] = useState<"open" | "close" | null>(null);
+
+  // Allow parent to force-open the register dialog by incrementing triggerOpen
+  useEffect(() => {
+    if (triggerOpen && triggerOpen > 0 && !register && !loading) {
+      setDialogMode("open");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [triggerOpen]);
   const [openingAmount, setOpeningAmount] = useState("");
   const [actualCash, setActualCash] = useState("");
   const [closeNotes, setCloseNotes] = useState("");

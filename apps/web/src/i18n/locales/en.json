@@ -254,6 +254,7 @@
     "exact": "Exact",
     "surplus": "Surplus",
     "deficit": "Deficit",
+    "openToCharge": "Open register to charge",
     "requiredTitle": "Register not open",
     "requiredText": "You must open the cash register before placing an order."
   }

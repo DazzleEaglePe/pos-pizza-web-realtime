@@ -254,6 +254,7 @@
     "exact": "Exacto",
     "surplus": "Sobrante",
     "deficit": "Faltante",
+    "openToCharge": "Abre la caja para cobrar",
     "requiredTitle": "Caja no abierta",
     "requiredText": "Debes abrir la caja registradora antes de realizar un pedido."
   }
