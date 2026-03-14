@@ -170,7 +170,7 @@ export default function MovementsPage() {
                       <td className="px-4 py-2 text-xs text-muted-foreground">
                         {m.referenceType || "—"}
                       </td>
-                      <td className="px-4 py-2 text-xs text-muted-foreground max-w-[200px] truncate">
+                      <td className="px-4 py-2 text-xs text-muted-foreground max-w-50 truncate">
                         {m.notes || "—"}
                       </td>
                     </tr>

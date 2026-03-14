@@ -1,11 +1,11 @@
-import { uuid,  boolean,  timestamp,  pgTable, text, integer, jsonb    } from "drizzle-orm/pg-core";
+import { uuid,  boolean,  timestamp,  pgTable, text, integer, real, jsonb    } from "drizzle-orm/pg-core";
 import { products } from "./catalog.schema";
 import { users } from "./auth.schema";
 
 export const businessConfig = pgTable("business_config", {
   id: uuid("id").defaultRandom().primaryKey(),
   companyName: text("company_name").notNull(),
-  taxRateDefault: integer("tax_rate_default").notNull().default(18),
+  taxRateDefault: real("tax_rate_default").notNull().default(18),
   currency: text("currency").notNull().default("PEN"),
   timezone: text("timezone").notNull().default("America/Lima"),
   settings: jsonb("settings"),

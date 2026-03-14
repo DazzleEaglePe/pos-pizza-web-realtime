@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useConfig } from "./useConfig";
 
 export interface CartModifier {
   id: string;
@@ -31,7 +32,7 @@ interface CartState {
   updateNotes: (id: string, notes: string | null) => void;
   clearCart: () => void;
   setTableId: (id: string | null) => void;
-  getTotals: () => { subtotal: number; tax: number; total: number };
+  getTotals: () => { subtotal: number; tax: number; total: number; taxRate: number };
 }
 
 export const useCart = create<CartState>((set, get) => ({
@@ -101,10 +102,11 @@ export const useCart = create<CartState>((set, get) => ({
         sum + (item.price + (item.modifiersCost || 0)) * item.quantity,
       0,
     );
-    const taxRate = 0.18; // 18% SUNAT Peru
+    const taxPercent = useConfig.getState().taxRate;
+    const taxRate = taxPercent / 100;
     const tax = subtotal * taxRate;
     const total = subtotal + tax;
 
-    return { subtotal, tax, total };
+    return { subtotal, tax, total, taxRate: taxPercent };
   },
 }));

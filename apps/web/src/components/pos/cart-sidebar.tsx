@@ -12,7 +12,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useCart } from "@/hooks/useCart";
-import { useState } from "react";
+import { useConfig } from "@/hooks/useConfig";
+import { useState, useEffect } from "react";
 import { posAlert } from "@/lib/sweetalert";
 import { useTranslation } from "@/i18n";
 import { PaymentDialog } from "./payment-dialog";
@@ -28,7 +29,9 @@ import { useCashRegister } from "@/hooks/useCashRegister";
 export function CartSidebar() {
   const { items, getTotals, removeItem, updateQuantity, clearCart } = useCart();
   const updateNotes = useCart((s) => s.updateNotes);
-  const { subtotal, tax, total } = getTotals();
+  const { subtotal, tax, total, taxRate } = getTotals();
+  const fetchConfig = useConfig((s) => s.fetchConfig);
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [orderType, setOrderType] = useState<"DINE_IN" | "TAKEOUT">("DINE_IN");
@@ -210,7 +213,7 @@ export function CartSidebar() {
               tm.setTableTouched(false);
             }}
             className={cn(
-              "flex-1 h-8 rounded-[7px] text-xs font-semibold uppercase tracking-wide transition-all",
+              "flex-1 h-8 rounded-sm text-xs font-semibold uppercase tracking-wide transition-all",
               orderType === "DINE_IN"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
@@ -387,7 +390,7 @@ export function CartSidebar() {
                 </div>
 
                 {item.notes && (
-                  <div className="text-[11px] font-medium text-destructive bg-destructive/5 border border-destructive/15 rounded-lg px-2.5 py-1.5 leading-snug">
+                  <div className="text-[11px] font-medium text-destructive bg-destructive/5 border border-destructive/15 rounded-sm px-2.5 py-1.5 leading-snug">
                     {item.notes}
                   </div>
                 )}
@@ -413,7 +416,7 @@ export function CartSidebar() {
             <span className="font-medium text-primary">- S/0.00</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
-            <span>{t("cart.tax")} (18%)</span>
+            <span>{t("cart.tax")} ({taxRate}%)</span>
             <span className="text-foreground font-medium">S/{tax.toFixed(2)}</span>
           </div>
         </div>
@@ -468,7 +471,7 @@ export function CartSidebar() {
               onChange={(e) => setNoteDialogValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveNote()}
               placeholder={t("cart.itemNotePlaceholder")}
-              className="h-10 rounded-xl bg-background/60 border-border text-sm"
+              className="h-10 rounded-sm bg-background/60 border-border text-sm"
             />
           </div>
 

@@ -99,6 +99,15 @@ async function seed() {
       { number: 5, capacity: 8, zone: 'Privado' },
     ]);
 
+    // 6. Seed Business Config
+    console.log('Seeding Business Config...');
+    await db.insert(schema.businessConfig).values({
+      companyName: 'POS Pizza',
+      taxRateDefault: 18,
+      currency: 'PEN',
+      timezone: 'America/Lima',
+    });
+
     console.log('✅ Seeding completed successfully!');
     process.exit(0);
   } catch (error) {

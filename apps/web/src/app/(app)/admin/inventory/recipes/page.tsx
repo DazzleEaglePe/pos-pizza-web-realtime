@@ -48,7 +48,7 @@ export default function RecipesPage() {
       cat.products.map((p) => ({
         id: p.id,
         name: p.name,
-        variants: Array.isArray((p as any).variants) ? (p as any).variants : [],
+        variants: Array.isArray(p.variants) ? p.variants : [],
       }))
     );
     setProducts(allProducts);

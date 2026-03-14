@@ -14,6 +14,7 @@ import { PaymentsService } from '../payments/payments.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
 import { TrackingService } from '../tracking/tracking.service';
 import { InventoryService } from '../inventory/inventory.service';
+import { BusinessConfigService } from '../config/config.service';
 
 @Injectable()
 export class OrdersService {
@@ -23,6 +24,7 @@ export class OrdersService {
     private readonly cashRegister: CashRegisterService,
     private readonly tracking: TrackingService,
     private readonly inventory: InventoryService,
+    private readonly businessConfig: BusinessConfigService,
   ) {}
   async create(createOrderDto: any) {
     const {
@@ -160,7 +162,7 @@ export class OrdersService {
       };
     });
 
-    const taxRate = 0.18;
+    const taxRate = await this.businessConfig.getTaxRateDecimal();
     const taxAmount = subtotal * taxRate;
     const total = subtotal + taxAmount;
 

@@ -390,7 +390,7 @@ export function MenuDisplay({
 
               return (
                 <motion.div key={product.id} variants={gridItem}>
-                  <Card size="sm" className="overflow-hidden py-0 gap-0 h-full flex flex-col">
+                  <Card size="sm" className="overflow-hidden py-0 gap-0 h-full flex flex-col ring-2 ring-primary/20">
                     <div className="relative aspect-4/3 overflow-hidden bg-muted/30">
                       <img
                         src={
@@ -401,12 +401,9 @@ export function MenuDisplay({
                         className="h-full w-full object-cover"
                       />
                       {product.hasVariants && v.length > 0 && (
-                        <Badge
-                          variant="outline"
-                          className="absolute top-2.5 right-2.5 bg-background/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wide"
-                        >
+                        <div className="absolute top-2.5 right-2.5 bg-background/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 border border-border/50">
                           {v.length} opc.
-                        </Badge>
+                        </div>
                       )}
                     </div>
 
@@ -415,20 +412,22 @@ export function MenuDisplay({
                         {product.name}
                       </h3>
                       {product.description && (
-                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1">
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                           {product.description}
                         </p>
                       )}
 
                       <div className="flex items-center justify-between mt-auto pt-2">
-                        <span className="text-base font-bold tracking-tight text-card-foreground">
+                        <div className="flex flex-col">
                           {minPrice !== null && (
-                            <span className="text-[10px] font-medium text-muted-foreground mr-0.5">
-                              desde{" "}
+                            <span className="text-[10px] font-medium text-muted-foreground/60">
+                              desde
                             </span>
                           )}
-                          S/{price.toFixed(2)}
-                        </span>
+                          <span className="text-base font-bold tracking-tight text-primary">
+                            S/{price.toFixed(2)}
+                          </span>
+                        </div>
 
                         {inCart ? (
                           <div className="flex items-center gap-0">

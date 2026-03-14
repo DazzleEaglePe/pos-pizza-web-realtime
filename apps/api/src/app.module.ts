@@ -12,10 +12,12 @@ import { TablesModule } from './tables/tables.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { BusinessConfigModule } from './config/config.module';
 
 @Module({
   imports: [
     DatabaseModule,
+    BusinessConfigModule,
     AuthModule,
     CatalogModule,
     OrdersModule,
