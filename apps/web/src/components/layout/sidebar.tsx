@@ -5,7 +5,7 @@ import {
   LayoutGrid,
   History,
   ReceiptText,
-  Settings,
+  Shield,
   HelpCircle,
   LogOut,
   Pizza,
@@ -106,8 +106,13 @@ export function Sidebar({
     { name: t("sidebar.bills"), href: "/pos/bills", icon: ReceiptText },
   ];
 
+  const isAdmin = (user?.role || "").toUpperCase() === "ADMIN";
+
+  const managementNav: NavItem[] = isAdmin
+    ? [{ name: t("sidebar.management"), href: "/admin", icon: Shield }]
+    : [];
+
   const utilNav: NavItem[] = [
-    { name: t("sidebar.settings"), href: "/admin/settings", icon: Settings },
     { name: t("sidebar.helpCenter"), href: "/help", icon: HelpCircle },
   ];
 
@@ -175,13 +180,46 @@ export function Sidebar({
           <NavLink
             key={item.href}
             item={item}
-            isActive={pathname === item.href}
+            isActive={pathname === item.href || (item.href === "/pos" && pathname === "/")}
             isCollapsed={isCollapsed}
             onNavigate={onNavigate}
           />
         ))}
 
+        {managementNav.length > 0 && (
+          <>
+            <div
+              className={cn(
+                "my-3 border-t border-sidebar-border",
+                isCollapsed ? "mx-1" : "mx-1",
+              )}
+            />
+
+            {!isCollapsed && (
+              <p className="px-3 mb-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                {t("sidebar.managementSection")}
+              </p>
+            )}
+
+            {managementNav.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+                isActive={pathname.startsWith(item.href)}
+                isCollapsed={isCollapsed}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </>
+        )}
+
         <div className={cn("my-3 border-t border-sidebar-border", isCollapsed ? "mx-1" : "mx-1")} />
+
+        {!isCollapsed && (
+          <p className="px-3 mb-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+            {t("sidebar.supportSection")}
+          </p>
+        )}
 
         {utilNav.map((item) => (
           <NavLink

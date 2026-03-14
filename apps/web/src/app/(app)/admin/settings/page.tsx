@@ -5,6 +5,7 @@ import { Settings, Save } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { useConfig } from "@/hooks/useConfig";
+import Link from "next/link";
 
 type BusinessConfig = {
   id: string;
@@ -49,6 +50,7 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [form, setForm] = useState<BusinessConfigForm>({
     id: "",
@@ -93,8 +95,42 @@ export default function AdminSettingsPage() {
   }, [setTaxRate]);
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem("pos_user");
+      const parsed = raw
+        ? (JSON.parse(raw) as { role?: string })
+        : null;
+      const role = (parsed?.role || "").toUpperCase();
+      setIsAdmin(role === "ADMIN");
+      if (role !== "ADMIN") {
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setLoading(false);
+      return;
+    }
     fetchConfig();
   }, [fetchConfig]);
+
+  if (!loading && !isAdmin) {
+    return (
+      <div className="p-6">
+        <div className="max-w-xl rounded-2xl border border-border bg-card p-6 space-y-3">
+          <h1 className="text-lg font-bold text-foreground">Acceso restringido</h1>
+          <p className="text-sm text-muted-foreground">
+            La configuración del negocio solo está disponible para administradores.
+          </p>
+          <Link
+            href="/pos"
+            className="inline-flex items-center px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold"
+          >
+            Volver a Operación
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const onSave = async () => {
     setSaving(true);

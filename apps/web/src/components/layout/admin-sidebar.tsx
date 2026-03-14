@@ -13,28 +13,60 @@ import {
   BookOpen,
   ArrowDownUp,
   PackagePlus,
+  ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
-const navigation = [
-  { section: "GENERAL" },
-  { name: "Overview", href: "/admin", icon: LayoutDashboard },
-  { section: "CATÁLOGO" },
-  { name: "Menú", href: "/admin/menu", icon: UtensilsCrossed },
-  { name: "Combos & Promos", href: "/admin/promotions", icon: Gift },
-  { section: "INVENTARIO" },
-  { name: "Insumos", href: "/admin/inventory", icon: Package },
-  { name: "Recetas", href: "/admin/inventory/recipes", icon: BookOpen },
-  { name: "Reposición", href: "/admin/inventory/restock", icon: PackagePlus },
-  { name: "Movimientos", href: "/admin/inventory/movements", icon: ArrowDownUp },
-  { name: "Alertas Stock", href: "/admin/inventory/alerts", icon: AlertTriangle },
-  { section: "CONFIGURACIÓN" },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-];
+type NavigationItem =
+  | { section: string }
+  | {
+      name: string;
+      href: string;
+      icon: typeof LayoutDashboard;
+    };
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("pos_user");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { name?: string; email?: string; role?: string };
+      setUser({
+        name: parsed?.name || parsed?.email || "Admin",
+        role: parsed?.role ?? "",
+      });
+    } catch {}
+  }, []);
+
+  const isAdmin = (user?.role || "").toUpperCase() === "ADMIN";
+
+  const navigation = useMemo<NavigationItem[]>(() => {
+    const items: NavigationItem[] = [
+      { section: "GESTIÓN" },
+      { name: "Dashboard Admin", href: "/admin", icon: LayoutDashboard },
+      { section: "CATÁLOGO" },
+      { name: "Menú", href: "/admin/menu", icon: UtensilsCrossed },
+      { name: "Combos & Promos", href: "/admin/promotions", icon: Gift },
+      { section: "STOCK" },
+      { name: "Insumos", href: "/admin/inventory", icon: Package },
+      { name: "Recetas", href: "/admin/inventory/recipes", icon: BookOpen },
+      { name: "Reposición", href: "/admin/inventory/restock", icon: PackagePlus },
+      { name: "Movimientos", href: "/admin/inventory/movements", icon: ArrowDownUp },
+      { name: "Alertas Stock", href: "/admin/inventory/alerts", icon: AlertTriangle },
+    ];
+
+    if (isAdmin) {
+      items.push({ section: "CONFIGURACIÓN" });
+      items.push({ name: "Negocio", href: "/admin/settings", icon: Settings });
+    }
+
+    return items;
+  }, [isAdmin]);
 
   return (
     <div className="flex flex-col w-64 h-screen bg-card border-r border-border p-6 shadow-sm z-10 transition-all duration-300">
@@ -42,13 +74,21 @@ export function AdminSidebar() {
       {/* User Profile */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center overflow-hidden">
-           <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Guy&backgroundColor=e6f6f4" alt="Avatar" className="w-full h-full object-cover" />
+          <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user?.name ?? "Admin")}&backgroundColor=e6f6f4`} alt="Avatar" className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col">
-           <span className="font-bold text-sm tracking-tight text-foreground">Guy Hawkins</span>
-           <span className="text-xs text-muted-foreground">Admin</span>
+          <span className="font-bold text-sm tracking-tight text-foreground">{user?.name ?? "Admin"}</span>
+          <span className="text-xs text-muted-foreground">{(user?.role || "ADMIN").toUpperCase()}</span>
         </div>
       </div>
+
+      <Link
+        href="/pos"
+        className="group flex items-center gap-2.5 px-3 py-2.5 mb-5 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200"
+      >
+        <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+        <span className="text-[13px] font-semibold">Volver a Operación</span>
+      </Link>
 
       {/* Global Search */}
       <div className="relative w-full mb-8">
@@ -64,15 +104,15 @@ export function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1">
         {navigation.map((item, index) => {
-          if (item.section) {
+          if ("section" in item) {
              return <div key={`section-${index}`} className="text-[10px] font-bold tracking-widest text-muted-foreground mb-3 mt-6 px-3 uppercase">{item.section}</div>
           }
-          const isActive = pathname === item.href || (pathname.startsWith(item.href!) && item.href !== "/admin");
+          const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/admin");
           
           return (
             <Link
               key={item.name}
-              href={item.href!}
+              href={item.href}
               className={cn(
                 "group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200",
                 isActive
@@ -97,7 +137,7 @@ export function AdminSidebar() {
       {/* Footer System Brand */}
       <div className="pt-6 mt-auto flex items-center justify-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
         <Pizza className="w-4 h-4 text-primary" />
-        <span className="font-bold text-sm tracking-widest text-foreground uppercase text-center w-full">POS PIZZA</span>
+        <span className="font-bold text-sm tracking-widest text-foreground uppercase text-center w-full">ADMIN PIZZA</span>
       </div>
     </div>
   );
