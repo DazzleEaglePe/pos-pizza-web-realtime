@@ -1,61 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { UtensilsCrossed, Plus, Pencil, Trash2 } from "lucide-react";
+import { UtensilsCrossed } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
-
-type Variant = {
-  id: string;
-  productId: string;
-  name: string;
-  price: number;
-  displayOrder: number;
-  isActive: boolean;
-};
-
-type Product = {
-  id: string;
-  categoryId: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  basePrice: number;
-  imageUrl: string | null;
-  hasVariants: boolean;
-  isActive: boolean;
-  displayOrder: number;
-  variants: Variant[];
-};
-
-type Category = {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string | null;
-  description: string | null;
-  displayOrder: number;
-  isActive: boolean;
-  products: Product[];
-};
-
-type CategoryForm = {
-  id: string | null;
-  name: string;
-  icon: string;
-  description: string;
-  displayOrder: number;
-};
-
-type ProductForm = {
-  id: string | null;
-  categoryId: string;
-  name: string;
-  description: string;
-  basePrice: number;
-  imageUrl: string;
-  displayOrder: number;
-};
+import { CategoriesSection } from "./categories-section";
+import { ProductsSection } from "./products-section";
+import { Category, CategoryForm, ProductForm, Variant, VariantDraft } from "./types";
 
 export default function AdminMenuPage() {
   const [loading, setLoading] = useState(true);
@@ -81,9 +32,7 @@ export default function AdminMenuPage() {
     displayOrder: 0,
   });
 
-  const [variantDraftByProduct, setVariantDraftByProduct] = useState<
-    Record<string, { name: string; price: number; displayOrder: number }>
-  >({});
+  const [variantDraftByProduct, setVariantDraftByProduct] = useState<Record<string, VariantDraft>>({});
 
   const token = getAccessToken();
 
@@ -299,295 +248,29 @@ export default function AdminMenuPage() {
       </div>
 
       {tab === "categories" && (
-        <>
-          <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-            <h2 className="font-semibold text-foreground">{categoryForm.id ? "Editar categoría" : "Nueva categoría"}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <input
-                value={categoryForm.name}
-                onChange={(e) => setCategoryForm((s) => ({ ...s, name: e.target.value }))}
-                placeholder="Nombre"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
-              />
-              <input
-                value={categoryForm.icon}
-                onChange={(e) => setCategoryForm((s) => ({ ...s, icon: e.target.value }))}
-                placeholder="Icon"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
-              />
-              <input
-                type="number"
-                value={categoryForm.displayOrder}
-                onChange={(e) =>
-                  setCategoryForm((s) => ({ ...s, displayOrder: Number(e.target.value || 0) }))
-                }
-                placeholder="Orden"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
-              />
-              <button
-                type="button"
-                onClick={submitCategory}
-                className="px-4 py-2.5 bg-primary text-primary-foreground rounded-sm text-sm font-semibold"
-              >
-                <span className="inline-flex items-center gap-1">
-                  <Plus className="w-4 h-4" />
-                  {categoryForm.id ? "Actualizar" : "Crear"}
-                </span>
-              </button>
-              <input
-                value={categoryForm.description}
-                onChange={(e) => setCategoryForm((s) => ({ ...s, description: e.target.value }))}
-                placeholder="Descripción"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm md:col-span-4"
-              />
-            </div>
-          </div>
-
-          <div className="bg-card rounded-2xl border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Categoría</th>
-                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Slug</th>
-                    <th className="text-right px-4 py-3 font-semibold text-muted-foreground">Orden</th>
-                    <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Estado</th>
-                    <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {catalog.map((category) => (
-                    <tr key={category.id} className="border-b border-border/50 hover:bg-muted/20">
-                      <td className="px-4 py-3 font-medium text-foreground">{category.name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{category.slug}</td>
-                      <td className="px-4 py-3 text-right text-muted-foreground">{category.displayOrder}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${category.isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                          {category.isActive ? "Activo" : "Inactivo"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() =>
-                              setCategoryForm({
-                                id: category.id,
-                                name: category.name,
-                                icon: category.icon ?? "",
-                                description: category.description ?? "",
-                                displayOrder: category.displayOrder,
-                              })
-                            }
-                            className="p-1.5 rounded-sm hover:bg-accent"
-                            title="Editar"
-                          >
-                            <Pencil className="w-4 h-4 text-muted-foreground" />
-                          </button>
-                          <button
-                            onClick={() => disableCategory(category.id)}
-                            className="p-1.5 rounded-sm hover:bg-destructive/10"
-                            title="Desactivar"
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </>
+        <CategoriesSection
+          catalog={catalog}
+          categoryForm={categoryForm}
+          setCategoryForm={setCategoryForm}
+          submitCategory={submitCategory}
+          disableCategory={disableCategory}
+        />
       )}
 
       {tab === "products" && (
-        <>
-          <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
-            <h2 className="font-semibold text-foreground">{productForm.id ? "Editar producto" : "Nuevo producto"}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <select
-                value={productForm.categoryId}
-                onChange={(e) => setProductForm((s) => ({ ...s, categoryId: e.target.value }))}
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
-              >
-                {catalog.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                value={productForm.name}
-                onChange={(e) => setProductForm((s) => ({ ...s, name: e.target.value }))}
-                placeholder="Nombre"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
-              />
-              <input
-                type="number"
-                step="0.01"
-                value={productForm.basePrice}
-                onChange={(e) =>
-                  setProductForm((s) => ({ ...s, basePrice: Number(e.target.value || 0) }))
-                }
-                placeholder="Precio base"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
-              />
-              <button
-                type="button"
-                onClick={submitProduct}
-                className="px-4 py-2.5 bg-primary text-primary-foreground rounded-sm text-sm font-semibold"
-              >
-                <span className="inline-flex items-center gap-1">
-                  <Plus className="w-4 h-4" />
-                  {productForm.id ? "Actualizar" : "Crear"}
-                </span>
-              </button>
-              <input
-                value={productForm.description}
-                onChange={(e) => setProductForm((s) => ({ ...s, description: e.target.value }))}
-                placeholder="Descripción"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm md:col-span-2"
-              />
-              <input
-                value={productForm.imageUrl}
-                onChange={(e) => setProductForm((s) => ({ ...s, imageUrl: e.target.value }))}
-                placeholder="URL de imagen"
-                className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm md:col-span-2"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {allProducts.map((product) => (
-              <div key={product.id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground">{product.name}</h3>
-                    <p className="text-xs text-muted-foreground">{product.slug} · S/{Number(product.basePrice).toFixed(2)}</p>
-                    {product.description && (
-                      <p className="text-xs text-muted-foreground mt-1">{product.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() =>
-                        setProductForm({
-                          id: product.id,
-                          categoryId: product.categoryId,
-                          name: product.name,
-                          description: product.description ?? "",
-                          basePrice: Number(product.basePrice),
-                          imageUrl: product.imageUrl ?? "",
-                          displayOrder: product.displayOrder,
-                        })
-                      }
-                      className="p-1.5 rounded-sm hover:bg-accent"
-                      title="Editar"
-                    >
-                      <Pencil className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                    <button
-                      onClick={() => disableProduct(product.id)}
-                      className="p-1.5 rounded-sm hover:bg-destructive/10"
-                      title="Desactivar"
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Variantes</p>
-                  {product.variants.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">Sin variantes.</p>
-                  ) : (
-                    <div className="space-y-1">
-                      {product.variants.map((variant) => (
-                        <div key={variant.id} className="flex items-center justify-between px-3 py-2 rounded-sm border border-border/60 bg-background/50">
-                          <span className="text-sm text-foreground">
-                            {variant.name} · S/{Number(variant.price).toFixed(2)}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => editVariant(variant)}
-                              className="p-1 rounded-sm hover:bg-accent"
-                            >
-                              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                            </button>
-                            <button
-                              onClick={() => disableVariant(variant.id)}
-                              className="p-1 rounded-sm hover:bg-destructive/10"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                    <input
-                      value={variantDraftByProduct[product.id]?.name ?? ""}
-                      onChange={(e) =>
-                        setVariantDraftByProduct((prev) => ({
-                          ...prev,
-                          [product.id]: {
-                            name: e.target.value,
-                            price: prev[product.id]?.price ?? 0,
-                            displayOrder: prev[product.id]?.displayOrder ?? 0,
-                          },
-                        }))
-                      }
-                      placeholder="Nombre variante"
-                      className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
-                    />
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={variantDraftByProduct[product.id]?.price ?? 0}
-                      onChange={(e) =>
-                        setVariantDraftByProduct((prev) => ({
-                          ...prev,
-                          [product.id]: {
-                            name: prev[product.id]?.name ?? "",
-                            price: Number(e.target.value || 0),
-                            displayOrder: prev[product.id]?.displayOrder ?? 0,
-                          },
-                        }))
-                      }
-                      placeholder="Precio"
-                      className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
-                    />
-                    <input
-                      type="number"
-                      value={variantDraftByProduct[product.id]?.displayOrder ?? 0}
-                      onChange={(e) =>
-                        setVariantDraftByProduct((prev) => ({
-                          ...prev,
-                          [product.id]: {
-                            name: prev[product.id]?.name ?? "",
-                            price: prev[product.id]?.price ?? 0,
-                            displayOrder: Number(e.target.value || 0),
-                          },
-                        }))
-                      }
-                      placeholder="Orden"
-                      className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
-                    />
-                    <button
-                      onClick={() => createVariant(product.id)}
-                      className="px-3 py-2 rounded-sm bg-primary text-primary-foreground text-sm font-semibold"
-                    >
-                      Agregar variante
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
+        <ProductsSection
+          catalog={catalog}
+          allProducts={allProducts}
+          productForm={productForm}
+          setProductForm={setProductForm}
+          submitProduct={submitProduct}
+          disableProduct={disableProduct}
+          variantDraftByProduct={variantDraftByProduct}
+          setVariantDraftByProduct={setVariantDraftByProduct}
+          createVariant={createVariant}
+          editVariant={editVariant}
+          disableVariant={disableVariant}
+        />
       )}
     </div>
   );
