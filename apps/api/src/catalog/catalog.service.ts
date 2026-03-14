@@ -8,7 +8,7 @@ import {
   modifiers,
   productModifiers,
 } from '../drizzle/schema/catalog.schema';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, and } from 'drizzle-orm';
 
 @Injectable()
 export class CatalogService {
@@ -122,10 +122,20 @@ export class CatalogService {
   }
 
   async findAllAdmin() {
-    const [allCategories, allProducts, allVariants] = await Promise.all([
+    const [
+      allCategories,
+      allProducts,
+      allVariants,
+      allModifierGroups,
+      allModifierOptions,
+      allProductModifiers,
+    ] = await Promise.all([
       db.select().from(categories).orderBy(asc(categories.displayOrder)),
       db.select().from(products).orderBy(asc(products.displayOrder)),
       db.select().from(productVariants).orderBy(asc(productVariants.displayOrder)),
+      db.select().from(modifierGroups).orderBy(asc(modifierGroups.displayOrder)),
+      db.select().from(modifiers).orderBy(asc(modifiers.displayOrder)),
+      db.select().from(productModifiers),
     ]);
 
     return allCategories.map((category) => ({
@@ -135,7 +145,34 @@ export class CatalogService {
         .map((p) => ({
           ...p,
           variants: allVariants.filter((v) => v.productId === p.id),
+          modifierGroups: allProductModifiers
+            .filter((pm) => pm.productId === p.id)
+            .map((pm) => {
+              const group = allModifierGroups.find(
+                (g) => g.id === pm.modifierGroupId,
+              );
+              if (!group) return null;
+              return {
+                ...group,
+                modifiers: allModifierOptions.filter(
+                  (m) => m.groupId === group.id,
+                ),
+              };
+            })
+            .filter((g): g is NonNullable<typeof g> => g !== null),
         })),
+    }));
+  }
+
+  async findModifierGroupsAdmin() {
+    const [allGroups, allModifiers] = await Promise.all([
+      db.select().from(modifierGroups).orderBy(asc(modifierGroups.displayOrder)),
+      db.select().from(modifiers).orderBy(asc(modifiers.displayOrder)),
+    ]);
+
+    return allGroups.map((group) => ({
+      ...group,
+      modifiers: allModifiers.filter((m) => m.groupId === group.id),
     }));
   }
 
@@ -362,5 +399,168 @@ export class CatalogService {
       .returning();
 
     return updated;
+  }
+
+  async createModifierGroup(body: {
+    name: string;
+    description?: string | null;
+    minSelections?: number;
+    maxSelections?: number;
+    displayOrder?: number;
+    isActive?: boolean;
+  }) {
+    const [created] = await db
+      .insert(modifierGroups)
+      .values({
+        name: body.name,
+        description: body.description ?? null,
+        minSelections: body.minSelections ?? 0,
+        maxSelections: body.maxSelections ?? 99,
+        displayOrder: body.displayOrder ?? 0,
+        isActive: body.isActive ?? true,
+      })
+      .returning();
+
+    return created;
+  }
+
+  async updateModifierGroup(
+    id: string,
+    body: {
+      name?: string;
+      description?: string | null;
+      minSelections?: number;
+      maxSelections?: number;
+      displayOrder?: number;
+      isActive?: boolean;
+    },
+  ) {
+    const current = await db.query.modifierGroups.findFirst({
+      where: eq(modifierGroups.id, id),
+    });
+    if (!current) return null;
+
+    const [updated] = await db
+      .update(modifierGroups)
+      .set({
+        name: body.name ?? current.name,
+        description: body.description ?? current.description,
+        minSelections: body.minSelections ?? current.minSelections,
+        maxSelections: body.maxSelections ?? current.maxSelections,
+        displayOrder: body.displayOrder ?? current.displayOrder,
+        isActive: body.isActive ?? current.isActive,
+      })
+      .where(eq(modifierGroups.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async deleteModifierGroup(id: string) {
+    const [updated] = await db
+      .update(modifierGroups)
+      .set({ isActive: false })
+      .where(eq(modifierGroups.id, id))
+      .returning();
+
+    await db
+      .update(modifiers)
+      .set({ isActive: false })
+      .where(eq(modifiers.groupId, id));
+
+    return updated;
+  }
+
+  async createModifier(
+    groupId: string,
+    body: {
+      name: string;
+      price: number;
+      displayOrder?: number;
+      isActive?: boolean;
+    },
+  ) {
+    const [created] = await db
+      .insert(modifiers)
+      .values({
+        groupId,
+        name: body.name,
+        price: Number(body.price || 0),
+        displayOrder: body.displayOrder ?? 0,
+        isActive: body.isActive ?? true,
+      })
+      .returning();
+
+    return created;
+  }
+
+  async updateModifier(
+    id: string,
+    body: {
+      name?: string;
+      price?: number;
+      displayOrder?: number;
+      isActive?: boolean;
+    },
+  ) {
+    const current = await db.query.modifiers.findFirst({
+      where: eq(modifiers.id, id),
+    });
+    if (!current) return null;
+
+    const [updated] = await db
+      .update(modifiers)
+      .set({
+        name: body.name ?? current.name,
+        price: body.price !== undefined ? Number(body.price) : current.price,
+        displayOrder: body.displayOrder ?? current.displayOrder,
+        isActive: body.isActive ?? current.isActive,
+      })
+      .where(eq(modifiers.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async deleteModifier(id: string) {
+    const [updated] = await db
+      .update(modifiers)
+      .set({ isActive: false })
+      .where(eq(modifiers.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async assignModifierGroupToProduct(productId: string, modifierGroupId: string) {
+    const existing = await db.query.productModifiers.findFirst({
+      where: and(
+        eq(productModifiers.productId, productId),
+        eq(productModifiers.modifierGroupId, modifierGroupId),
+      ),
+    });
+
+    if (existing) return existing;
+
+    const [created] = await db
+      .insert(productModifiers)
+      .values({ productId, modifierGroupId })
+      .returning();
+
+    return created;
+  }
+
+  async removeModifierGroupFromProduct(productId: string, modifierGroupId: string) {
+    const [removed] = await db
+      .delete(productModifiers)
+      .where(
+        and(
+          eq(productModifiers.productId, productId),
+          eq(productModifiers.modifierGroupId, modifierGroupId),
+        ),
+      )
+      .returning();
+
+    return removed ?? null;
   }
 }

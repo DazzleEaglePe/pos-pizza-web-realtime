@@ -35,6 +35,13 @@ export class CatalogController {
     return await this.catalogService.findAllAdmin();
   }
 
+  @Get('modifier-groups')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async findModifierGroupsAdmin() {
+    return await this.catalogService.findModifierGroupsAdmin();
+  }
+
   @Post('categories')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -158,5 +165,112 @@ export class CatalogController {
   @Roles('ADMIN')
   async deleteVariant(@Param('id') id: string) {
     return this.catalogService.deleteVariant(id);
+  }
+
+  @Post('modifier-groups')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async createModifierGroup(
+    @Body()
+    body: {
+      name: string;
+      description?: string | null;
+      minSelections?: number;
+      maxSelections?: number;
+      displayOrder?: number;
+      isActive?: boolean;
+    },
+  ) {
+    return await this.catalogService.createModifierGroup(body);
+  }
+
+  @Patch('modifier-groups/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async updateModifierGroup(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      name?: string;
+      description?: string | null;
+      minSelections?: number;
+      maxSelections?: number;
+      displayOrder?: number;
+      isActive?: boolean;
+    },
+  ) {
+    return await this.catalogService.updateModifierGroup(id, body);
+  }
+
+  @Delete('modifier-groups/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async deleteModifierGroup(@Param('id') id: string) {
+    return await this.catalogService.deleteModifierGroup(id);
+  }
+
+  @Post('modifier-groups/:id/modifiers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async createModifier(
+    @Param('id') groupId: string,
+    @Body()
+    body: {
+      name: string;
+      price: number;
+      displayOrder?: number;
+      isActive?: boolean;
+    },
+  ) {
+    return await this.catalogService.createModifier(groupId, body);
+  }
+
+  @Patch('modifiers/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async updateModifier(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      name?: string;
+      price?: number;
+      displayOrder?: number;
+      isActive?: boolean;
+    },
+  ) {
+    return await this.catalogService.updateModifier(id, body);
+  }
+
+  @Delete('modifiers/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async deleteModifier(@Param('id') id: string) {
+    return await this.catalogService.deleteModifier(id);
+  }
+
+  @Post('products/:id/modifier-groups')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async assignModifierGroupToProduct(
+    @Param('id') productId: string,
+    @Body() body: { modifierGroupId: string },
+  ) {
+    return await this.catalogService.assignModifierGroupToProduct(
+      productId,
+      body.modifierGroupId,
+    );
+  }
+
+  @Delete('products/:id/modifier-groups/:groupId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async removeModifierGroupFromProduct(
+    @Param('id') productId: string,
+    @Param('groupId') modifierGroupId: string,
+  ) {
+    return await this.catalogService.removeModifierGroupFromProduct(
+      productId,
+      modifierGroupId,
+    );
   }
 }
