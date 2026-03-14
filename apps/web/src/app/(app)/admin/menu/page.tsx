@@ -6,13 +6,24 @@ import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { CategoriesSection } from "./categories-section";
 import { ProductsSection } from "./products-section";
-import { Category, CategoryForm, ProductForm, Variant, VariantDraft } from "./types";
+import {
+  Category,
+  CategoryForm,
+  Modifier,
+  ModifierDraft,
+  ModifierGroup,
+  ModifierGroupForm,
+  ProductForm,
+  Variant,
+  VariantDraft,
+} from "./types";
 
 export default function AdminMenuPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"categories" | "products">("categories");
   const [catalog, setCatalog] = useState<Category[]>([]);
+  const [modifierGroups, setModifierGroups] = useState<ModifierGroup[]>([]);
 
   const [categoryForm, setCategoryForm] = useState<CategoryForm>({
     id: null,
@@ -33,15 +44,30 @@ export default function AdminMenuPage() {
   });
 
   const [variantDraftByProduct, setVariantDraftByProduct] = useState<Record<string, VariantDraft>>({});
+  const [modifierDraftByGroup, setModifierDraftByGroup] = useState<Record<string, ModifierDraft>>({});
+  const [assignGroupByProduct, setAssignGroupByProduct] = useState<Record<string, string>>({});
+
+  const [modifierGroupForm, setModifierGroupForm] = useState<ModifierGroupForm>({
+    id: null,
+    name: "",
+    description: "",
+    minSelections: 0,
+    maxSelections: 99,
+    displayOrder: 0,
+  });
 
   const token = getAccessToken();
 
   const fetchCatalog = useCallback(async () => {
     try {
-      const data = await apiFetch<Category[]>("/catalog/admin", { token });
-      setCatalog(data);
-      if (!productForm.categoryId && data.length > 0) {
-        setProductForm((prev) => ({ ...prev, categoryId: data[0].id }));
+      const [catalogData, groupsData] = await Promise.all([
+        apiFetch<Category[]>("/catalog/admin", { token }),
+        apiFetch<ModifierGroup[]>("/catalog/modifier-groups", { token }),
+      ]);
+      setCatalog(catalogData);
+      setModifierGroups(groupsData);
+      if (!productForm.categoryId && catalogData.length > 0) {
+        setProductForm((prev) => ({ ...prev, categoryId: catalogData[0].id }));
       }
       setError(null);
     } catch (err) {
@@ -73,6 +99,17 @@ export default function AdminMenuPage() {
       description: "",
       basePrice: 0,
       imageUrl: "",
+      displayOrder: 0,
+    });
+  };
+
+  const resetModifierGroupForm = () => {
+    setModifierGroupForm({
+      id: null,
+      name: "",
+      description: "",
+      minSelections: 0,
+      maxSelections: 99,
       displayOrder: 0,
     });
   };
@@ -200,6 +237,119 @@ export default function AdminMenuPage() {
     await fetchCatalog();
   };
 
+  const submitModifierGroup = async () => {
+    try {
+      if (!modifierGroupForm.name.trim()) return;
+      const payload = {
+        name: modifierGroupForm.name.trim(),
+        description: modifierGroupForm.description.trim() || null,
+        minSelections: Number(modifierGroupForm.minSelections || 0),
+        maxSelections: Number(modifierGroupForm.maxSelections || 99),
+        displayOrder: Number(modifierGroupForm.displayOrder || 0),
+      };
+
+      if (modifierGroupForm.id) {
+        await apiFetch(`/catalog/modifier-groups/${modifierGroupForm.id}`, {
+          method: "PATCH",
+          token,
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await apiFetch("/catalog/modifier-groups", {
+          method: "POST",
+          token,
+          body: JSON.stringify(payload),
+        });
+      }
+
+      resetModifierGroupForm();
+      await fetchCatalog();
+    } catch (err) {
+      console.error("Failed to save modifier group", err);
+      setError("No se pudo guardar el grupo de modificadores.");
+    }
+  };
+
+  const disableModifierGroup = async (groupId: string) => {
+    if (!confirm("¿Desactivar este grupo de modificadores?")) return;
+    await apiFetch(`/catalog/modifier-groups/${groupId}`, {
+      method: "DELETE",
+      token,
+    });
+    await fetchCatalog();
+  };
+
+  const createModifier = async (groupId: string) => {
+    const draft = modifierDraftByGroup[groupId] || {
+      name: "",
+      price: 0,
+      displayOrder: 0,
+    };
+    if (!draft.name.trim()) return;
+
+    await apiFetch(`/catalog/modifier-groups/${groupId}/modifiers`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({
+        name: draft.name.trim(),
+        price: Number(draft.price || 0),
+        displayOrder: Number(draft.displayOrder || 0),
+      }),
+    });
+
+    setModifierDraftByGroup((prev) => ({
+      ...prev,
+      [groupId]: { name: "", price: 0, displayOrder: 0 },
+    }));
+    await fetchCatalog();
+  };
+
+  const editModifier = async (modifier: Modifier) => {
+    const name = prompt("Nombre del modificador", modifier.name);
+    if (!name) return;
+    const priceRaw = prompt("Precio", String(modifier.price));
+    if (!priceRaw) return;
+
+    await apiFetch(`/catalog/modifiers/${modifier.id}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify({ name: name.trim(), price: Number(priceRaw) }),
+    });
+    await fetchCatalog();
+  };
+
+  const disableModifier = async (modifierId: string) => {
+    if (!confirm("¿Desactivar este modificador?")) return;
+    await apiFetch(`/catalog/modifiers/${modifierId}`, { method: "DELETE", token });
+    await fetchCatalog();
+  };
+
+  const assignModifierGroup = async (productId: string) => {
+    const modifierGroupId = assignGroupByProduct[productId];
+    if (!modifierGroupId) return;
+
+    await apiFetch(`/catalog/products/${productId}/modifier-groups`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ modifierGroupId }),
+    });
+
+    setAssignGroupByProduct((prev) => ({ ...prev, [productId]: "" }));
+    await fetchCatalog();
+  };
+
+  const removeModifierGroupFromProduct = async (
+    productId: string,
+    modifierGroupId: string,
+  ) => {
+    if (!confirm("¿Quitar este grupo del producto?")) return;
+    await apiFetch(`/catalog/products/${productId}/modifier-groups/${modifierGroupId}`, {
+      method: "DELETE",
+      token,
+    });
+    await fetchCatalog();
+  };
+
   if (loading) {
     return <div className="p-6 text-muted-foreground">Cargando catálogo...</div>;
   }
@@ -270,6 +420,20 @@ export default function AdminMenuPage() {
           createVariant={createVariant}
           editVariant={editVariant}
           disableVariant={disableVariant}
+          modifierGroups={modifierGroups}
+          modifierGroupForm={modifierGroupForm}
+          setModifierGroupForm={setModifierGroupForm}
+          submitModifierGroup={submitModifierGroup}
+          disableModifierGroup={disableModifierGroup}
+          modifierDraftByGroup={modifierDraftByGroup}
+          setModifierDraftByGroup={setModifierDraftByGroup}
+          createModifier={createModifier}
+          editModifier={editModifier}
+          disableModifier={disableModifier}
+          assignGroupByProduct={assignGroupByProduct}
+          setAssignGroupByProduct={setAssignGroupByProduct}
+          assignModifierGroup={assignModifierGroup}
+          removeModifierGroupFromProduct={removeModifierGroupFromProduct}
         />
       )}
     </div>

@@ -7,6 +7,26 @@ export type Variant = {
   isActive: boolean;
 };
 
+export type Modifier = {
+  id: string;
+  groupId: string;
+  name: string;
+  price: number;
+  isActive: boolean;
+  displayOrder: number;
+};
+
+export type ModifierGroup = {
+  id: string;
+  name: string;
+  description: string | null;
+  minSelections: number;
+  maxSelections: number;
+  displayOrder: number;
+  isActive: boolean;
+  modifiers: Modifier[];
+};
+
 export type Product = {
   id: string;
   categoryId: string;
@@ -19,6 +39,7 @@ export type Product = {
   isActive: boolean;
   displayOrder: number;
   variants: Variant[];
+  modifierGroups: ModifierGroup[];
 };
 
 export type Category = {
@@ -51,6 +72,21 @@ export type ProductForm = {
 };
 
 export type VariantDraft = {
+  name: string;
+  price: number;
+  displayOrder: number;
+};
+
+export type ModifierGroupForm = {
+  id: string | null;
+  name: string;
+  description: string;
+  minSelections: number;
+  maxSelections: number;
+  displayOrder: number;
+};
+
+export type ModifierDraft = {
   name: string;
   price: number;
   displayOrder: number;
