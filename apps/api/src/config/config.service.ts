@@ -1,19 +1,66 @@
 import { Injectable } from '@nestjs/common';
 import { db } from '../drizzle/db';
 import { businessConfig } from '../drizzle/schema/config.schema';
+import { eq } from 'drizzle-orm';
+
+type UpdateBusinessConfigInput = Partial<{
+  companyName: string;
+  ruc: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  taxRateDefault: number;
+  currency: string;
+  timezone: string;
+  ticketHeader: string | null;
+  ticketFooter: string | null;
+  trackingBaseUrl: string | null;
+  trackingExpiryHours: number;
+  logoUrl: string | null;
+}>;
 
 @Injectable()
 export class BusinessConfigService {
   private cachedConfig: typeof businessConfig.$inferSelect | null = null;
 
+  private async ensureConfigRow() {
+    const existing = await db.query.businessConfig.findFirst();
+    if (existing) return existing;
+
+    const [created] = await db
+      .insert(businessConfig)
+      .values({
+        companyName: 'POS Pizza',
+        taxRateDefault: 18,
+        currency: 'PEN',
+        timezone: 'America/Lima',
+      })
+      .returning();
+
+    return created;
+  }
+
   async getConfig() {
     if (!this.cachedConfig) {
-      const row = await db.query.businessConfig.findFirst();
-      if (row) {
-        this.cachedConfig = row;
-      }
+      this.cachedConfig = await this.ensureConfigRow();
     }
     return this.cachedConfig;
+  }
+
+  async updateConfig(input: UpdateBusinessConfigInput) {
+    const current = await this.ensureConfigRow();
+
+    const [updated] = await db
+      .update(businessConfig)
+      .set({
+        ...input,
+        updatedAt: new Date(),
+      })
+      .where(eq(businessConfig.id, current.id))
+      .returning();
+
+    this.cachedConfig = updated;
+    return updated;
   }
 
   /** Returns the tax rate as a decimal (e.g. 0.18 for 18%) */

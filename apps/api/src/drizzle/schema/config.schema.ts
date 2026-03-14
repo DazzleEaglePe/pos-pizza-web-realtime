@@ -5,9 +5,18 @@ import { users } from "./auth.schema";
 export const businessConfig = pgTable("business_config", {
   id: uuid("id").defaultRandom().primaryKey(),
   companyName: text("company_name").notNull(),
+  ruc: text("ruc"),
+  address: text("address"),
+  phone: text("phone"),
+  email: text("email"),
   taxRateDefault: real("tax_rate_default").notNull().default(18),
   currency: text("currency").notNull().default("PEN"),
   timezone: text("timezone").notNull().default("America/Lima"),
+  ticketHeader: text("ticket_header"),
+  ticketFooter: text("ticket_footer"),
+  trackingBaseUrl: text("tracking_base_url"),
+  trackingExpiryHours: integer("tracking_expiry_hours").notNull().default(2),
+  logoUrl: text("logo_url"),
   settings: jsonb("settings"),
   updatedAt: timestamp("updated_at").notNull().$defaultFn(() => new Date()),
 });

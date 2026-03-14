@@ -5,6 +5,8 @@ interface ConfigState {
   taxRate: number; // percentage, e.g. 18
   loaded: boolean;
   fetchConfig: () => Promise<void>;
+  reloadConfig: () => Promise<void>;
+  setTaxRate: (taxRate: number) => void;
 }
 
 export const useConfig = create<ConfigState>((set, get) => ({
@@ -21,4 +23,11 @@ export const useConfig = create<ConfigState>((set, get) => ({
       set({ loaded: true });
     }
   },
+
+  reloadConfig: async () => {
+    set({ loaded: false });
+    await get().fetchConfig();
+  },
+
+  setTaxRate: (taxRate) => set({ taxRate }),
 }));

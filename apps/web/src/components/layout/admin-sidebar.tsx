@@ -3,17 +3,11 @@
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  ShoppingCart,
-  Users,
   Settings,
-  MessageSquare,
-  Star,
-  LogOut,
-  Moon,
-  Bell,
   Search,
   Pizza,
   Gift,
+  UtensilsCrossed,
   Package,
   AlertTriangle,
   BookOpen,
@@ -24,12 +18,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navigation = [
-  { section: "DASHBOARDS" },
+  { section: "GENERAL" },
   { name: "Overview", href: "/admin", icon: LayoutDashboard },
-  { name: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
-  { name: "Analytics", href: "/admin/analytics", icon: LayoutDashboard },
-  { name: "Customers", href: "/admin/customers", icon: Users },
   { section: "CATÁLOGO" },
+  { name: "Menú", href: "/admin/menu", icon: UtensilsCrossed },
   { name: "Combos & Promos", href: "/admin/promotions", icon: Gift },
   { section: "INVENTARIO" },
   { name: "Insumos", href: "/admin/inventory", icon: Package },
@@ -37,9 +29,7 @@ const navigation = [
   { name: "Reposición", href: "/admin/inventory/restock", icon: PackagePlus },
   { name: "Movimientos", href: "/admin/inventory/movements", icon: ArrowDownUp },
   { name: "Alertas Stock", href: "/admin/inventory/alerts", icon: AlertTriangle },
-  { section: "SETTINGS" },
-  { name: "Messages", href: "/admin/messages", icon: MessageSquare },
-  { name: "Customer Reviews", href: "/admin/reviews", icon: Star },
+  { section: "CONFIGURACIÓN" },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

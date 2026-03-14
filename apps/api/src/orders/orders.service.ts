@@ -134,15 +134,15 @@ export class OrdersService {
       actualCashRegisterId = register.id;
     }
 
-    // Recalculate totals
-    let subtotal = 0;
+    // Recalculate totals (tax-inclusive pricing model)
+    let grossTotal = 0;
     const orderItemsPayload = items.map((item: any) => {
       const itemModifiersTotal = (item.modifiers || []).reduce(
         (s: number, m: any) => s + Number(m.price || 0),
         0,
       );
       const itemSubtotal = (item.price + itemModifiersTotal) * item.quantity;
-      subtotal += itemSubtotal;
+      grossTotal += itemSubtotal;
       return {
         productId: item.promotionId ? null : (item.productId ?? null),
         promotionId: item.promotionId ?? null,
@@ -163,8 +163,9 @@ export class OrdersService {
     });
 
     const taxRate = await this.businessConfig.getTaxRateDecimal();
-    const taxAmount = subtotal * taxRate;
-    const total = subtotal + taxAmount;
+    const taxAmount = grossTotal * (taxRate / (1 + taxRate));
+    const subtotal = grossTotal - taxAmount;
+    const total = grossTotal;
 
     // Generate real ticket sequence
     const ticketNumber = await this.cashRegister.generateNextTicketNumber();

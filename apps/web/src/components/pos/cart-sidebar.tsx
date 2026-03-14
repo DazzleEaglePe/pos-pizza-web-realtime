@@ -246,7 +246,7 @@ export function CartSidebar() {
               type="button"
               onClick={tm.openTableDialog}
               className={cn(
-                "w-full px-3.5 py-2.5 rounded-xl border bg-background/60 flex items-center gap-3 transition-colors",
+                "w-full px-3.5 py-2.5 rounded-sm border bg-background/60 flex items-center gap-3 transition-colors",
                 tm.tableTouched && !tm.tableId
                   ? "border-destructive/50 bg-destructive/5"
                   : tm.selectedTable
@@ -299,7 +299,7 @@ export function CartSidebar() {
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             placeholder={t("cart.customerNamePlaceholder")}
-            className="h-10 rounded-xl bg-background/60 border-border"
+            className="h-10 rounded-sm bg-background/60 border-border"
           />
         )}
       </div>
@@ -408,7 +408,7 @@ export function CartSidebar() {
             <span className="text-foreground font-medium">{items.length}</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
-            <span>{t("cart.subtotal")}</span>
+            <span>{t("cart.baseNet")}</span>
             <span className="text-foreground font-medium">S/{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
@@ -416,7 +416,7 @@ export function CartSidebar() {
             <span className="font-medium text-primary">- S/0.00</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
-            <span>{t("cart.tax")} ({taxRate}%)</span>
+            <span>{t("cart.tax")} ({taxRate}%) {t("cart.included")}</span>
             <span className="text-foreground font-medium">S/{tax.toFixed(2)}</span>
           </div>
         </div>

@@ -97,15 +97,15 @@ export const useCart = create<CartState>((set, get) => ({
 
   getTotals: () => {
     const { items } = get();
-    const subtotal = items.reduce(
+    const total = items.reduce(
       (sum, item) =>
         sum + (item.price + (item.modifiersCost || 0)) * item.quantity,
       0,
     );
     const taxPercent = useConfig.getState().taxRate;
     const taxRate = taxPercent / 100;
-    const tax = subtotal * taxRate;
-    const total = subtotal + tax;
+    const tax = total * (taxRate / (1 + taxRate));
+    const subtotal = total - tax;
 
     return { subtotal, tax, total, taxRate: taxPercent };
   },
