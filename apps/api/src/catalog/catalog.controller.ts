@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  ParseUUIDPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -23,11 +24,6 @@ export class CatalogController {
     return await this.catalogService.findAll();
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.catalogService.findOne(id);
-  }
-
   @Get('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -40,6 +36,11 @@ export class CatalogController {
   @Roles('ADMIN')
   async findModifierGroupsAdmin() {
     return await this.catalogService.findModifierGroupsAdmin();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.catalogService.findOne(id);
   }
 
   @Post('categories')

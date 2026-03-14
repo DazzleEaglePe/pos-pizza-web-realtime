@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { UtensilsCrossed } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { CategoriesSection } from "./categories-section";
 import { ProductsSection } from "./products-section";
@@ -17,6 +17,13 @@ import {
   Variant,
   VariantDraft,
 } from "./types";
+
+function getRequestErrorMessage(err: unknown, fallback: string) {
+  if (err instanceof ApiError && err.status === 401) {
+    return "Tu sesión expiró o no es válida. Vuelve a iniciar sesión.";
+  }
+  return fallback;
+}
 
 export default function AdminMenuPage() {
   const [loading, setLoading] = useState(true);
@@ -56,10 +63,9 @@ export default function AdminMenuPage() {
     displayOrder: 0,
   });
 
-  const token = getAccessToken();
-
   const fetchCatalog = useCallback(async () => {
     try {
+      const token = getAccessToken();
       const [catalogData, groupsData] = await Promise.all([
         apiFetch<Category[]>("/catalog/admin", { token }),
         apiFetch<ModifierGroup[]>("/catalog/modifier-groups", { token }),
@@ -72,11 +78,11 @@ export default function AdminMenuPage() {
       setError(null);
     } catch (err) {
       console.error("Failed to fetch catalog admin", err);
-      setError("No se pudo cargar el catálogo.");
+      setError(getRequestErrorMessage(err, "No se pudo cargar el catálogo."));
     } finally {
       setLoading(false);
     }
-  }, [productForm.categoryId, token]);
+  }, [productForm.categoryId]);
 
   useEffect(() => {
     fetchCatalog();
@@ -116,6 +122,7 @@ export default function AdminMenuPage() {
 
   const submitCategory = async () => {
     try {
+      const token = getAccessToken();
       if (!categoryForm.name.trim()) return;
       const payload = {
         name: categoryForm.name.trim(),
@@ -142,18 +149,20 @@ export default function AdminMenuPage() {
       await fetchCatalog();
     } catch (err) {
       console.error("Failed to save category", err);
-      setError("No se pudo guardar la categoría.");
+      setError(getRequestErrorMessage(err, "No se pudo guardar la categoría."));
     }
   };
 
   const disableCategory = async (id: string) => {
     if (!confirm("¿Desactivar esta categoría?")) return;
+    const token = getAccessToken();
     await apiFetch(`/catalog/categories/${id}`, { method: "DELETE", token });
     await fetchCatalog();
   };
 
   const submitProduct = async () => {
     try {
+      const token = getAccessToken();
       if (!productForm.name.trim() || !productForm.categoryId) return;
       const payload = {
         categoryId: productForm.categoryId,
@@ -182,17 +191,19 @@ export default function AdminMenuPage() {
       await fetchCatalog();
     } catch (err) {
       console.error("Failed to save product", err);
-      setError("No se pudo guardar el producto.");
+      setError(getRequestErrorMessage(err, "No se pudo guardar el producto."));
     }
   };
 
   const disableProduct = async (id: string) => {
     if (!confirm("¿Desactivar este producto?")) return;
+    const token = getAccessToken();
     await apiFetch(`/catalog/products/${id}`, { method: "DELETE", token });
     await fetchCatalog();
   };
 
   const createVariant = async (productId: string) => {
+    const token = getAccessToken();
     const draft = variantDraftByProduct[productId] || {
       name: "",
       price: 0,
@@ -218,6 +229,7 @@ export default function AdminMenuPage() {
   };
 
   const editVariant = async (variant: Variant) => {
+    const token = getAccessToken();
     const name = prompt("Nombre de variante", variant.name);
     if (!name) return;
     const priceRaw = prompt("Precio", String(variant.price));
@@ -233,12 +245,14 @@ export default function AdminMenuPage() {
 
   const disableVariant = async (variantId: string) => {
     if (!confirm("¿Desactivar esta variante?")) return;
+    const token = getAccessToken();
     await apiFetch(`/catalog/variants/${variantId}`, { method: "DELETE", token });
     await fetchCatalog();
   };
 
   const submitModifierGroup = async () => {
     try {
+      const token = getAccessToken();
       if (!modifierGroupForm.name.trim()) return;
       const payload = {
         name: modifierGroupForm.name.trim(),
@@ -266,12 +280,13 @@ export default function AdminMenuPage() {
       await fetchCatalog();
     } catch (err) {
       console.error("Failed to save modifier group", err);
-      setError("No se pudo guardar el grupo de modificadores.");
+      setError(getRequestErrorMessage(err, "No se pudo guardar el grupo de modificadores."));
     }
   };
 
   const disableModifierGroup = async (groupId: string) => {
     if (!confirm("¿Desactivar este grupo de modificadores?")) return;
+    const token = getAccessToken();
     await apiFetch(`/catalog/modifier-groups/${groupId}`, {
       method: "DELETE",
       token,
@@ -280,6 +295,7 @@ export default function AdminMenuPage() {
   };
 
   const createModifier = async (groupId: string) => {
+    const token = getAccessToken();
     const draft = modifierDraftByGroup[groupId] || {
       name: "",
       price: 0,
@@ -305,6 +321,7 @@ export default function AdminMenuPage() {
   };
 
   const editModifier = async (modifier: Modifier) => {
+    const token = getAccessToken();
     const name = prompt("Nombre del modificador", modifier.name);
     if (!name) return;
     const priceRaw = prompt("Precio", String(modifier.price));
@@ -320,11 +337,13 @@ export default function AdminMenuPage() {
 
   const disableModifier = async (modifierId: string) => {
     if (!confirm("¿Desactivar este modificador?")) return;
+    const token = getAccessToken();
     await apiFetch(`/catalog/modifiers/${modifierId}`, { method: "DELETE", token });
     await fetchCatalog();
   };
 
   const assignModifierGroup = async (productId: string) => {
+    const token = getAccessToken();
     const modifierGroupId = assignGroupByProduct[productId];
     if (!modifierGroupId) return;
 
@@ -343,6 +362,7 @@ export default function AdminMenuPage() {
     modifierGroupId: string,
   ) => {
     if (!confirm("¿Quitar este grupo del producto?")) return;
+    const token = getAccessToken();
     await apiFetch(`/catalog/products/${productId}/modifier-groups/${modifierGroupId}`, {
       method: "DELETE",
       token,
