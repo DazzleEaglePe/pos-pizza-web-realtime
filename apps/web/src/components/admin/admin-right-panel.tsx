@@ -1,11 +1,62 @@
-import { User, MessageSquare, Briefcase, Phone, Mail, MoreHorizontal } from "lucide-react";
+import {
+   User,
+   MessageSquare,
+   Briefcase,
+   Phone,
+   Mail,
+   MoreHorizontal,
+   Bell,
+   Activity,
+   Users,
+   ChevronLeft,
+   ChevronRight,
+} from "lucide-react";
 
-export function AdminRightPanel() {
+export function AdminRightPanel({
+   collapsed,
+   onToggle,
+}: {
+   collapsed: boolean;
+   onToggle: () => void;
+}) {
+   if (collapsed) {
+      return (
+         <aside className="w-16 h-full bg-card border-l border-border z-10 hidden xl:flex flex-col items-center py-4 gap-3">
+            <button
+               onClick={onToggle}
+               className="w-9 h-9 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
+               title="Expandir panel"
+            >
+               <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div className="mt-4 flex flex-col items-center gap-2">
+               <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                  <Bell className="w-4 h-4" />
+               </div>
+               <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                  <Activity className="w-4 h-4" />
+               </div>
+               <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                  <Users className="w-4 h-4" />
+               </div>
+            </div>
+         </aside>
+      );
+   }
+
   return (
-    <aside className="w-85 h-full overflow-y-auto no-scrollbar bg-card border-l border-border flex-col pt-6 z-10 hidden xl:flex">
+      <aside className="w-85 h-full overflow-y-auto no-scrollbar bg-card border-l border-border flex-col pt-6 z-10 hidden xl:flex relative">
+          <button
+             onClick={onToggle}
+             className="absolute top-4 left-4 w-8 h-8 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
+             title="Contraer panel"
+          >
+             <ChevronRight className="w-4 h-4" />
+          </button>
        
        {/* Notifications */}
-       <div className="px-6 mb-10">
+          <div className="px-6 mb-10 pt-8">
           <div className="flex justify-between items-center mb-6">
              <h3 className="text-foreground font-bold tracking-tight">Notifications</h3>
           </div>

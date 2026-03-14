@@ -1,11 +1,17 @@
 "use client";
 
-import { Bell, Globe, Sun, Moon } from "lucide-react";
+import { Bell, Globe, Sun, Moon, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-export function AdminTopbar() {
+export function AdminTopbar({
+  rightPanelCollapsed,
+  onToggleRightPanel,
+}: {
+  rightPanelCollapsed: boolean;
+  onToggleRightPanel: () => void;
+}) {
   const pathname = usePathname();
 
   const segmentLabel: Record<string, string> = {
@@ -64,6 +70,18 @@ export function AdminTopbar() {
         <button className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-card"></span>
+        </button>
+
+        <button
+          onClick={onToggleRightPanel}
+          className="p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+          title={rightPanelCollapsed ? "Expandir panel" : "Contraer panel"}
+        >
+          {rightPanelCollapsed ? (
+            <PanelRightOpen className="w-5 h-5" />
+          ) : (
+            <PanelRightClose className="w-5 h-5" />
+          )}
         </button>
       </div>
     </header>
