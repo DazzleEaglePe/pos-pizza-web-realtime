@@ -257,5 +257,15 @@
     "openToCharge": "Open register to charge",
     "requiredTitle": "Register not open",
     "requiredText": "You must open the cash register before placing an order."
+  },
+  "promotions": {
+    "combos": "Combos",
+    "empty": "No combos available",
+    "title": "Combos & Promotions",
+    "originalPrice": "Original price",
+    "promoPrice": "Combo price",
+    "included": "Includes",
+    "add": "Add combo",
+    "badge": "COMBO"
   }
 }

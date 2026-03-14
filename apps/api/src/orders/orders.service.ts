@@ -138,7 +138,8 @@ export class OrdersService {
       const itemSubtotal = (item.price + itemModifiersTotal) * item.quantity;
       subtotal += itemSubtotal;
       return {
-        productId: item.productId,
+        productId: item.promotionId ? null : (item.productId ?? null),
+        promotionId: item.promotionId ?? null,
         variantId: item.variantId || null,
         productName: item.name,
         quantity: item.quantity,

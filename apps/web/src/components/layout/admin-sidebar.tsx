@@ -12,7 +12,8 @@ import {
   Moon,
   Bell,
   Search,
-  Pizza
+  Pizza,
+  Gift,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,6 +24,8 @@ const navigation = [
   { name: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
   { name: "Analytics", href: "/admin/analytics", icon: LayoutDashboard },
   { name: "Customers", href: "/admin/customers", icon: Users },
+  { section: "CATÁLOGO" },
+  { name: "Combos & Promos", href: "/admin/promotions", icon: Gift },
   { section: "SETTINGS" },
   { name: "Messages", href: "/admin/messages", icon: MessageSquare },
   { name: "Customer Reviews", href: "/admin/reviews", icon: Star },

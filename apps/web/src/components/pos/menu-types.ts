@@ -51,6 +51,38 @@ export type CatalogCategory = {
   products?: CatalogProduct[];
 };
 
+export type PromotionItem = {
+  id: string;
+  promotionId: string;
+  productId: string;
+  variantId?: string | null;
+  quantity: number;
+  isRequired: boolean;
+  product?: {
+    id: string;
+    name: string;
+    imageUrl?: string | null;
+  };
+  variant?: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+export type Promotion = {
+  id: string;
+  name: string;
+  description?: string | null;
+  promoPrice: number;
+  originalPrice?: number | null;
+  imageUrl?: string | null;
+  isActive: boolean;
+  startDate?: string | null;
+  endDate?: string | null;
+  displayOrder: number;
+  items: PromotionItem[];
+};
+
 export const ICON_MAP: Record<string, LucideIcon> = {
   Pizza,
   Coffee,

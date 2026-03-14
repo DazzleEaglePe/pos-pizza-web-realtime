@@ -9,6 +9,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
 import { CashRegisterModule } from './cash-register/cash-register.module';
 import { TablesModule } from './tables/tables.module';
+import { PromotionsModule } from './promotions/promotions.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TablesModule } from './tables/tables.module';
     PaymentsModule,
     CashRegisterModule,
     TablesModule,
+    PromotionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

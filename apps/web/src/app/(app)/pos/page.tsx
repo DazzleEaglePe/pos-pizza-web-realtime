@@ -23,13 +23,32 @@ async function getCatalog() {
   }
 }
 
+async function getPromotions() {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("pos_access_token")?.value;
+
+    const res = await fetch(`${API_URL}/promotions`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch (e) {
+    console.error("Failed to fetch promotions:", e);
+    return [];
+  }
+}
+
 export default async function POSPage() {
-  const catalog = await getCatalog();
+  const [catalog, promotions] = await Promise.all([getCatalog(), getPromotions()]);
 
   return (
     <div className="flex w-full h-full gap-6 relative pl-4">
       {/* Left Area - Dynamic POS Grid & Filters */}
-      <MenuDisplay catalog={catalog} />
+      <MenuDisplay catalog={catalog} promotions={promotions} />
 
       {/* Right Area - Cart Sidebar (Desktop Only) */}
       <div className="hidden lg:block h-full w-95 overflow-hidden bg-background z-10 shrink-0">

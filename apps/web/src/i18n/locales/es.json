@@ -257,5 +257,15 @@
     "openToCharge": "Abre la caja para cobrar",
     "requiredTitle": "Caja no abierta",
     "requiredText": "Debes abrir la caja registradora antes de realizar un pedido."
+  },
+  "promotions": {
+    "combos": "Combos",
+    "empty": "No hay combos disponibles",
+    "title": "Combos & Promociones",
+    "originalPrice": "Precio normal",
+    "promoPrice": "Precio combo",
+    "included": "Incluye",
+    "add": "Agregar combo",
+    "badge": "COMBO"
   }
 }

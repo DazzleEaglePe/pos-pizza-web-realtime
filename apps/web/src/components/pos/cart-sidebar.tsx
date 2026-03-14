@@ -89,7 +89,8 @@ export function CartSidebar() {
         tableId: orderType === "DINE_IN" ? tm.tableId : null,
         customerName: orderType === "TAKEOUT" ? customerName.trim() || null : null,
         items: items.map((item) => ({
-          productId: item.productId,
+          productId: item.promotionId ? null : item.productId,
+          promotionId: item.promotionId ?? null,
           variantId: item.variantId || null,
           name: item.name,
           quantity: item.quantity,

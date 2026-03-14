@@ -10,6 +10,7 @@ export interface CartModifier {
 export interface CartItem {
   id: string; // unique ID for the cart row
   productId: string;
+  promotionId?: string | null;
   variantId?: string | null;
   name: string;
   price: number; // base/variant unit price (without modifiers)
@@ -39,20 +40,25 @@ export const useCart = create<CartState>((set, get) => ({
 
   addItem: (item) =>
     set((state) => {
-      // Two items merge only when same product/variant AND same modifiers
+      // Promo items merge by promotionId; regular items by product/variant + modifiers
       const newModIds = (item.modifiers || [])
         .map((m) => m.id)
         .sort()
         .join(",");
-      const existing = state.items.find(
-        (i) =>
-          i.productId === item.productId &&
-          (i.variantId || null) === (item.variantId || null) &&
-          (i.modifiers || [])
-            .map((m) => m.id)
-            .sort()
-            .join(",") === newModIds,
-      );
+
+      const existing = item.promotionId
+        ? state.items.find((i) => i.promotionId === item.promotionId)
+        : state.items.find(
+            (i) =>
+              !i.promotionId &&
+              i.productId === item.productId &&
+              (i.variantId || null) === (item.variantId || null) &&
+              (i.modifiers || [])
+                .map((m) => m.id)
+                .sort()
+                .join(",") === newModIds,
+          );
+
       if (existing) {
         return {
           items: state.items.map((i) =>
