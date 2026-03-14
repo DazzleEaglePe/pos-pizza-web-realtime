@@ -43,7 +43,7 @@ function NavLink({
       onClick={onNavigate}
       title={isCollapsed ? item.name : undefined}
       className={cn(
-        "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "relative flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isCollapsed && "justify-center px-0",
         isActive
           ? "bg-primary/10 text-primary"
@@ -203,7 +203,7 @@ export function Sidebar({
       >
         {/* User card */}
         {!isCollapsed && user && (
-          <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-xl bg-muted/40">
+          <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-sm bg-muted/40">
             <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/15 overflow-hidden shrink-0">
               <img
                 src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=e6f6f4`}
@@ -227,7 +227,7 @@ export function Sidebar({
           onClick={handleLogout}
           title={isCollapsed ? t("sidebar.signOut") : undefined}
           className={cn(
-            "flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none focus-visible:ring-2 focus-visible:ring-destructive",
+            "flex items-center gap-3 w-full rounded-sm px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none focus-visible:ring-2 focus-visible:ring-destructive",
             isCollapsed && "justify-center px-0",
           )}
         >

@@ -202,39 +202,6 @@ export function MenuDisplay({
           </button>
         )}
       </div>
-
-      {/* ── Sort row (hidden in combo view) ── */}
-      {!isComboView && (
-        <div className="flex items-center justify-end gap-0 mb-4">
-          <span className="text-[11px] font-medium text-muted-foreground/50 mr-2">
-            ordenar:
-          </span>
-          {([
-            { key: "default",    label: "Default" },
-            { key: "name",       label: "A–Z"     },
-            { key: "price-asc",  label: "$ ↑"     },
-            { key: "price-desc", label: "$ ↓"     },
-          ] as const).map(({ key, label }, i, arr) => (
-            <span key={key} className="flex items-center">
-              <button
-                type="button"
-                onClick={() => setSortBy(key)}
-                className={`text-[11px] font-semibold px-1.5 py-0.5 rounded transition-colors ${
-                  sortBy === key
-                    ? "text-foreground"
-                    : "text-muted-foreground/50 hover:text-muted-foreground"
-                }`}
-              >
-                {label}
-              </button>
-              {i < arr.length - 1 && (
-                <span className="text-border text-[10px]">·</span>
-              )}
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* ── Combos grid ── */}
       <AnimatePresence mode="wait">
         {isComboView ? (
