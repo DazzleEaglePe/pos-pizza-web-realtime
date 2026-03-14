@@ -84,7 +84,7 @@ export function AdminSidebar() {
 
       <Link
         href="/pos"
-        className="group flex items-center gap-2.5 px-3 py-2.5 mb-5 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200"
+        className="group flex items-center gap-2.5 px-3 py-2.5 mb-5 rounded-sm border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200"
       >
         <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
         <span className="text-[13px] font-semibold">Volver a Operación</span>
@@ -96,7 +96,7 @@ export function AdminSidebar() {
         <input
           type="text"
           placeholder="Search..."
-          className="w-full pl-9 pr-3 py-2.5 bg-muted border border-border rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-primary/50 transition-all placeholder:text-muted-foreground text-foreground outline-none"
+          className="w-full pl-9 pr-3 py-2.5 bg-muted border border-border rounded-sm text-sm focus-visible:ring-1 focus-visible:ring-primary/50 transition-all placeholder:text-muted-foreground text-foreground outline-none"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground bg-card px-1.5 py-0.5 rounded border border-border">⌘K</div>
       </div>
@@ -114,7 +114,7 @@ export function AdminSidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200",
+                "group flex items-center justify-between px-3 py-2.5 rounded-sm transition-all duration-200",
                 isActive
                   ? "bg-primary text-primary-foreground font-bold shadow-[0_0_15px_rgba(var(--primary),0.3)]"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground font-medium"

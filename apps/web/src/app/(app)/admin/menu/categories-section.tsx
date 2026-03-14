@@ -19,7 +19,7 @@ export function CategoriesSection({
 }: CategoriesSectionProps) {
   return (
     <>
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+      <div className="bg-card border border-border rounded-sm p-5 space-y-4">
         <h2 className="font-semibold text-foreground">
           {categoryForm.id ? "Editar categoría" : "Nueva categoría"}
         </h2>
@@ -64,7 +64,7 @@ export function CategoriesSection({
         </div>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      <div className="bg-card rounded-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

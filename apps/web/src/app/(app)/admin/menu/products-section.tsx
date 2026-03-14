@@ -72,7 +72,7 @@ export function ProductsSection({
 }: ProductsSectionProps) {
   return (
     <>
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+      <div className="bg-card border border-border rounded-sm p-5 space-y-4">
         <h2 className="font-semibold text-foreground">
           {productForm.id ? "Editar producto" : "Nuevo producto"}
         </h2>
@@ -129,7 +129,7 @@ export function ProductsSection({
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+      <div className="bg-card border border-border rounded-sm p-5 space-y-4">
         <h2 className="font-semibold text-foreground">
           {modifierGroupForm.id ? "Editar grupo de modificadores" : "Nuevo grupo de modificadores"}
         </h2>
@@ -319,7 +319,7 @@ export function ProductsSection({
         {allProducts.map((product) => (
           <div
             key={product.id}
-            className="bg-card border border-border rounded-2xl p-4 space-y-3"
+            className="bg-card border border-border rounded-sm p-4 space-y-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div>

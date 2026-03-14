@@ -50,7 +50,7 @@ export default function AlertsPage() {
           Cargando alertas...
         </div>
       ) : alerts.length === 0 ? (
-        <div className="bg-card rounded-2xl border border-border p-8 text-center space-y-2">
+        <div className="bg-card rounded-sm border border-border p-8 text-center space-y-2">
           <div className="text-4xl">✅</div>
           <h3 className="text-lg font-bold text-foreground">
             Todo en orden
@@ -64,7 +64,7 @@ export default function AlertsPage() {
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className={`bg-card rounded-2xl border p-4 flex items-center justify-between ${
+              className={`bg-card rounded-sm border p-4 flex items-center justify-between ${
                 alert.urgency === "critical"
                   ? "border-destructive/50"
                   : "border-yellow-500/50"
@@ -72,7 +72,7 @@ export default function AlertsPage() {
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  className={`w-10 h-10 rounded-sm flex items-center justify-center ${
                     alert.urgency === "critical"
                       ? "bg-destructive/10"
                       : "bg-yellow-500/10"
@@ -126,7 +126,7 @@ export default function AlertsPage() {
                 </div>
                 <Link
                   href="/admin/inventory/restock"
-                  className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-bold shadow hover:opacity-90 transition"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-sm text-xs font-bold shadow hover:opacity-90 transition"
                 >
                   <PackagePlus className="w-3.5 h-3.5" />
                   Reponer

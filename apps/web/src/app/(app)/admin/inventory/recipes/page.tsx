@@ -91,7 +91,7 @@ export default function RecipesPage() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm shadow hover:opacity-90 transition"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition"
         >
           <Plus className="w-4 h-4" />
           Agregar Ingrediente
@@ -111,7 +111,7 @@ export default function RecipesPage() {
           {Object.entries(grouped).map(([productName, rows]) => (
             <div
               key={productName}
-              className="bg-card rounded-2xl border border-border overflow-hidden"
+              className="bg-card rounded-sm border border-border overflow-hidden"
             >
               <div className="px-4 py-3 bg-muted/30 border-b border-border">
                 <h3 className="font-bold text-foreground">{productName}</h3>
@@ -154,7 +154,7 @@ export default function RecipesPage() {
                       <td className="px-4 py-2 text-center">
                         <button
                           onClick={() => handleDelete(r.id)}
-                          className="p-1.5 rounded-lg hover:bg-destructive/10 transition"
+                          className="p-1.5 rounded-sm hover:bg-destructive/10 transition"
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </button>
@@ -232,7 +232,7 @@ function RecipeFormDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <form
         onSubmit={handleSubmit}
-        className="bg-card border border-border rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-xl max-h-[90vh] overflow-y-auto"
+        className="bg-card border border-border rounded-sm p-6 w-full max-w-lg space-y-4 shadow-xl max-h-[90vh] overflow-y-auto"
       >
         <h2 className="text-lg font-bold text-foreground">
           Agregar Ingredientes a Receta
@@ -249,7 +249,7 @@ function RecipeFormDialog({
               setProductId(e.target.value);
               setVariantId("");
             }}
-            className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none"
+            className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none"
           >
             <option value="">Seleccionar producto...</option>
             {products.map((p) => (
@@ -268,7 +268,7 @@ function RecipeFormDialog({
             <select
               value={variantId}
               onChange={(e) => setVariantId(e.target.value)}
-              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none"
+              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none"
             >
               <option value="">Todas las variantes</option>
               {selectedProduct.variants.map((v) => (
@@ -294,7 +294,7 @@ function RecipeFormDialog({
                     copy[i].inventoryItemId = e.target.value;
                     setIngredients(copy);
                   }}
-                  className="w-full px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none"
+                  className="w-full px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none"
                 >
                   <option value="">Seleccionar insumo...</option>
                   {items.map((it) => (
@@ -316,7 +316,7 @@ function RecipeFormDialog({
                       parseFloat(e.target.value) || 0;
                     setIngredients(copy);
                   }}
-                  className="w-full px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none"
+                  className="w-full px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none"
                 />
               </div>
               {ingredients.length > 1 && (
@@ -325,7 +325,7 @@ function RecipeFormDialog({
                   onClick={() =>
                     setIngredients(ingredients.filter((_, idx) => idx !== i))
                   }
-                  className="p-2 rounded-lg hover:bg-destructive/10 transition"
+                  className="p-2 rounded-sm hover:bg-destructive/10 transition"
                 >
                   <Trash2 className="w-4 h-4 text-destructive" />
                 </button>
@@ -350,14 +350,14 @@ function RecipeFormDialog({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-xl"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-sm"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-xl shadow hover:opacity-90 transition disabled:opacity-50"
+            className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-sm shadow hover:opacity-90 transition disabled:opacity-50"
           >
             {saving ? "Guardando..." : "Guardar Receta"}
           </button>

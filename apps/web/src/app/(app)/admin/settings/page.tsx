@@ -116,14 +116,14 @@ export default function AdminSettingsPage() {
   if (!loading && !isAdmin) {
     return (
       <div className="p-6">
-        <div className="max-w-xl rounded-2xl border border-border bg-card p-6 space-y-3">
+        <div className="max-w-xl rounded-sm border border-border bg-card p-6 space-y-3">
           <h1 className="text-lg font-bold text-foreground">Acceso restringido</h1>
           <p className="text-sm text-muted-foreground">
             La configuración del negocio solo está disponible para administradores.
           </p>
           <Link
             href="/pos"
-            className="inline-flex items-center px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold"
+            className="inline-flex items-center px-4 py-2 rounded-sm bg-primary text-primary-foreground text-sm font-semibold"
           >
             Volver a Operación
           </Link>
@@ -198,12 +198,12 @@ export default function AdminSettingsPage() {
       </div>
 
       {error && (
-        <div className="px-4 py-3 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
+        <div className="px-4 py-3 rounded-sm border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
           {error}
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-5">
+      <div className="bg-card border border-border rounded-sm p-5 space-y-5">
         <h2 className="font-semibold text-foreground">Negocio</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Nombre" value={form.companyName} onChange={(v) => setForm((s) => ({ ...s, companyName: v }))} />
@@ -214,7 +214,7 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-5">
+      <div className="bg-card border border-border rounded-sm p-5 space-y-5">
         <h2 className="font-semibold text-foreground">Impuestos y moneda</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Field
@@ -228,7 +228,7 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-5">
+      <div className="bg-card border border-border rounded-sm p-5 space-y-5">
         <h2 className="font-semibold text-foreground">Ticket y tracking</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Cabecera ticket" value={form.ticketHeader} onChange={(v) => setForm((s) => ({ ...s, ticketHeader: v }))} />
@@ -249,7 +249,7 @@ export default function AdminSettingsPage() {
           type="button"
           onClick={onSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
         >
           <Save className="w-4 h-4" />
           {saving ? "Guardando..." : "Guardar configuración"}
@@ -279,7 +279,7 @@ function Field({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/50"
+        className="mt-1.5 w-full px-3 py-2.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/50"
       />
     </label>
   );

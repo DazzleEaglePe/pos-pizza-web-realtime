@@ -78,7 +78,7 @@ export default function MovementsPage() {
         <select
           value={filterItem}
           onChange={(e) => setFilterItem(e.target.value)}
-          className="px-3 py-2 bg-card border border-border rounded-xl text-sm text-foreground outline-none"
+          className="px-3 py-2 bg-card border border-border rounded-sm text-sm text-foreground outline-none"
         >
           <option value="">Todos los insumos</option>
           {items.map((i) => (
@@ -90,7 +90,7 @@ export default function MovementsPage() {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="px-3 py-2 bg-card border border-border rounded-xl text-sm text-foreground outline-none"
+          className="px-3 py-2 bg-card border border-border rounded-sm text-sm text-foreground outline-none"
         >
           <option value="">Todos los tipos</option>
           <option value="IN">Entrada</option>
@@ -105,7 +105,7 @@ export default function MovementsPage() {
           Cargando movimientos...
         </div>
       ) : (
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+        <div className="bg-card rounded-sm border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

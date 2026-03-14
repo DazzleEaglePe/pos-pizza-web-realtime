@@ -81,7 +81,7 @@ export default function InventoryPage() {
             setEditingItem(null);
             setShowForm(true);
           }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm shadow hover:opacity-90 transition"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition"
         >
           <Plus className="w-4 h-4" />
           Nuevo Insumo
@@ -96,7 +96,7 @@ export default function InventoryPage() {
           placeholder="Buscar por nombre, SKU o proveedor..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-xl text-sm focus:ring-1 focus:ring-primary/50 outline-none text-foreground placeholder:text-muted-foreground"
+          className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-sm text-sm focus:ring-1 focus:ring-primary/50 outline-none text-foreground placeholder:text-muted-foreground"
         />
       </div>
 
@@ -106,7 +106,7 @@ export default function InventoryPage() {
           Cargando inventario...
         </div>
       ) : (
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+        <div className="bg-card rounded-sm border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -178,14 +178,14 @@ export default function InventoryPage() {
                               setEditingItem(item);
                               setShowForm(true);
                             }}
-                            className="p-1.5 rounded-lg hover:bg-accent transition"
+                            className="p-1.5 rounded-sm hover:bg-accent transition"
                             title="Editar"
                           >
                             <Pencil className="w-4 h-4 text-muted-foreground" />
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="p-1.5 rounded-lg hover:bg-destructive/10 transition"
+                            className="p-1.5 rounded-sm hover:bg-destructive/10 transition"
                             title="Desactivar"
                           >
                             <Trash2 className="w-4 h-4 text-destructive" />
@@ -283,7 +283,7 @@ function ItemFormDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <form
         onSubmit={handleSubmit}
-        className="bg-card border border-border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl"
+        className="bg-card border border-border rounded-sm p-6 w-full max-w-md space-y-4 shadow-xl"
       >
         <h2 className="text-lg font-bold text-foreground">
           {item ? "Editar Insumo" : "Nuevo Insumo"}
@@ -298,7 +298,7 @@ function ItemFormDialog({
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -309,7 +309,7 @@ function ItemFormDialog({
               <input
                 value={form.sku}
                 onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
             <div>
@@ -321,7 +321,7 @@ function ItemFormDialog({
                 onChange={(e) =>
                   setForm({ ...form, unitOfMeasure: e.target.value })
                 }
-                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
               >
                 <option value="g">Gramos (g)</option>
                 <option value="kg">Kilogramos (kg)</option>
@@ -343,7 +343,7 @@ function ItemFormDialog({
                 onChange={(e) =>
                   setForm({ ...form, currentStock: parseFloat(e.target.value) || 0 })
                 }
-                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
             <div>
@@ -360,7 +360,7 @@ function ItemFormDialog({
                     minStockAlert: parseFloat(e.target.value) || 0,
                   })
                 }
-                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
           </div>
@@ -379,7 +379,7 @@ function ItemFormDialog({
                     costPerUnit: parseFloat(e.target.value) || 0,
                   })
                 }
-                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
             <div>
@@ -391,7 +391,7 @@ function ItemFormDialog({
                 onChange={(e) =>
                   setForm({ ...form, supplier: e.target.value })
                 }
-                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
           </div>
@@ -401,14 +401,14 @@ function ItemFormDialog({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-xl"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-sm"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-xl shadow hover:opacity-90 transition disabled:opacity-50"
+            className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-sm shadow hover:opacity-90 transition disabled:opacity-50"
           >
             {saving ? "Guardando..." : item ? "Actualizar" : "Crear"}
           </button>

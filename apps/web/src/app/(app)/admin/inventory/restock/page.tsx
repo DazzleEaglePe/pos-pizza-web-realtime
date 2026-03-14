@@ -83,14 +83,14 @@ export default function RestockPage() {
       {loading ? (
         <div className="text-muted-foreground">Cargando...</div>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-sm p-6 space-y-4">
           <div>
             <label className="text-xs font-semibold text-muted-foreground">Insumo *</label>
             <select
               required
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none"
+              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none"
             >
               <option value="">Seleccionar insumo...</option>
               {items.map((i) => (
@@ -112,7 +112,7 @@ export default function RestockPage() {
               step="0.001"
               value={quantity || ""}
               onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
-              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none"
+              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none"
             />
           </div>
 
@@ -122,7 +122,7 @@ export default function RestockPage() {
               value={supplier}
               onChange={(e) => setSupplier(e.target.value)}
               placeholder="Nombre del proveedor"
-              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none"
+              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none"
             />
           </div>
 
@@ -133,20 +133,20 @@ export default function RestockPage() {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Factura, lote, observaciones..."
               rows={2}
-              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-xl text-sm text-foreground outline-none resize-none"
+              className="w-full mt-1 px-3 py-2 bg-muted border border-border rounded-sm text-sm text-foreground outline-none resize-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm shadow hover:opacity-90 transition disabled:opacity-50"
+            className="w-full py-2.5 bg-primary text-primary-foreground rounded-sm font-bold text-sm shadow hover:opacity-90 transition disabled:opacity-50"
           >
             {saving ? "Registrando..." : "Registrar Entrada"}
           </button>
 
           {result && (
-            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-foreground">
+            <div className="bg-primary/10 border border-primary/20 rounded-sm p-4 text-sm text-foreground">
               <span className="font-bold text-primary">Entrada registrada.</span>{" "}
               {result.name} ahora tiene{" "}
               <span className="font-bold">{result.newStock.toLocaleString()} {result.unit}</span>{" "}

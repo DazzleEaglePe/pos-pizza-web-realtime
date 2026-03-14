@@ -166,7 +166,7 @@ export default function AdminPromotionsPage() {
         </div>
       ) : promotions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-sm bg-muted/60 flex items-center justify-center mb-4">
             <Gift className="w-6 h-6 text-muted-foreground/60" />
           </div>
           <p className="text-sm font-medium text-muted-foreground">
@@ -182,7 +182,7 @@ export default function AdminPromotionsPage() {
             <Card key={promo.id} className="overflow-hidden">
               <CardContent className="p-4 flex items-start gap-4">
                 {/* Image */}
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted/40 shrink-0">
+                <div className="w-16 h-16 rounded-sm overflow-hidden bg-muted/40 shrink-0">
                   <img
                     src={
                       promo.imageUrl ||
@@ -304,7 +304,7 @@ export default function AdminPromotionsPage() {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Ej. Combo Familiar"
-                className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
@@ -319,7 +319,7 @@ export default function AdminPromotionsPage() {
                   setForm((f) => ({ ...f, description: e.target.value }))
                 }
                 placeholder="Breve descripción del combo"
-                className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
@@ -337,7 +337,7 @@ export default function AdminPromotionsPage() {
                     setForm((f) => ({ ...f, promoPrice: e.target.value }))
                   }
                   placeholder="25.00"
-                  className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div>
@@ -353,7 +353,7 @@ export default function AdminPromotionsPage() {
                     setForm((f) => ({ ...f, originalPrice: e.target.value }))
                   }
                   placeholder="35.00"
-                  className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
             </div>
@@ -369,7 +369,7 @@ export default function AdminPromotionsPage() {
                   setForm((f) => ({ ...f, imageUrl: e.target.value }))
                 }
                 placeholder="https://..."
-                className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
@@ -385,7 +385,7 @@ export default function AdminPromotionsPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, displayOrder: e.target.value }))
                   }
-                  className="w-full h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div className="flex flex-col justify-end pb-1">

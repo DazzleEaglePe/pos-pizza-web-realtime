@@ -387,7 +387,7 @@ export default function AdminMenuPage() {
       </div>
 
       {error && (
-        <div className="px-4 py-3 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
+        <div className="px-4 py-3 rounded-sm border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
           {error}
         </div>
       )}
