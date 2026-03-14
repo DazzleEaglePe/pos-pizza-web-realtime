@@ -16,7 +16,7 @@ export const useConfig = create<ConfigState>((set, get) => ({
   fetchConfig: async () => {
     if (get().loaded) return;
     try {
-      const data = await apiFetch("/config");
+      const data = await apiFetch<{ taxRate?: number }>("/config");
       set({ taxRate: data.taxRate ?? 18, loaded: true });
     } catch {
       // Fallback to default 18% if fetch fails
