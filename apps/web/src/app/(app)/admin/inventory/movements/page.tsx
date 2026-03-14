@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { ArrowDownUp } from "lucide-react";
@@ -38,40 +38,55 @@ export default function MovementsPage() {
   const [filterItem, setFilterItem] = useState("");
   const [filterType, setFilterType] = useState("");
 
-  const fetchData = useCallback(async () => {
-    const token = getAccessToken();
-    const params = new URLSearchParams();
-    if (filterItem) params.set("inventoryItemId", filterItem);
-    if (filterType) params.set("movementType", filterType);
-    params.set("limit", "200");
-
-    const [m, i] = await Promise.all([
-      apiFetch<Movement[]>(`/inventory/movements?${params}`, { token }),
-      apiFetch<InventoryItem[]>("/inventory/items", { token }),
-    ]);
-    setMovements(m);
-    setItems(i);
-    setLoading(false);
-  }, [filterItem, filterType]);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    let cancelled = false;
+
+    const loadMovements = async () => {
+      const token = getAccessToken();
+      const params = new URLSearchParams();
+      if (filterItem) params.set("inventoryItemId", filterItem);
+      if (filterType) params.set("movementType", filterType);
+      params.set("limit", "200");
+
+      const [m, i] = await Promise.all([
+        apiFetch<Movement[]>(`/inventory/movements?${params}`, { token }),
+        apiFetch<InventoryItem[]>('/inventory/items', { token }),
+      ]);
+
+      if (cancelled) return;
+
+      setMovements(m);
+      setItems(i);
+      setLoading(false);
+    };
+
+    void loadMovements();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filterItem, filterType]);
 
   const getItemName = (id: string) =>
     items.find((i) => i.id === id)?.name || id.slice(0, 8);
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <ArrowDownUp className="w-6 h-6 text-primary" />
-          Historial de Movimientos
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Registro completo de entradas, salidas y ajustes de inventario
-        </p>
-      </div>
+      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
+        <div className="space-y-2">
+          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+            <ArrowDownUp className="h-3.5 w-3.5" />
+            Centro de inventario
+          </span>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <ArrowDownUp className="w-6 h-6 text-primary" />
+            Historial de Movimientos
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Revisa entradas, salidas y ajustes para trazabilidad de stock.
+          </p>
+        </div>
+      </section>
 
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">

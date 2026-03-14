@@ -376,15 +376,21 @@ export default function AdminMenuPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <UtensilsCrossed className="w-6 h-6 text-primary" />
-          Gestión de Menú
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Administra categorías, productos y variantes.
-        </p>
-      </div>
+      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
+        <div className="space-y-2">
+          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+            <UtensilsCrossed className="h-3.5 w-3.5" />
+            Centro de catálogo
+          </span>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <UtensilsCrossed className="w-6 h-6 text-primary" />
+            Gestión de Menú
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Administra categorías, productos, variantes y grupos de modificadores.
+          </p>
+        </div>
+      </section>
 
       {error && (
         <div className="px-4 py-3 rounded-sm border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">

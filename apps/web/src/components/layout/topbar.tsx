@@ -1,53 +1,27 @@
 "use client";
 
-import { Bell, Sun, Moon, Languages } from "lucide-react";
+import { Bell, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { useTranslation, locales, localeNames, type Locale } from "@/i18n";
+import { useTranslation } from "@/i18n";
 import { MobileNav } from "./mobile-nav";
 
 export function Topbar() {
   const { theme, setTheme } = useTheme();
-  const { t, locale, setLocale } = useTranslation();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const toggleLocale = () => {
-    const nextLocale = locale === "es" ? "en" : "es";
-    setLocale(nextLocale);
-  };
+  const { t } = useTranslation();
 
   return (
     <header className="flex items-center justify-between px-6 h-16 bg-background border-b border-border w-full">
       <MobileNav />
 
       <div className="flex items-center gap-2 ml-auto">
-        {mounted && (
-          <>
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLocale}
-              className="flex items-center gap-1.5 px-3 py-2 h-10 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors uppercase tracking-wider focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              aria-label="Toggle Language"
-            >
-              <Languages className="h-4 w-4" />
-              {locale}
-            </button>
-
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              aria-label={t("topbar.toggleDarkMode")}
-            >
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform duration-300 dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100" />
-            </button>
-          </>
-        )}
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          aria-label={t("topbar.toggleDarkMode")}
+        >
+          <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform duration-300 dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100" />
+        </button>
 
         <button className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
           <Bell className="h-5 w-5" />

@@ -107,8 +107,17 @@ export function AdminSidebar() {
           if ("section" in item) {
              return <div key={`section-${index}`} className="text-[10px] font-bold tracking-widest text-muted-foreground mb-3 mt-6 px-3 uppercase">{item.section}</div>
           }
-          const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/admin");
-          
+          const isActive = (() => {
+            if (pathname === item.href) return true;
+            if (item.href === "/admin") return false;
+            if (!pathname.startsWith(item.href + "/")) return false;
+            // Don't activate a parent if a more-specific sibling nav item already matches
+            const hasChildMatch = navigation.some(
+              (n) => "href" in n && n.href !== item.href && (pathname === n.href || pathname.startsWith(n.href + "/")),
+            );
+            return !hasChildMatch;
+          })();
+
           return (
             <Link
               key={item.name}

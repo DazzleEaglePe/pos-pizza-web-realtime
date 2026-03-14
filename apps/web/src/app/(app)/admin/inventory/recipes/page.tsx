@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { BookOpen, Plus, Trash2 } from "lucide-react";
@@ -35,7 +35,7 @@ export default function RecipesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  const fetchAll = useCallback(async () => {
+  const fetchAll = async () => {
     const token = getAccessToken();
     const [r, i, catalog] = await Promise.all([
       apiFetch<RecipeRow[]>("/inventory/recipes", { token }),
@@ -53,11 +53,40 @@ export default function RecipesPage() {
     );
     setProducts(allProducts);
     setLoading(false);
-  }, []);
+  };
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    let cancelled = false;
+
+    const loadInitialData = async () => {
+      const token = getAccessToken();
+      const [r, i, catalog] = await Promise.all([
+        apiFetch<RecipeRow[]>('/inventory/recipes', { token }),
+        apiFetch<InventoryItemOption[]>('/inventory/items', { token }),
+        apiFetch<Array<{ products: CatalogProduct[] }>>('/catalog', { token }),
+      ]);
+
+      if (cancelled) return;
+
+      setRecipes(r);
+      setItems(i);
+      const allProducts = catalog.flatMap((cat) =>
+        cat.products.map((p) => ({
+          id: p.id,
+          name: p.name,
+          variants: Array.isArray(p.variants) ? p.variants : [],
+        }))
+      );
+      setProducts(allProducts);
+      setLoading(false);
+    };
+
+    void loadInitialData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Eliminar este ingrediente de la receta?")) return;
@@ -79,24 +108,30 @@ export default function RecipesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-primary" />
-            Recetas
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Define qué insumos usa cada producto y en qué cantidad
-          </p>
+      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+              <BookOpen className="h-3.5 w-3.5" />
+              Centro de inventario
+            </span>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-primary" />
+              Recetas
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Define qué insumos usa cada producto y en qué cantidad exacta.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            Agregar Ingrediente
+          </button>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition"
-        >
-          <Plus className="w-4 h-4" />
-          Agregar Ingrediente
-        </button>
-      </div>
+      </section>
 
       {loading ? (
         <div className="text-muted-foreground text-center py-12">
