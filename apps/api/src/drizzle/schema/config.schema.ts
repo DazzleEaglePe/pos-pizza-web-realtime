@@ -30,9 +30,14 @@ export const productPrepTimes = pgTable("product_prep_times", {
 export const printerConfigs = pgTable("printer_configs", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
+  location: text("location").notNull(),            // 'CASHIER' | 'KITCHEN'
+  connectionType: text("connection_type").notNull(), // 'USB' | 'NETWORK'
   ipAddress: text("ip_address"),
-  type: text("type").notNull(), 
+  port: integer("port"),
+  paperWidth: integer("paper_width").notNull().default(80),
   isActive: boolean("is_active").notNull().default(true),
+  isDefault: boolean("is_default").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().$defaultFn(() => new Date()),
 });
 
 export const dailySummaries = pgTable("daily_summaries", {
