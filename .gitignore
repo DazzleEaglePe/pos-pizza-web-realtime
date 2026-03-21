@@ -34,9 +34,20 @@ yarn-debug.log*
 yarn-error.log*
 .dev-logs/
 
+# IDE
+.vscode/
+.idea/
+
 # Misc
 .DS_Store
 *.pem
+*.bak
+
+# Migration/seed error logs
+migrate*.txt
+migrate*.log
+seed*.txt
+seed*.log
 
 # Database
 *.db
