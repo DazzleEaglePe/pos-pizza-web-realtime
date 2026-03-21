@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { AlertTriangle, PackagePlus } from "lucide-react";
 import Link from "next/link";
 
@@ -59,9 +60,7 @@ export default function AlertsPage() {
       </section>
 
       {loading ? (
-        <div className="text-muted-foreground text-center py-12">
-          Cargando alertas...
-        </div>
+        <PageSkeleton variant="cards" cards={4} showHero={false} />
       ) : alerts.length === 0 ? (
         <div className="bg-card rounded-sm border border-border p-8 text-center space-y-2">
           <div className="text-4xl">✅</div>

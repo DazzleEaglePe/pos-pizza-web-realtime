@@ -18,10 +18,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { API_URL } from "@/lib/config";
 import { useConfig } from "@/hooks/useConfig";
 import { locales, localeNames, type Locale, useTranslation } from "@/i18n";
 import { posAlert } from "@/lib/sweetalert";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { CurrencySelect } from "@/components/ui/currency-select";
 
 type BusinessConfig = {
   id: string;
@@ -126,6 +130,7 @@ export default function AdminSettingsPage() {
   const router = useRouter();
   const { locale, setLocale } = useTranslation();
   const setTaxRate = useConfig((s) => s.setTaxRate);
+  const setCurrency = useConfig((s) => s.setCurrency);
 
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -210,6 +215,7 @@ export default function AdminSettingsPage() {
       setError(null);
       setSuccessMessage(null);
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to load admin settings", err);
       setError("No se pudo cargar la configuración. Verifica tu sesión.");
     } finally {
@@ -280,8 +286,10 @@ export default function AdminSettingsPage() {
       }));
 
       setTaxRate(Number(updated.taxRateDefault || 18));
+      setCurrency(updated.currency || "PEN");
       setSuccessMessage("Configuración de negocio guardada correctamente.");
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to save business config", err);
       setError("No se pudo guardar la configuración del negocio.");
     } finally {
@@ -319,6 +327,7 @@ export default function AdminSettingsPage() {
 
       setSuccessMessage("Nombre actualizado.");
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to update profile", err);
       setError("No se pudo actualizar el nombre.");
     } finally {
@@ -356,6 +365,7 @@ export default function AdminSettingsPage() {
 
       setSuccessMessage("Correo actualizado.");
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to update email", err);
       setError("No se pudo actualizar el correo. Verifica que no esté en uso.");
     } finally {
@@ -402,6 +412,7 @@ export default function AdminSettingsPage() {
 
       await resetSessionAndRedirectToLogin();
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to change password", err);
       setError("No se pudo cambiar la contraseña. Revisa los datos ingresados.");
     } finally {
@@ -430,6 +441,7 @@ export default function AdminSettingsPage() {
       setBusinessForm((prev) => ({ ...prev, logoUrl: response.logoUrl }));
       setSuccessMessage("Logo actualizado correctamente.");
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to upload logo", err);
       setError("No se pudo subir el logo. Usa PNG, JPG, WebP o SVG (máx. 4MB).");
     } finally {
@@ -462,7 +474,11 @@ export default function AdminSettingsPage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-muted-foreground">Cargando configuración...</div>;
+    return (
+      <div className="p-6 space-y-6">
+        <PageSkeleton variant="settings" />
+      </div>
+    );
   }
 
   return (
@@ -555,13 +571,18 @@ export default function AdminSettingsPage() {
                   value={businessForm.ruc}
                   onChange={(value) => setBusinessForm((s) => ({ ...s, ruc: value }))}
                 />
-                <Field
-                  label="Teléfono"
-                  value={businessForm.phone}
-                  onChange={(value) =>
-                    setBusinessForm((s) => ({ ...s, phone: value }))
-                  }
-                />
+                <label>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Teléfono
+                  </span>
+                  <PhoneInput
+                    value={businessForm.phone}
+                    onChange={(value) =>
+                      setBusinessForm((s) => ({ ...s, phone: value }))
+                    }
+                    className="mt-1.5"
+                  />
+                </label>
                 <Field
                   label="Email de negocio"
                   value={businessForm.email}
@@ -588,16 +609,18 @@ export default function AdminSettingsPage() {
                     }))
                   }
                 />
-                <Field
-                  label="Moneda"
-                  value={businessForm.currency}
-                  onChange={(value) =>
-                    setBusinessForm((s) => ({
-                      ...s,
-                      currency: value.toUpperCase(),
-                    }))
-                  }
-                />
+                <label>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Moneda
+                  </span>
+                  <CurrencySelect
+                    value={businessForm.currency}
+                    onChange={(value) =>
+                      setBusinessForm((s) => ({ ...s, currency: value }))
+                    }
+                    className="mt-1.5"
+                  />
+                </label>
                 <Field
                   label="Zona horaria"
                   value={businessForm.timezone}

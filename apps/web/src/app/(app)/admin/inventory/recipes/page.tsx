@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { BookOpen, Plus, Trash2 } from "lucide-react";
 
 interface RecipeRow {
@@ -134,9 +136,7 @@ export default function RecipesPage() {
       </section>
 
       {loading ? (
-        <div className="text-muted-foreground text-center py-12">
-          Cargando recetas...
-        </div>
+        <PageSkeleton variant="table" cols={4} rows={5} showHero={false} />
       ) : Object.keys(grouped).length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           No hay recetas configuradas. Agrega ingredientes a los productos.
@@ -257,6 +257,7 @@ function RecipeFormDialog({
       });
       onSaved();
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to create recipe", err);
     } finally {
       setSaving(false);

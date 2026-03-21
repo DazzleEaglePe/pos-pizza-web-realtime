@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import {
   Package,
   Plus,
@@ -40,6 +42,7 @@ export default function InventoryPage() {
       });
       setItems(data);
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to fetch inventory items", err);
     } finally {
       setLoading(false);
@@ -108,9 +111,7 @@ export default function InventoryPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="text-muted-foreground text-center py-12">
-          Cargando inventario...
-        </div>
+        <PageSkeleton variant="table" cols={7} rows={6} showHero={false} />
       ) : (
         <div className="bg-card rounded-sm border border-border overflow-hidden">
           <div className="overflow-x-auto">
@@ -279,6 +280,7 @@ function ItemFormDialog({
       }
       onSaved();
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to save item", err);
     } finally {
       setSaving(false);

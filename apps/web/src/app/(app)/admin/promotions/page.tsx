@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { useConfig } from "@/hooks/useConfig";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,6 +60,7 @@ const EMPTY_FORM = {
 };
 
 export default function AdminPromotionsPage() {
+  const cs = useConfig((s) => s.currencySymbol);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -167,9 +170,7 @@ export default function AdminPromotionsPage() {
 
       {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        </div>
+        <PageSkeleton variant="cards" cards={3} showHero={false} />
       ) : promotions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-14 h-14 rounded-sm bg-muted/60 flex items-center justify-center mb-4">
@@ -239,11 +240,11 @@ export default function AdminPromotionsPage() {
                   <div className="flex items-center gap-2 mt-2">
                     {promo.originalPrice && (
                       <span className="text-xs line-through text-muted-foreground/60">
-                        S/{Number(promo.originalPrice).toFixed(2)}
+                        {cs}{Number(promo.originalPrice).toFixed(2)}
                       </span>
                     )}
                     <span className="text-base font-bold text-primary">
-                      S/{Number(promo.promoPrice).toFixed(2)}
+                      {cs}{Number(promo.promoPrice).toFixed(2)}
                     </span>
                     {promo.originalPrice && promo.originalPrice > promo.promoPrice && (
                       <Badge variant="outline" className="text-[10px] text-green-600 border-green-200">

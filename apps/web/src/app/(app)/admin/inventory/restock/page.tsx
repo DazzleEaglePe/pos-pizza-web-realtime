@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { PackagePlus } from "lucide-react";
 
 interface InventoryItem {
@@ -62,6 +64,7 @@ export default function RestockPage() {
       setNotes("");
       fetchItems();
     } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Restock failed", err);
     } finally {
       setSaving(false);
@@ -87,7 +90,7 @@ export default function RestockPage() {
       </section>
 
       {loading ? (
-        <div className="text-muted-foreground">Cargando...</div>
+        <PageSkeleton variant="form" showHero={false} />
       ) : (
         <form onSubmit={handleSubmit} className="bg-card border border-border rounded-sm p-6 space-y-4">
           <div>

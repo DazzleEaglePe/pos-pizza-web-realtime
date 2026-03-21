@@ -1,5 +1,8 @@
-import { Dispatch, SetStateAction } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Dispatch, SetStateAction, useState } from "react";
+import { Pencil, Plus, Trash2, Timer } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { getAccessToken } from "@/lib/auth";
+import { useConfig } from "@/hooks/useConfig";
 import {
   Category,
   Modifier,
@@ -70,6 +73,7 @@ export function ProductsSection({
   assignModifierGroup,
   removeModifierGroupFromProduct,
 }: ProductsSectionProps) {
+  const cs = useConfig((s) => s.currencySymbol);
   return (
     <>
       <div className="bg-card border border-border rounded-sm p-5 space-y-4">
@@ -234,7 +238,7 @@ export function ProductsSection({
                     className="flex items-center justify-between px-2 py-1.5 rounded-sm border border-border/60 bg-background/50"
                   >
                     <span className="text-xs text-foreground">
-                      {modifier.name} · S/{Number(modifier.price).toFixed(2)}
+                      {modifier.name} · {cs}{Number(modifier.price).toFixed(2)}
                     </span>
                     <div className="flex items-center gap-1">
                       <button
@@ -325,13 +329,14 @@ export function ProductsSection({
               <div>
                 <h3 className="font-semibold text-foreground">{product.name}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {product.slug} · S/{Number(product.basePrice).toFixed(2)}
+                  {product.slug} · {cs}{Number(product.basePrice).toFixed(2)}
                 </p>
                 {product.description && (
                   <p className="text-xs text-muted-foreground mt-1">{product.description}</p>
                 )}
               </div>
               <div className="flex items-center gap-1">
+                <PrepTimeButton productId={product.id} />
                 <button
                   onClick={() =>
                     setProductForm({
@@ -431,7 +436,7 @@ export function ProductsSection({
                       className="flex items-center justify-between px-3 py-2 rounded-sm border border-border/60 bg-background/50"
                     >
                       <span className="text-sm text-foreground">
-                        {variant.name} · S/{Number(variant.price).toFixed(2)}
+                        {variant.name} · {cs}{Number(variant.price).toFixed(2)}
                       </span>
                       <div className="flex items-center gap-1">
                         <button
@@ -513,5 +518,93 @@ export function ProductsSection({
         ))}
       </div>
     </>
+  );
+}
+
+/* ─── PrepTimeButton ──────────────────────────────────── */
+
+function PrepTimeButton({ productId }: { productId: string }) {
+  const [open, setOpen] = useState(false);
+  const [minutes, setMinutes] = useState<number | "">("");
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleOpen = async () => {
+    setOpen(true);
+    setSaved(false);
+    try {
+      const token = getAccessToken();
+      const res = await apiFetch<{ estimatedMinutes: number } | null>(
+        `/catalog/products/${productId}/prep-time`,
+        { token },
+      );
+      if (res && res.estimatedMinutes) {
+        setMinutes(res.estimatedMinutes);
+      } else {
+        setMinutes("");
+      }
+    } catch {
+      setMinutes("");
+    }
+  };
+
+  const handleSave = async () => {
+    if (minutes === "" || minutes <= 0) return;
+    setLoading(true);
+    try {
+      const token = getAccessToken();
+      await apiFetch(`/catalog/products/${productId}/prep-time`, {
+        token,
+        method: "PUT",
+        body: JSON.stringify({ estimatedMinutes: Number(minutes) }),
+      });
+      setSaved(true);
+      setTimeout(() => setOpen(false), 600);
+    } catch {
+      console.error("Failed to save prep time");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => void handleOpen()}
+        className="p-1.5 rounded-sm hover:bg-accent"
+        title="Tiempo de preparación"
+      >
+        <Timer className="w-4 h-4 text-muted-foreground" />
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 bg-muted/60 rounded-sm px-2 py-1">
+      <Timer className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+      <input
+        type="number"
+        min={1}
+        value={minutes}
+        onChange={(e) => setMinutes(e.target.value === "" ? "" : Number(e.target.value))}
+        placeholder="min"
+        className="w-14 bg-transparent text-sm outline-none text-center"
+        autoFocus
+      />
+      <span className="text-[10px] text-muted-foreground">min</span>
+      <button
+        onClick={() => void handleSave()}
+        disabled={loading || minutes === "" || minutes <= 0}
+        className="px-1.5 py-0.5 text-[10px] bg-primary text-primary-foreground rounded font-semibold disabled:opacity-50"
+      >
+        {saved ? "✓" : "OK"}
+      </button>
+      <button
+        onClick={() => setOpen(false)}
+        className="px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+      >
+        ✕
+      </button>
+    </div>
   );
 }

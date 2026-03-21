@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { UtensilsCrossed } from "lucide-react";
-import { ApiError, apiFetch } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { CategoriesSection } from "./categories-section";
 import { ProductsSection } from "./products-section";
+import { handleApiError } from "@/lib/api-error-handler";
+import { useTranslation } from "@/i18n";
 import {
   Category,
   CategoryForm,
@@ -18,14 +21,8 @@ import {
   VariantDraft,
 } from "./types";
 
-function getRequestErrorMessage(err: unknown, fallback: string) {
-  if (err instanceof ApiError && err.status === 401) {
-    return "Tu sesión expiró o no es válida. Vuelve a iniciar sesión.";
-  }
-  return fallback;
-}
-
 export default function AdminMenuPage() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"categories" | "products">("categories");
@@ -78,7 +75,8 @@ export default function AdminMenuPage() {
       setError(null);
     } catch (err) {
       console.error("Failed to fetch catalog admin", err);
-      setError(getRequestErrorMessage(err, "No se pudo cargar el catálogo."));
+      const resolved = handleApiError(err, t, { silent: true });
+      setError(resolved.text);
     } finally {
       setLoading(false);
     }
@@ -149,7 +147,8 @@ export default function AdminMenuPage() {
       await fetchCatalog();
     } catch (err) {
       console.error("Failed to save category", err);
-      setError(getRequestErrorMessage(err, "No se pudo guardar la categoría."));
+      const resolved = handleApiError(err, t, { silent: true });
+      setError(resolved.text);
     }
   };
 
@@ -191,7 +190,8 @@ export default function AdminMenuPage() {
       await fetchCatalog();
     } catch (err) {
       console.error("Failed to save product", err);
-      setError(getRequestErrorMessage(err, "No se pudo guardar el producto."));
+      const resolved = handleApiError(err, t, { silent: true });
+      setError(resolved.text);
     }
   };
 
@@ -280,7 +280,8 @@ export default function AdminMenuPage() {
       await fetchCatalog();
     } catch (err) {
       console.error("Failed to save modifier group", err);
-      setError(getRequestErrorMessage(err, "No se pudo guardar el grupo de modificadores."));
+      const resolved = handleApiError(err, t, { silent: true });
+      setError(resolved.text);
     }
   };
 
@@ -371,7 +372,11 @@ export default function AdminMenuPage() {
   };
 
   if (loading) {
-    return <div className="p-6 text-muted-foreground">Cargando catálogo...</div>;
+    return (
+      <div className="p-6 space-y-6">
+        <PageSkeleton variant="table" cols={5} rows={6} />
+      </div>
+    );
   }
 
   return (

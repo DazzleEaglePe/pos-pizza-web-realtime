@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { ArrowDownUp } from "lucide-react";
 
 interface Movement {
@@ -116,9 +117,7 @@ export default function MovementsPage() {
       </div>
 
       {loading ? (
-        <div className="text-muted-foreground text-center py-12">
-          Cargando movimientos...
-        </div>
+        <PageSkeleton variant="table" cols={6} rows={6} showHero={false} showFilterBar />
       ) : (
         <div className="bg-card rounded-sm border border-border overflow-hidden">
           <div className="overflow-x-auto">
