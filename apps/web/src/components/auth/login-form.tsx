@@ -9,11 +9,12 @@ import { Loader2 } from "lucide-react";
 import { posAlert } from "@/lib/sweetalert";
 import { useTranslation } from "@/i18n";
 import { API_URL } from "@/lib/config";
+import { saveTokens } from "@/lib/auth";
 
 export function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@pospizza.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { t } = useTranslation();
@@ -36,12 +37,9 @@ export function LoginForm() {
         throw new Error(data.message || "Invalid credentials");
       }
 
-      // Store JWT in LocalStorage for client components (Zustand, pure React)
-      localStorage.setItem("pos_access_token", data.access_token);
+      // Store tokens (access + refresh) in localStorage + cookie
+      saveTokens(data.access_token, data.refresh_token);
       localStorage.setItem("pos_user", JSON.stringify(data.user));
-
-      // Store JWT in Cookies as a Session Cookie (expires when browser closes)
-      document.cookie = `pos_access_token=${data.access_token}; path=/; SameSite=Lax`;
 
       // Route to POS seamlessly
       router.push("/pos");
@@ -72,7 +70,7 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-12 bg-muted/50 border-border rounded-xl focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
+          className="h-12 bg-muted/50 border-border rounded-sm focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
           placeholder="admin@pospizza.com"
         />
       </div>
@@ -90,7 +88,7 @@ export function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-12 bg-muted/50 border-border rounded-xl focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
+          className="h-12 bg-muted/50 border-border rounded-sm focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
           placeholder="••••••••"
         />
       </div>
@@ -98,7 +96,7 @@ export function LoginForm() {
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-colors flex items-center justify-center gap-2"
+        className="w-full h-11 rounded-sm bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-colors flex items-center justify-center gap-2"
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         {isLoading ? t("login.authenticating") : t("login.signIn")}

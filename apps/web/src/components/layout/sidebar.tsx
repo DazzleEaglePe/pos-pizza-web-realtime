@@ -11,13 +11,19 @@ import {
   Pizza,
   ChevronLeft,
   ChevronRight,
+  Sun,
+  Moon,
+  Monitor,
+  MoreHorizontal,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { posAlert } from "@/lib/sweetalert";
 import { useTranslation } from "@/i18n";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type NavItem = {
   name: string;
@@ -84,8 +90,29 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useTranslation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("pos_sidebar_collapsed") === "1";
+  });
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  // Persist + sync collapsed state across tabs
+  const toggleCollapsed = useCallback((collapsed: boolean) => {
+    setIsCollapsed(collapsed);
+    try { localStorage.setItem("pos_sidebar_collapsed", collapsed ? "1" : "0"); } catch {}
+  }, []);
+
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key === "pos_sidebar_collapsed") setIsCollapsed(e.newValue === "1");
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   useEffect(() => {
     try {
@@ -102,6 +129,7 @@ export function Sidebar({
   const mainNav: NavItem[] = [
     { name: t("sidebar.menu"), href: "/pos", icon: LayoutGrid },
     { name: t("sidebar.orderList"), href: "/pos/orders", icon: ReceiptText, badge: "9+" },
+    { name: "Mesas", href: "/pos/tables", icon: LayoutGrid },
     { name: t("sidebar.history"), href: "/pos/history", icon: History },
     { name: t("sidebar.bills"), href: "/pos/bills", icon: ReceiptText },
   ];
@@ -126,7 +154,17 @@ export function Sidebar({
       cancelButtonText: t("sidebar.cancel"),
     });
     if (result.isConfirmed) {
+      // Server-side logout: revoke refresh token
+      const rt = localStorage.getItem("pos_refresh_token");
+      if (rt) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/auth/logout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: rt }),
+        }).catch(() => {});
+      }
       localStorage.removeItem("pos_access_token");
+      localStorage.removeItem("pos_refresh_token");
       localStorage.removeItem("pos_user");
       document.cookie =
         "pos_access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -150,7 +188,7 @@ export function Sidebar({
         )}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-sm bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
             <Pizza className="w-4 h-4 text-primary" />
           </div>
           {!isCollapsed && (
@@ -161,8 +199,8 @@ export function Sidebar({
         </div>
         {!isCollapsed && (
           <button
-            onClick={() => setIsCollapsed(true)}
-            className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            onClick={() => toggleCollapsed(true)}
+            className="w-7 h-7 shrink-0 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -239,51 +277,189 @@ export function Sidebar({
           isCollapsed ? "px-2" : "px-3",
         )}
       >
-        {/* User card */}
-        {!isCollapsed && user && (
-          <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-sm bg-muted/40">
-            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/15 overflow-hidden shrink-0">
-              <img
-                src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=e6f6f4`}
-                alt={user.name}
-                className="w-full h-full object-cover scale-110"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-foreground truncate leading-none mb-0.5">
-                {user.name}
-              </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
-                {user.role.toLowerCase()}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          title={isCollapsed ? t("sidebar.signOut") : undefined}
-          className={cn(
-            "flex items-center gap-3 w-full rounded-sm px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors outline-none focus-visible:ring-2 focus-visible:ring-destructive",
-            isCollapsed && "justify-center px-0",
-          )}
-        >
-          <LogOut className="w-5 h-5 shrink-0" strokeWidth={2} />
-          {!isCollapsed && <span>{t("sidebar.signOut")}</span>}
-        </button>
+        <UserMenu
+          user={user}
+          isCollapsed={isCollapsed}
+          mounted={mounted}
+          theme={theme}
+          setTheme={setTheme}
+          onLogout={handleLogout}
+        />
 
         {/* Expand when collapsed */}
         {isCollapsed && (
           <button
-            onClick={() => setIsCollapsed(false)}
-            className="flex items-center justify-center w-full mt-1.5 py-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            onClick={() => toggleCollapsed(false)}
+            className="flex items-center justify-center w-full mt-1.5 py-2 rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
       </div>
     </div>
+  );
+}
+
+/* ─── User Menu Popover ──────────────────────────────── */
+
+function UserMenu({
+  user,
+  isCollapsed,
+  mounted,
+  theme,
+  setTheme,
+  onLogout,
+}: {
+  user: { name: string; role: string } | null;
+  isCollapsed: boolean;
+  mounted: boolean;
+  theme: string | undefined;
+  setTheme: (t: string) => void;
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  if (!user) return null;
+
+  const themeOptions = [
+    { value: "light", icon: Sun, label: "Light" },
+    { value: "dark", icon: Moon, label: "Dark" },
+    { value: "system", icon: Monitor, label: "System" },
+  ];
+
+  /* Collapsed: just avatar */
+  if (isCollapsed) {
+    return (
+      <div className="relative flex flex-col items-center gap-1.5 mb-2" ref={ref}>
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-8 h-8 rounded-full bg-primary/10 border border-primary/15 overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/30 transition-all"
+        >
+          <img
+            src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=e6f6f4`}
+            alt={user.name}
+            className="w-full h-full object-cover scale-110"
+          />
+        </button>
+
+        {open && (
+          <div className="absolute bottom-full left-0 mb-2 w-56 bg-card border border-border rounded-sm shadow-xl z-50 overflow-hidden">
+            <PopoverContent user={user} themeOptions={themeOptions} theme={theme} setTheme={setTheme} mounted={mounted} onLogout={onLogout} onClose={() => setOpen(false)} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* Expanded: user row with ··· and 🔔 */
+  return (
+    <div className="relative flex items-center gap-2 px-1 py-1" ref={ref}>
+      {/* Status dot + avatar */}
+      <div className="relative shrink-0">
+        <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/15 overflow-hidden">
+          <img
+            src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=e6f6f4`}
+            alt={user.name}
+            className="w-full h-full object-cover scale-110"
+          />
+        </div>
+        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-sidebar" />
+      </div>
+
+      {/* Name */}
+      <span className="flex-1 text-[13px] font-semibold text-foreground truncate">
+        {user.name}
+      </span>
+
+      {/* ··· menu trigger */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-7 h-7 shrink-0 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+      >
+        <MoreHorizontal className="w-4 h-4" />
+      </button>
+
+      {/* Popover */}
+      {open && (
+        <div className="absolute bottom-full left-0 mb-2 w-[calc(100%+8px)] -ml-1 bg-card border border-border rounded-sm shadow-xl z-50 overflow-hidden">
+          <PopoverContent user={user} themeOptions={themeOptions} theme={theme} setTheme={setTheme} mounted={mounted} onLogout={onLogout} onClose={() => setOpen(false)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Popover Content ────────────────────────────────── */
+
+function PopoverContent({
+  user,
+  themeOptions,
+  theme,
+  setTheme,
+  mounted,
+  onLogout,
+  onClose,
+}: {
+  user: { name: string; role: string };
+  themeOptions: { value: string; icon: typeof Sun; label: string }[];
+  theme: string | undefined;
+  setTheme: (t: string) => void;
+  mounted: boolean;
+  onLogout: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      {/* User info header */}
+      <div className="px-4 py-3 border-b border-border">
+        <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
+        <p className="text-xs text-muted-foreground">{user.role.toLowerCase()}</p>
+      </div>
+
+      {/* Theme row */}
+      {mounted && (
+        <div className="px-4 py-2.5 border-b border-border">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] text-foreground font-medium">Tema</span>
+            <div className="flex items-center bg-muted rounded-md p-0.5 gap-0.5">
+              {themeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setTheme(opt.value)}
+                  className={cn(
+                    "w-7 h-7 flex items-center justify-center rounded-md transition-all",
+                    theme === opt.value
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                  title={opt.label}
+                >
+                  <opt.icon className="w-3.5 h-3.5" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logout */}
+      <button
+        onClick={() => { onClose(); onLogout(); }}
+        className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+      >
+        <LogOut className="w-4 h-4" />
+        Cerrar Sesión
+      </button>
+    </>
   );
 }
 

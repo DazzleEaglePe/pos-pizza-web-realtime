@@ -1,40 +1,62 @@
 "use client";
 
-import { Bell, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useTranslation } from "@/i18n";
 import { MobileNav } from "./mobile-nav";
+import { NotificationBell } from "./notification-bell";
+import { useEffect, useState } from "react";
+import { Store, MonitorSmartphone } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useCashRegister } from "@/hooks/useCashRegister";
 
 export function Topbar() {
-  const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
+  const pathname = usePathname();
+  const isPosRoute = !pathname.startsWith("/admin");
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const cr = useCashRegister();
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("pos_user");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { name?: string; email?: string; role?: string };
+      setUser({
+        name: parsed?.name || parsed?.email || "Usuario",
+        role: parsed?.role ?? "",
+      });
+    } catch {}
+  }, []);
 
   return (
-    <header className="flex items-center justify-between px-6 h-16 bg-background border-b border-border w-full">
+    <header className="flex items-center justify-between gap-2 px-3 sm:px-4 h-14 bg-background border-b border-border w-full min-w-0">
       <MobileNav />
 
-      <div className="flex items-center gap-2 ml-auto">
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          aria-label={t("topbar.toggleDarkMode")}
-        >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform duration-300 dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100" />
-        </button>
-
-        <button className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-destructive rounded-full border border-background"></span>
-        </button>
-        
-        <div className="flex items-center gap-3 pl-4 ml-2 border-l border-border h-10">
-          <div className="flex flex-col items-end justify-center">
-            <span className="text-sm font-semibold text-foreground leading-none mb-1">Sofia L.</span>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{t("topbar.cashier")}</span>
+      {/* ── Context pills (POS routes only) ── */}
+      {isPosRoute && (
+        <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-sm bg-primary/8 border border-primary/15 text-[11px] font-semibold text-primary">
+            <Store className="w-3.5 h-3.5" />
+            POS Pizza
           </div>
-          <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden shrink-0">
-             <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Sofia&backgroundColor=e6f6f4" alt="Avatar" className="w-full h-full object-cover scale-110" />
+          {cr.register && (
+            <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-sm bg-emerald-500/8 border border-emerald-500/15 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <MonitorSmartphone className="w-3.5 h-3.5" />
+              {t("topbar.cashier")} #{cr.register.id.slice(-4).toUpperCase()}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center gap-1.5 sm:gap-3 ml-auto min-w-0">
+        <NotificationBell />
+
+        <div className="flex items-center gap-2 pl-2 sm:pl-3 ml-0.5 sm:ml-1 border-l border-border h-8 min-w-0">
+          <div className="hidden sm:flex flex-col items-end justify-center min-w-0">
+            <span className="text-[13px] font-semibold text-foreground leading-none">{user?.name ?? "Usuario"}</span>
+            <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">{user?.role?.toLowerCase() ?? t("topbar.cashier")}</span>
+          </div>
+          <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden shrink-0">
+             <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user?.name ?? "Usuario")}&backgroundColor=e6f6f4`} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
         </div>
       </div>
