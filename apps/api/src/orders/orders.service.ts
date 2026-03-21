@@ -15,6 +15,9 @@ import { CashRegisterService } from '../cash-register/cash-register.service';
 import { TrackingService } from '../tracking/tracking.service';
 import { InventoryService } from '../inventory/inventory.service';
 import { BusinessConfigService } from '../config/config.service';
+import { OrdersRepository } from './orders.repository';
+import { buildOrderItemsPayload, calculateTotals } from './order-calculations';
+import { validateAndApplyPromotions } from './promotion-validator';
 
 @Injectable()
 export class OrdersService {
@@ -25,6 +28,7 @@ export class OrdersService {
     private readonly tracking: TrackingService,
     private readonly inventory: InventoryService,
     private readonly businessConfig: BusinessConfigService,
+    private readonly repository: OrdersRepository,
   ) {}
   async create(createOrderDto: any) {
     const {
@@ -39,6 +43,9 @@ export class OrdersService {
       paymentMethod = 'CASH',
       cashReceived,
       referenceNumber,
+      cashAmount,
+      digitalAmount,
+      digitalMethod,
     } = createOrderDto;
 
     if (!items || items.length === 0) {
@@ -134,38 +141,14 @@ export class OrdersService {
       actualCashRegisterId = register.id;
     }
 
+    // Validate promotions and overwrite prices with DB promoPrice
+    const promotionSnapshots = await validateAndApplyPromotions(items);
+
     // Recalculate totals (tax-inclusive pricing model)
-    let grossTotal = 0;
-    const orderItemsPayload = items.map((item: any) => {
-      const itemModifiersTotal = (item.modifiers || []).reduce(
-        (s: number, m: any) => s + Number(m.price || 0),
-        0,
-      );
-      const itemSubtotal = (item.price + itemModifiersTotal) * item.quantity;
-      grossTotal += itemSubtotal;
-      return {
-        productId: item.promotionId ? null : (item.productId ?? null),
-        promotionId: item.promotionId ?? null,
-        variantId: item.variantId || null,
-        productName: item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        modifiersTotal: itemModifiersTotal,
-        subtotal: itemSubtotal,
-        notes: item.notes || null,
-        variantName: item.variantName || null,
-        _modifiers: (item.modifiers || []) as Array<{
-          id: string;
-          name: string;
-          price: number;
-        }>,
-      };
-    });
+    const { payload: orderItemsPayload, grossTotal } = buildOrderItemsPayload(items);
 
     const taxRate = await this.businessConfig.getTaxRateDecimal();
-    const taxAmount = grossTotal * (taxRate / (1 + taxRate));
-    const subtotal = grossTotal - taxAmount;
-    const total = grossTotal;
+    const { taxAmount, subtotal, total } = calculateTotals(grossTotal, taxRate);
 
     // Generate real ticket sequence
     const ticketNumber = await this.cashRegister.generateNextTicketNumber();
@@ -173,9 +156,6 @@ export class OrdersService {
     try {
       // Execute everything in a Drizzle Transaction
       const result = await db.transaction(async (tx) => {
-        console.log('--- STARTING DB TRANSACTION ---');
-        console.log('Payload UUIDs:', { userId, actualCashRegisterId });
-
         // 1. Create the Order
         const [newOrder] = await tx
           .insert(orders)
@@ -242,6 +222,9 @@ export class OrdersService {
             amount: total,
             cashReceived: cashReceived,
             referenceNumber: referenceNumber,
+            cashAmount: cashAmount,
+            digitalAmount: digitalAmount,
+            digitalMethod: digitalMethod,
           },
         );
 
@@ -341,125 +324,19 @@ export class OrdersService {
   }
 
   async findAll() {
-    return await db.query.orders.findMany({
-      with: {
-        items: true,
-        table: true,
-      },
-      orderBy: (orders, { desc }) => [desc(orders.createdAt)],
-    });
+    return this.repository.findAll();
   }
 
   async findActive() {
-    return await db.query.orders.findMany({
-      where: (orders, { inArray }) =>
-        inArray(orders.status, ['RECEIVED', 'PREPARING', 'IN_OVEN', 'READY']),
-      with: {
-        items: true,
-        table: true,
-      },
-      orderBy: (orders, { asc }) => [asc(orders.createdAt)],
-    });
+    return this.repository.findActive();
   }
 
   async findOne(id: string) {
-    const order = await db.query.orders.findFirst({
-      where: eq(orders.id, id),
-      with: {
-        items: true,
-      },
-    });
-    if (!order) {
-      throw new HttpException(
-        { code: 'ORDER_NOT_FOUND', details: { orderId: id } },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    const trackingRecord = await this.tracking.findByOrderId(id);
-
-    return {
-      ...order,
-      tracking: trackingRecord
-        ? {
-            code: trackingRecord.trackingCode,
-            qrData: trackingRecord.qrData,
-            estimatedMinutes: trackingRecord.estimatedMinutes,
-          }
-        : null,
-    };
+    return this.repository.findOne(id);
   }
 
   async findByTicketNumber(ticketNumber: string) {
-    const order = await db.query.orders.findFirst({
-      where: eq(orders.ticketNumber, ticketNumber),
-      with: {
-        items: true,
-        statusHistory: true,
-        table: true,
-      },
-    });
-    if (!order) {
-      throw new HttpException(
-        { code: 'ORDER_NOT_FOUND', details: { ticketNumber } },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    const trackingRecord = await this.tracking.findByOrderId(order.id);
-
-    const safeItems = Array.isArray((order as any).items)
-      ? (order as any).items
-      : [];
-
-    const safeHistory = Array.isArray((order as any).statusHistory)
-      ? (order as any).statusHistory
-      : [];
-
-    // Return only safe public data (no userId, cashRegisterId)
-    return {
-      id: order.id,
-      ticketNumber: order.ticketNumber,
-      status: order.status,
-      orderType: order.orderType,
-      customerName: order.customerName,
-      table: order.table
-        ? {
-            number: order.table.number,
-            zone: order.table.zone,
-          }
-        : null,
-      subtotal: order.subtotal,
-      taxAmount: order.taxAmount,
-      total: order.total,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt,
-      deliveredAt: order.deliveredAt,
-      tracking: trackingRecord
-        ? {
-            code: trackingRecord.trackingCode,
-            estimatedMinutes: trackingRecord.estimatedMinutes,
-            qrData: trackingRecord.qrData,
-          }
-        : null,
-      items: safeItems.map((item: any) => ({
-        productName: item.productName,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        subtotal: item.subtotal,
-        variantName: item.variantName,
-      })),
-      statusHistory: safeHistory
-        .slice()
-        .sort(
-          (a: any, b: any) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        )
-        .map((h: any) => ({
-          status: h.status,
-          createdAt: h.createdAt,
-        })),
-    };
+    return this.repository.findByTicketNumber(ticketNumber);
   }
 
   async updateStatus(id: string, status: string, changedBy?: string) {
