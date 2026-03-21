@@ -6,6 +6,7 @@ import { Clock, ExternalLink, Loader2, UtensilsCrossed } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { posAlert } from "@/lib/sweetalert";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 
 type ActiveOrder = {
   id: string;
@@ -222,6 +223,7 @@ export function OrdersClient({
       await updateOrderStatus(orderId, "DELIVERED");
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
     } catch (err: any) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error(err);
       posAlert.fire({
         toast: true,
@@ -267,6 +269,7 @@ export function OrdersClient({
         title: "Pedido cancelado",
       });
     } catch (err: any) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error(err);
       posAlert.fire({
         toast: true,

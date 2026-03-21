@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Minus, ShoppingCart } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCart } from "@/hooks/useCart";
+import { useConfig } from "@/hooks/useConfig";
 import { useTranslation } from "@/i18n";
 import type { CatalogProduct, ProductVariant, Modifier, ModifierGroup } from "./menu-types";
 
@@ -16,6 +17,7 @@ type Props = {
 
 export function ProductDetailDialog({ product, onClose }: Props) {
   const addItem = useCart((s) => s.addItem);
+  const cs = useConfig((s) => s.currencySymbol);
   const { t } = useTranslation();
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -97,10 +99,10 @@ export function ProductDetailDialog({ product, onClose }: Props) {
 
   return (
     <Dialog open={Boolean(product)} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-sm p-0 gap-0 rounded-2xl border border-border bg-background">
+      <DialogContent className="sm:max-w-sm p-0 gap-0 rounded-sm border border-border bg-background">
         {/* ── Product header ── */}
         <div className="flex items-start gap-3 p-4 border-b border-border">
-          <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted/40 shrink-0">
+          <div className="w-16 h-16 rounded-sm overflow-hidden bg-muted/40 shrink-0">
             <img
               src={
                 product?.imageUrl ||
@@ -120,7 +122,7 @@ export function ProductDetailDialog({ product, onClose }: Props) {
               </p>
             )}
             <p className="text-xl font-black text-foreground mt-1.5 tracking-tight">
-              <span className="text-sm font-semibold align-super mr-0.5">$</span>
+              <span className="text-sm font-semibold align-super mr-0.5">{cs}</span>
               {(
                 (
                   (selectedVariant
@@ -160,7 +162,7 @@ export function ProductDetailDialog({ product, onClose }: Props) {
                       key={variant.id}
                       type="button"
                       onClick={() => setSelectedVariant(variant)}
-                      title={`${variant.name} — S/${Number(variant.price).toFixed(2)}`}
+                      title={`${variant.name} — ${cs}${Number(variant.price).toFixed(2)}`}
                       className={cn(
                         "w-11 h-11 rounded-full text-[11px] font-bold border-2 transition-all flex items-center justify-center shrink-0 select-none",
                         isActive
@@ -214,7 +216,7 @@ export function ProductDetailDialog({ product, onClose }: Props) {
                         type="button"
                         onClick={() => toggleModifier(group, modifier)}
                         title={`${modifier.name}${
-                          modifier.price > 0 ? ` +$${modifier.price.toFixed(2)}` : ""
+                          modifier.price > 0 ? ` +${cs}${modifier.price.toFixed(2)}` : ""
                         }`}
                         className={cn(
                           "h-11 min-w-11 px-3 rounded-full text-[11px] font-bold border-2 transition-all flex items-center justify-center gap-1 shrink-0 select-none",
@@ -274,10 +276,10 @@ export function ProductDetailDialog({ product, onClose }: Props) {
           <Button
             disabled={isDisabled}
             onClick={handleAdd}
-            className="w-full h-12 rounded-full bg-foreground hover:opacity-90 text-background font-bold text-sm gap-2 disabled:opacity-30 transition-opacity"
+            className="w-full h-12 rounded-sm bg-foreground hover:opacity-90 text-background font-bold text-sm gap-2 disabled:opacity-30 transition-opacity"
           >
             <ShoppingCart className="w-4 h-4" />
-            Agregar al carrito
+            {t("pos.addToCart")}
           </Button>
         </div>
       </DialogContent>

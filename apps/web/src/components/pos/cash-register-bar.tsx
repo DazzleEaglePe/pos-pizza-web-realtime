@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/dialog";
 import { LockOpen, Lock, DollarSign, Clock, Banknote, CreditCard, Receipt, ArrowRight, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
 import { useTranslation } from "@/i18n";
+import { useConfig } from "@/hooks/useConfig";
 import { posAlert } from "@/lib/sweetalert";
+import { handleApiError } from "@/lib/api-error-handler";
 import type { ReactNode } from "react";
 import type { CashRegisterSummary } from "@/hooks/useCashRegister";
 
@@ -62,6 +64,7 @@ function Divider() {
 
 export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSummary, triggerOpen }: Props) {
   const { t } = useTranslation();
+  const cs = useConfig((s) => s.currencySymbol);
   const [dialogMode, setDialogMode] = useState<"open" | "close" | null>(null);
 
   // Allow parent to force-open the register dialog by incrementing triggerOpen
@@ -116,8 +119,8 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
         icon: "success",
         title: t("cashRegister.openedSuccess"),
       });
-    } catch {
-      posAlert.fire({ icon: "error", title: t("cashRegister.openError") });
+    } catch (err) {
+      handleApiError(err, t);
     } finally {
       setSubmitting(false);
     }
@@ -150,7 +153,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
         : isSurplus
           ? t("cashRegister.surplus")
           : t("cashRegister.deficit");
-      const diffDisplay = `${diff > 0 ? "+" : ""}S/ ${Math.abs(diff).toFixed(2)}`;
+      const diffDisplay = `${diff > 0 ? "+" : ""}${cs} ${Math.abs(diff).toFixed(2)}`;
 
       await posAlert.fire({
         icon: isExact || isSurplus ? "success" : "warning",
@@ -162,19 +165,19 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
           <div style="text-align:left; font-size:13px; color:var(--muted-foreground); margin-top:8px;">
             <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid color-mix(in oklch, var(--border) 50%, transparent);">
               <span>${t("cashRegister.openingAmount")}</span>
-              <span style="font-weight:700; color:var(--foreground);">S/ ${opening.toFixed(2)}</span>
+              <span style="font-weight:700; color:var(--foreground);">${cs} ${opening.toFixed(2)}</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid color-mix(in oklch, var(--border) 50%, transparent);">
               <span>+ ${t("cashRegister.cashSales")}</span>
-              <span style="font-weight:700; color:var(--foreground);">S/ ${totalCashSales.toFixed(2)}</span>
+              <span style="font-weight:700; color:var(--foreground);">${cs} ${totalCashSales.toFixed(2)}</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid color-mix(in oklch, var(--border) 50%, transparent);">
               <span>${t("cashRegister.digitalSales")}</span>
-              <span style="font-weight:700; color:var(--foreground);">S/ ${totalDigitalSales.toFixed(2)}</span>
+              <span style="font-weight:700; color:var(--foreground);">${cs} ${totalDigitalSales.toFixed(2)}</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid color-mix(in oklch, var(--border) 50%, transparent);">
               <span>${t("cashRegister.totalSales")}</span>
-              <span style="font-weight:700; color:var(--foreground);">S/ ${totalSales.toFixed(2)}</span>
+              <span style="font-weight:700; color:var(--foreground);">${cs} ${totalSales.toFixed(2)}</span>
             </div>
             <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid color-mix(in oklch, var(--border) 50%, transparent);">
               <span>${t("cashRegister.tickets")}</span>
@@ -183,11 +186,11 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
             <div style="margin-top:10px; padding:10px 12px; border-radius:12px; background:color-mix(in oklch, var(--muted) 80%, transparent);">
               <div style="display:flex; justify-content:space-between; padding:3px 0;">
                 <span>${t("cashRegister.expectedCash")}</span>
-                <span style="font-weight:800; color:var(--foreground);">S/ ${expected.toFixed(2)}</span>
+                <span style="font-weight:800; color:var(--foreground);">${cs} ${expected.toFixed(2)}</span>
               </div>
               <div style="display:flex; justify-content:space-between; padding:3px 0;">
                 <span>${t("cashRegister.actualCash")}</span>
-                <span style="font-weight:800; color:var(--foreground);">S/ ${actual.toFixed(2)}</span>
+                <span style="font-weight:800; color:var(--foreground);">${cs} ${actual.toFixed(2)}</span>
               </div>
             </div>
             <div style="margin-top:12px; padding:14px; border-radius:14px; border:2px solid ${verdictColor}; background:color-mix(in oklch, ${verdictColor} 8%, transparent); text-align:center;">
@@ -197,8 +200,8 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
           </div>
         `,
       });
-    } catch {
-      posAlert.fire({ icon: "error", title: t("cashRegister.closeError") });
+    } catch (err) {
+      handleApiError(err, t);
     } finally {
       setSubmitting(false);
     }
@@ -227,7 +230,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
         )}
       >
         <div className={cn(
-          "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+          "w-7 h-7 rounded-sm flex items-center justify-center shrink-0",
           register ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive",
         )}>
           {register ? <LockOpen className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
@@ -255,7 +258,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
 
       {/* ── Open register dialog ── */}
       <Dialog open={dialogMode === "open"} onOpenChange={(open) => !open && setDialogMode(null)}>
-        <DialogContent className="sm:max-w-sm rounded-2xl border border-border bg-background p-0 gap-0">
+        <DialogContent className="sm:max-w-sm rounded-sm border border-border bg-background p-0 gap-0">
           <DialogHeader className="px-5 pt-5 pb-3 border-b border-border">
             <DialogTitle className="text-[15px] font-bold text-foreground flex items-center gap-2">
               <LockOpen className="w-4 h-4 text-primary" />
@@ -279,7 +282,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
                   onChange={(e) => setOpeningAmount(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleOpen()}
                   placeholder="0.00"
-                  className="h-12 pl-10 rounded-xl bg-muted/40 border-border text-lg font-bold tabular-nums"
+                  className="h-12 pl-10 rounded-sm bg-muted/40 border-border text-lg font-bold tabular-nums"
                 />
               </div>
             </div>
@@ -288,7 +291,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
           <DialogFooter className="px-5 pb-5 pt-0 flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 h-11 rounded-xl text-sm"
+              className="flex-1 h-11 rounded-sm text-sm"
               onClick={() => setDialogMode(null)}
             >
               {t("common.cancel")}
@@ -296,7 +299,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
             <Button
               disabled={!openingAmount || parseFloat(openingAmount) < 0 || submitting}
               onClick={handleOpen}
-              className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm gap-2"
+              className="flex-1 h-11 rounded-sm bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm gap-2"
             >
               <LockOpen className="w-4 h-4" />
               {t("cashRegister.openAction")}
@@ -307,7 +310,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
 
       {/* ── Close register dialog — full cuadre de caja ── */}
       <Dialog open={dialogMode === "close"} onOpenChange={(open) => !open && setDialogMode(null)}>
-        <DialogContent className="sm:max-w-[420px] rounded-2xl border border-border bg-background p-0 gap-0">
+        <DialogContent className="sm:max-w-[420px] rounded-sm border border-border bg-background p-0 gap-0">
           <DialogHeader className="px-5 pt-5 pb-3 border-b border-border">
             <DialogTitle className="text-[15px] font-bold text-foreground flex items-center gap-2">
               <Lock className="w-4 h-4 text-destructive" />
@@ -318,32 +321,32 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
           <div className="px-5 py-5 space-y-4">
             {/* Live sales breakdown */}
             {summaryLoading ? (
-              <div className="bg-muted/40 rounded-xl px-4 py-6 text-center">
+              <div className="bg-muted/40 rounded-sm px-4 py-6 text-center">
                 <p className="text-xs text-muted-foreground animate-pulse">{t("common.loading")}...</p>
               </div>
             ) : summary ? (
-              <div className="bg-muted/40 rounded-xl px-4 py-3 space-y-0">
+              <div className="bg-muted/40 rounded-sm px-4 py-3 space-y-0">
                 <StatRow
                   icon={<DollarSign className="w-3.5 h-3.5" />}
                   label={t("cashRegister.openingAmount")}
-                  value={`S/ ${summary.openingAmount.toFixed(2)}`}
+                  value={`${cs} ${summary.openingAmount.toFixed(2)}`}
                 />
                 <Divider />
                 <StatRow
                   icon={<Banknote className="w-3.5 h-3.5" />}
                   label={t("cashRegister.cashSales")}
-                  value={`S/ ${summary.totalCashSales.toFixed(2)}`}
+                  value={`${cs} ${summary.totalCashSales.toFixed(2)}`}
                   highlight
                 />
                 <StatRow
                   icon={<CreditCard className="w-3.5 h-3.5" />}
                   label={t("cashRegister.digitalSales")}
-                  value={`S/ ${summary.totalDigitalSales.toFixed(2)}`}
+                  value={`${cs} ${summary.totalDigitalSales.toFixed(2)}`}
                 />
                 <StatRow
                   icon={<TrendingUp className="w-3.5 h-3.5" />}
                   label={t("cashRegister.totalSales")}
-                  value={`S/ ${summary.totalSales.toFixed(2)}`}
+                  value={`${cs} ${summary.totalSales.toFixed(2)}`}
                   highlight
                 />
                 <Divider />
@@ -364,16 +367,16 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
                     {t("cashRegister.expectedCash")}
                   </div>
                   <span className="text-base font-black tabular-nums text-primary">
-                    S/ {summary.expectedCash.toFixed(2)}
+                    {cs} {summary.expectedCash.toFixed(2)}
                   </span>
                 </div>
               </div>
             ) : register ? (
-              <div className="bg-muted/40 rounded-xl px-4 py-3">
+              <div className="bg-muted/40 rounded-sm px-4 py-3">
                 <StatRow
                   icon={<DollarSign className="w-3.5 h-3.5" />}
                   label={t("cashRegister.openingAmount")}
-                  value={`S/ ${register.openingAmount.toFixed(2)}`}
+                  value={`${cs} ${register.openingAmount.toFixed(2)}`}
                 />
                 <StatRow
                   icon={<Clock className="w-3.5 h-3.5" />}
@@ -398,7 +401,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
                   value={actualCash}
                   onChange={(e) => setActualCash(e.target.value)}
                   placeholder="0.00"
-                  className="h-12 pl-10 rounded-xl bg-muted/40 border-border text-lg font-bold tabular-nums"
+                  className="h-12 pl-10 rounded-sm bg-muted/40 border-border text-lg font-bold tabular-nums"
                 />
               </div>
             </div>
@@ -406,7 +409,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
             {/* Live difference preview */}
             {liveDiff !== null && (
               <div className={cn(
-                "flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-colors",
+                "flex items-center justify-between px-4 py-3 rounded-sm border-2 transition-colors",
                 liveDiff === 0
                   ? "border-primary/30 bg-primary/5"
                   : liveDiff > 0
@@ -436,7 +439,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
                   "text-lg font-black tabular-nums",
                   liveDiff >= 0 ? "text-primary" : "text-destructive",
                 )}>
-                  {liveDiff > 0 ? "+" : ""}S/ {Math.abs(liveDiff).toFixed(2)}
+                  {liveDiff > 0 ? "+" : ""}{cs} {Math.abs(liveDiff).toFixed(2)}
                 </span>
               </div>
             )}
@@ -451,7 +454,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
                 onChange={(e) => setCloseNotes(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleClose()}
                 placeholder={t("cashRegister.notesPlaceholder")}
-                className="h-10 rounded-xl bg-muted/40 border-border text-sm"
+                className="h-10 rounded-sm bg-muted/40 border-border text-sm"
               />
             </div>
           </div>
@@ -459,7 +462,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
           <DialogFooter className="px-5 pb-5 pt-0 flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 h-11 rounded-xl text-sm"
+              className="flex-1 h-11 rounded-sm text-sm"
               onClick={() => setDialogMode(null)}
             >
               {t("common.cancel")}
@@ -468,7 +471,7 @@ export function CashRegisterBar({ register, loading, onOpen, onClose, onFetchSum
               disabled={!actualCash || parseFloat(actualCash) < 0 || submitting}
               onClick={handleClose}
               variant="destructive"
-              className="flex-1 h-11 rounded-xl font-bold text-sm gap-2"
+              className="flex-1 h-11 rounded-sm font-bold text-sm gap-2"
             >
               <Lock className="w-4 h-4" />
               {t("cashRegister.closeAction")}

@@ -6,6 +6,9 @@ import {
   Croissant,
   Utensils,
   IceCream,
+  Flame,
+  Salad,
+  IceCreamCone,
 } from "lucide-react";
 
 export type ProductVariant = {
@@ -35,6 +38,7 @@ export type ModifierGroup = {
 
 export type CatalogProduct = {
   id: string;
+  categoryId?: string;
   name: string;
   description?: string | null;
   basePrice: number;
@@ -48,7 +52,16 @@ export type CatalogCategory = {
   id: string;
   name: string;
   icon?: string | null;
+  productCount?: number;
   products?: CatalogProduct[];
+};
+
+export type CatalogProductsPage = {
+  items: CatalogProduct[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
 };
 
 export type PromotionItem = {
@@ -90,6 +103,9 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Croissant,
   Utensils,
   IceCream,
+  Flame,
+  Salad,
+  IceCreamCone,
 };
 
 export const gridContainer = {

@@ -26,7 +26,7 @@ export function TableCard({
   const seats = Math.min(tb.capacity || 4, 8);
 
   const borderColor = isSelected
-    ? "border-primary"
+    ? "border-primary ring-2 ring-primary/25"
     : status === "OCCUPIED"
       ? "border-destructive/30"
       : status === "RESERVED"
@@ -34,7 +34,7 @@ export function TableCard({
         : "border-border";
 
   const bgColor = isSelected
-    ? "bg-primary/5"
+    ? "bg-primary/8"
     : status === "OCCUPIED"
       ? "bg-destructive/[0.03]"
       : status === "RESERVED"
@@ -54,38 +54,40 @@ export function TableCard({
       ? "bg-destructive/40"
       : status === "RESERVED"
         ? "bg-amber-500/40"
-        : "bg-muted-foreground/20";
+        : isSelected
+          ? "bg-primary/40"
+          : "bg-muted-foreground/20";
 
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`group relative flex flex-col items-center gap-2 p-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
-        isSelected ? "scale-[1.03]" : "hover:scale-[1.02]"
+      className={`group relative flex flex-col items-center gap-2.5 p-3 rounded-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
+        isSelected ? "scale-[1.04]" : "hover:scale-[1.02] hover:bg-muted/30"
       }`}
     >
       {/* Top chairs */}
-      <div className="flex justify-center gap-1.5">
+      <div className="flex justify-center gap-2">
         {Array.from({ length: Math.ceil(seats / 2) }).map((_, i) => (
           <span
             key={`t${i}`}
-            className={`w-3 h-1.5 rounded-full transition-colors ${chairClass}`}
+            className={`w-4 h-1.5 rounded-full transition-colors ${chairClass}`}
           />
         ))}
       </div>
 
       {/* Table surface */}
       <div
-        className={`w-full aspect-square rounded-xl border-2 ${borderColor} ${bgColor} flex flex-col items-center justify-center transition-all ${
-          isSelected ? "shadow-md" : "shadow-sm group-hover:shadow-md"
+        className={`w-full aspect-square rounded-sm border-2 ${borderColor} ${bgColor} flex flex-col items-center justify-center transition-all ${
+          isSelected ? "shadow-lg shadow-primary/10" : "shadow-sm group-hover:shadow-md"
         }`}
       >
-        <span className="text-2xl font-black tracking-tight text-foreground leading-none">
+        <span className="text-3xl font-black tracking-tight text-foreground leading-none">
           {tb.number}
         </span>
-        <span className="flex items-center gap-1 mt-1">
-          <span className={`w-1.5 h-1.5 rounded-full ${dot}`} aria-hidden />
-          <span className="text-[10px] text-muted-foreground">
+        <span className="flex items-center gap-1.5 mt-1.5">
+          <span className={`w-2 h-2 rounded-full ${dot}`} aria-hidden />
+          <span className="text-[11px] text-muted-foreground font-medium">
             {getStatusLabel(tb.status)}
           </span>
         </span>
@@ -97,11 +99,11 @@ export function TableCard({
       </div>
 
       {/* Bottom chairs */}
-      <div className="flex justify-center gap-1.5">
+      <div className="flex justify-center gap-2">
         {Array.from({ length: Math.floor(seats / 2) }).map((_, i) => (
           <span
             key={`b${i}`}
-            className={`w-3 h-1.5 rounded-full transition-colors ${chairClass}`}
+            className={`w-4 h-1.5 rounded-full transition-colors ${chairClass}`}
           />
         ))}
       </div>

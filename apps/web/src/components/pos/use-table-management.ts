@@ -6,6 +6,7 @@ import { useCart } from "@/hooks/useCart";
 import Swal from "sweetalert2";
 import type { Table, ActiveOrder } from "./types";
 import { formatTicketList, getTicketsFromDetails } from "./table-utils";
+import { handleApiError, isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 
 const errorKeyByCode = {
   ORDER_NOT_FOUND: "errors.ORDER_NOT_FOUND",
@@ -91,7 +92,8 @@ export function useTableManagement(orderType: "DINE_IN" | "TAKEOUT", isAdmin: bo
     try {
       const data = await apiFetch<Table[]>("/tables");
       setTables(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       setTables([]);
     } finally {
       setTablesLoading(false);
@@ -103,7 +105,8 @@ export function useTableManagement(orderType: "DINE_IN" | "TAKEOUT", isAdmin: bo
     try {
       const data = await apiFetch<ActiveOrder[]>("/orders/active");
       setActiveOrders(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       setActiveOrders([]);
     } finally {
       setActiveOrdersLoading(false);
@@ -255,14 +258,18 @@ export function useTableManagement(orderType: "DINE_IN" | "TAKEOUT", isAdmin: bo
       const message =
         code && Object.prototype.hasOwnProperty.call(errorKeyByCode, code)
           ? t(errorKeyByCode[code as keyof typeof errorKeyByCode])
-          : t("errors.generic");
+          : undefined;
 
-      await posAlert.fire({
-        icon: "error",
-        title: t("tables.releaseAction"),
-        text: message,
-        confirmButtonText: t("common.close"),
-      });
+      if (message) {
+        await posAlert.fire({
+          icon: "error",
+          title: t("tables.releaseAction"),
+          text: message,
+          confirmButtonText: t("common.close"),
+        });
+      } else {
+        handleApiError(error, t);
+      }
     }
   };
 

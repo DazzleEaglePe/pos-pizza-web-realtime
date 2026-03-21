@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 import { Pencil, Trash2, ShoppingBag, Minus, Plus, ChevronDown, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +21,8 @@ import { Input } from "@/components/ui/input";
 import type { CreateOrderResult } from "./types";
 import { getStatusBorder } from "./table-utils";
 import { TableBoardDialog } from "./table-board-dialog";
-import { useTableManagement, errorKeyByCode } from "./use-table-management";
+import { useTableManagement } from "./use-table-management";
+import { handleApiError } from "@/lib/api-error-handler";
 import { CashRegisterBar } from "./cash-register-bar";
 import { useCashRegister } from "@/hooks/useCashRegister";
 
@@ -31,6 +31,7 @@ export function CartSidebar() {
   const updateNotes = useCart((s) => s.updateNotes);
   const { subtotal, tax, total, taxRate } = getTotals();
   const fetchConfig = useConfig((s) => s.fetchConfig);
+  const cs = useConfig((s) => s.currencySymbol);
   useEffect(() => { fetchConfig(); }, [fetchConfig]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
@@ -77,6 +78,9 @@ export function CartSidebar() {
     paymentMethod: string;
     cashReceived?: number;
     referenceNumber?: string;
+    cashAmount?: number;
+    digitalAmount?: number;
+    digitalMethod?: string;
   }) => {
     if (items.length === 0 || !cr.register) return;
     setIsSubmitting(true);
@@ -145,7 +149,7 @@ export function CartSidebar() {
               hasChange
                 ? `<div style="margin-top:16px; padding:14px 16px; border-radius:14px; border:1px solid var(--primary); background:color-mix(in oklch, var(--primary) 8%, transparent);">
                     <div style="font-weight:800; color:var(--primary); font-size:10px; text-transform:uppercase; letter-spacing:0.08em;">${t("cart.changeToGive")}</div>
-                    <div style="font-weight:900; color:var(--primary); font-size:28px; margin-top:4px; line-height:1;">S/ ${changeAmount.toFixed(2)}</div>
+                    <div style="font-weight:900; color:var(--primary); font-size:28px; margin-top:4px; line-height:1;">${cs} ${changeAmount.toFixed(2)}</div>
                   </div>`
                 : ""
             }
@@ -153,26 +157,8 @@ export function CartSidebar() {
         `,
       });
     } catch (error: unknown) {
-      const code =
-        error instanceof ApiError
-          ? error.code
-          : error instanceof Error
-            ? error.message
-            : null;
-
-      if (!Object.prototype.hasOwnProperty.call(errorKeyByCode, code ?? "")) {
-        console.error("Order submission failed", error);
-      }
-      const message =
-        code && Object.prototype.hasOwnProperty.call(errorKeyByCode, code)
-          ? t(errorKeyByCode[code as keyof typeof errorKeyByCode])
-          : t("errors.generic");
-
-      await posAlert.fire({
-        icon: "error",
-        title: t("cart.checkoutFailed"),
-        text: message || t("cart.checkoutFailedText"),
-      });
+      console.error("Order submission failed", error);
+      handleApiError(error, t);
     } finally {
       setIsSubmitting(false);
     }
@@ -197,7 +183,7 @@ export function CartSidebar() {
             {t("cart.currentOrder")}
           </h2>
           {items.length > 0 && (
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary leading-none">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-primary/10 text-primary leading-none">
               {items.reduce((acc, i) => acc + i.quantity, 0)}
             </span>
           )}
@@ -258,7 +244,7 @@ export function CartSidebar() {
                 <>
                   <span
                     className={cn(
-                      "w-8 h-8 rounded-lg border-2 flex items-center justify-center shrink-0",
+                      "w-8 h-8 rounded-sm border-2 flex items-center justify-center shrink-0",
                       getStatusBorder(tm.selectedTable.status),
                     )}
                   >
@@ -305,11 +291,11 @@ export function CartSidebar() {
       </div>
 
       {/* ── Cart items ── */}
-      <ScrollArea className="flex-1 px-4 bg-sidebar">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 bg-sidebar custom-scrollbar">
         <div className="py-4 space-y-2">
           {items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <div className="w-14 h-14 bg-muted/50 rounded-2xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-muted/50 rounded-sm flex items-center justify-center">
                 <ShoppingBag className="w-7 h-7 text-muted-foreground/40" />
               </div>
               <p className="font-semibold text-foreground text-sm">
@@ -320,7 +306,7 @@ export function CartSidebar() {
             items.map((item) => (
               <div
                 key={item.id}
-                className="bg-background/60 border border-border/60 rounded-sm px-3.5 py-3 flex flex-col gap-2"
+                className="bg-background/60 rounded-sm px-3.5 py-3 flex flex-col gap-2.5"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -328,29 +314,19 @@ export function CartSidebar() {
                       {item.name}
                     </p>
                     {item.variantName && (
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[11px] text-muted-foreground block">
                         {item.variantName}
                       </span>
                     )}
                     {item.modifiers && item.modifiers.length > 0 && (
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[11px] text-muted-foreground block">
                         + {item.modifiers.map((m) => m.name).join(", ")}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="font-bold text-sm text-primary">
-                      S/{((item.price + (item.modifiersCost || 0)) * item.quantity).toFixed(2)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
-                      aria-label="Eliminar"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  <span className="font-bold text-sm text-primary shrink-0">
+                    {cs}{((item.price + (item.modifiersCost || 0)) * item.quantity).toFixed(2)}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -362,7 +338,7 @@ export function CartSidebar() {
                           ? removeItem(item.id)
                           : updateQuantity(item.id, item.quantity - 1)
                       }
-                      className="w-7 h-7 rounded-lg border border-border bg-muted/40 hover:bg-accent flex items-center justify-center transition-colors"
+                      className="w-7 h-7 rounded-sm bg-muted/50 hover:bg-accent flex items-center justify-center transition-colors"
                       aria-label={t("cart.decrease")}
                     >
                       <Minus className="w-3.5 h-3.5" />
@@ -373,20 +349,31 @@ export function CartSidebar() {
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-7 h-7 rounded-lg border border-border bg-muted/40 hover:bg-accent flex items-center justify-center transition-colors"
+                      className="w-7 h-7 rounded-sm bg-muted/50 hover:bg-accent flex items-center justify-center transition-colors"
                       aria-label={t("cart.increase")}
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openNoteDialog(item.id, item.notes ?? null)}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    <Pencil className="w-3 h-3" />
-                    {item.notes ? t("cart.edit") : t("cart.add")} {t("cart.note").toLowerCase()}
-                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openNoteDialog(item.id, item.notes ?? null)}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      {item.notes ? t("cart.edit") : t("cart.add")} {t("cart.note").toLowerCase()}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-sm text-[11px] font-semibold text-destructive bg-destructive/8 hover:bg-destructive/15 transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
 
                 {item.notes && (
@@ -398,7 +385,7 @@ export function CartSidebar() {
             ))
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* ── Footer totals + CTA ── */}
       <div className="border-t border-sidebar-border px-5 pt-4 pb-5 space-y-3 bg-sidebar">
@@ -409,15 +396,15 @@ export function CartSidebar() {
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
             <span>{t("cart.baseNet")}</span>
-            <span className="text-foreground font-medium">S/{subtotal.toFixed(2)}</span>
+            <span className="text-foreground font-medium">{cs}{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
             <span>{t("cart.discount")}</span>
-            <span className="font-medium text-primary">- S/0.00</span>
+            <span className="font-medium text-primary">- {cs}0.00</span>
           </div>
           <div className="flex justify-between text-[13px] text-muted-foreground">
             <span>{t("cart.tax")} ({taxRate}%) {t("cart.included")}</span>
-            <span className="text-foreground font-medium">S/{tax.toFixed(2)}</span>
+            <span className="text-foreground font-medium">{cs}{tax.toFixed(2)}</span>
           </div>
         </div>
 
@@ -426,14 +413,14 @@ export function CartSidebar() {
             {t("cart.total")}
           </span>
           <span className="text-2xl font-black text-primary tracking-tight">
-            S/{total.toFixed(2)}
+            {cs}{total.toFixed(2)}
           </span>
         </div>
 
         {!cr.loading && !cr.register ? (
           <Button
             onClick={() => setRegisterOpenTrigger((n) => n + 1)}
-            className="h-12 w-full rounded-full font-bold text-sm transition-all active:scale-[0.98] bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/30"
+            className="h-11 w-full rounded-md font-bold text-sm transition-all active:scale-[0.98] bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/30"
           >
             <Lock className="w-4 h-4 mr-2" />
             {t("cashRegister.openToCharge")}
@@ -451,7 +438,7 @@ export function CartSidebar() {
 
       {/* ── Note Dialog ── */}
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent className="sm:max-w-sm rounded-2xl border border-border bg-sidebar p-0 gap-0 overflow-hidden">
+        <DialogContent className="sm:max-w-sm rounded-sm border border-border bg-sidebar p-0 gap-0 overflow-hidden">
           <DialogHeader className="px-5 pt-5 pb-3 border-b border-border">
             <DialogTitle className="text-[15px] font-bold text-foreground">
               {t("cart.itemNoteTitle")}
@@ -478,13 +465,13 @@ export function CartSidebar() {
           <DialogFooter className="px-5 pb-5 pt-0 flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 h-10 rounded-xl text-sm"
+              className="flex-1 h-10 rounded-md text-sm"
               onClick={() => setNoteDialogOpen(false)}
             >
               {t("common.cancel")}
             </Button>
             <Button
-              className="flex-1 h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm"
+              className="flex-1 h-10 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm"
               onClick={saveNote}
             >
               {t("common.save")}

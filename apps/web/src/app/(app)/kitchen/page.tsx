@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Clock, CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { API_URL } from "@/lib/config";
 import { getAccessToken } from "@/lib/auth";
 import { posAlert } from "@/lib/sweetalert";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 import { useKitchenUi } from "./kitchen-ui-context";
 import { flashDocumentTitle, playNewOrderSfx } from "./kds-sfx";
 
@@ -48,6 +50,7 @@ export default function KitchenPage() {
 
         if (!cancelled) setOrders(list);
       } catch (err) {
+        if (isUnauthorized(err)) { handleSessionExpired(); return; }
         console.error("Failed to load active orders", err);
         posAlert.fire({
           toast: true,
@@ -146,9 +149,8 @@ export default function KitchenPage() {
 
   if (loading)
     return (
-      <div className="p-10 text-foreground font-bold flex items-center gap-3">
-        <Loader2 className="w-5 h-5 animate-spin text-primary" />
-        Cargando pedidos...
+      <div className="p-6">
+        <PageSkeleton variant="board" showHero={false} />
       </div>
     );
 
@@ -283,6 +285,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
     try {
       await onUpdate(order.id, nextStatus);
     } catch (err: any) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to update order status", err);
       posAlert.fire({
         toast: true,

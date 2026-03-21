@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 
 type CashRegister = {
   id: string;
@@ -37,7 +38,8 @@ export function useCashRegister() {
     try {
       const data = await apiFetch<{ register: CashRegister | null }>("/cash-register/current");
       setRegister(data.register);
-    } catch {
+    } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       setRegister(null);
     } finally {
       setLoading(false);
@@ -52,7 +54,8 @@ export function useCashRegister() {
     try {
       const data = await apiFetch<{ summary: CashRegisterSummary | null }>("/cash-register/summary");
       return data.summary;
-    } catch {
+    } catch (err) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return null; }
       return null;
     }
   };

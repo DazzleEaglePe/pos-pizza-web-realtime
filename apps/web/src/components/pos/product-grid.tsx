@@ -63,13 +63,13 @@ export function ProductGrid() {
         >
           {/* Status/Badge */}
           {product.badge && (
-            <Badge className="absolute top-4 left-4 bg-[#ffbf00] hover:bg-[#ffbf00] text-foreground border-none rounded-xl font-bold px-3 py-1 z-10">
+            <Badge className="absolute top-4 left-4 bg-[#ffbf00] hover:bg-[#ffbf00] text-foreground border-none rounded-sm font-bold px-3 py-1 z-10">
               {product.badge}
             </Badge>
           )}
 
           {/* Image */}
-          <div className="w-full aspect-square rounded-2xl overflow-hidden mb-5 bg-muted relative">
+          <div className="w-full aspect-square rounded-sm overflow-hidden mb-5 bg-muted relative">
             <img
               src={product.image}
               alt={product.name}
@@ -96,7 +96,7 @@ export function ProductGrid() {
              
              {/* Add Button Area based on Wireframe */}
              {product.available === 0 ? (
-               <button disabled className="bg-muted text-muted-foreground font-bold px-6 py-3 rounded-2xl text-sm transition-all cursor-not-allowed w-full ml-3">
+               <button disabled className="bg-muted text-muted-foreground font-bold px-6 py-3 rounded-sm text-sm transition-all cursor-not-allowed w-full ml-3">
                  Sold Out
                </button>
              ) : (

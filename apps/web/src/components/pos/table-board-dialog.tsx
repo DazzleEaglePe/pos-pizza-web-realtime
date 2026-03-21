@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n";
 import {
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getStatusBorder, formatTicketList } from "./table-utils";
+import { getStatusBorder, getStatusDot, formatTicketList } from "./table-utils";
 import { TableCard } from "./table-card";
 import type { Table, ActiveOrder } from "./types";
 
@@ -63,9 +63,9 @@ export function TableBoardDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-230 max-h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="sm:max-w-260 max-h-[88vh] p-0 gap-0 overflow-hidden rounded-sm">
         {/* ── Header ── */}
-        <div className="px-5 pt-5 pb-3 flex flex-col gap-3 border-b border-border/50">
+        <div className="px-6 pt-5 pb-4 flex flex-col gap-3 border-b border-border/50">
           {/* Title row + legend */}
           <div className="flex items-start justify-between gap-4">
             <DialogHeader>
@@ -78,17 +78,17 @@ export function TableBoardDialog({
             </DialogHeader>
 
             {/* Status legend */}
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground shrink-0 pt-1.5">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-primary" />
+            <div className="flex items-center gap-4 text-xs text-muted-foreground shrink-0 pt-1">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary" />
                 {t("tables.statusAvailable")}
               </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-destructive" />
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-destructive" />
                 {t("tables.statusOccupied")}
               </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                 {t("tables.statusReserved")}
               </span>
             </div>
@@ -98,11 +98,11 @@ export function TableBoardDialog({
           <div className="flex flex-col gap-2">
             {/* Zone tabs */}
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center bg-muted/60 rounded-lg p-0.5 overflow-x-auto">
+              <div className="flex items-center bg-muted/60 rounded-sm p-1 overflow-x-auto">
                 <button
                   type="button"
                   onClick={() => onZoneFilterChange("*")}
-                  className={`h-7 px-3 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+                  className={`h-8 px-4 rounded-md text-[13px] font-medium transition-colors whitespace-nowrap ${
                     zoneFilter === "*"
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -115,7 +115,7 @@ export function TableBoardDialog({
                     key={zone || "__nozone"}
                     type="button"
                     onClick={() => onZoneFilterChange(zone)}
-                    className={`h-7 px-3 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+                    className={`h-8 px-4 rounded-md text-[13px] font-medium transition-colors whitespace-nowrap ${
                       zoneFilter === zone
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -129,12 +129,12 @@ export function TableBoardDialog({
               <Button
                 type="button"
                 variant="ghost"
-                size="icon-xs"
+                size="icon-sm"
                 onClick={onRefresh}
                 disabled={tablesLoading || activeOrdersLoading}
               >
                 <RefreshCw
-                  className={`w-3.5 h-3.5 ${tablesLoading || activeOrdersLoading ? "animate-spin" : ""}`}
+                  className={`w-4 h-4 ${tablesLoading || activeOrdersLoading ? "animate-spin" : ""}`}
                 />
               </Button>
             </div>
@@ -166,7 +166,7 @@ export function TableBoardDialog({
                     key={f.key}
                     type="button"
                     onClick={() => onStatusFilterChange(f.key)}
-                    className={`h-7 px-2.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
+                    className={`h-8 px-3 rounded-md text-[13px] font-medium flex items-center gap-1.5 transition-colors ${
                       statusFilter === f.key
                         ? "bg-muted text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -174,7 +174,7 @@ export function TableBoardDialog({
                   >
                     {f.dot && (
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${f.dot}`}
+                        className={`w-2 h-2 rounded-full ${f.dot}`}
                         aria-hidden
                       />
                     )}
@@ -183,7 +183,7 @@ export function TableBoardDialog({
                 ))}
               </div>
 
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground font-medium">
                 {tablesLoading || activeOrdersLoading
                   ? t("common.loading")
                   : `${filteredTables.length}/${tables.length}`}
@@ -199,7 +199,7 @@ export function TableBoardDialog({
               {t("tables.empty")}
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-4 p-5">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3 p-6">
               {filteredTables.map((tb) => (
                 <TableCard
                   key={tb.id}
@@ -215,12 +215,12 @@ export function TableBoardDialog({
 
         {/* ── Footer: selected table action bar ── */}
         {dialogSelectedTable && (
-          <div className="px-5 py-3 border-t border-border/50 bg-card flex items-center justify-between gap-3">
+          <div className="px-6 py-4 border-t border-border/50 bg-card flex items-center justify-between gap-4">
             <div className="min-w-0 flex items-center gap-3">
               <div
-                className={`w-9 h-9 rounded-lg border-2 ${getStatusBorder(dialogSelectedTable.status)} flex items-center justify-center shrink-0`}
+                className={`w-11 h-11 rounded-sm border-2 ${getStatusBorder(dialogSelectedTable.status)} flex items-center justify-center shrink-0`}
               >
-                <span className="text-sm font-black text-foreground">
+                <span className="text-base font-black text-foreground">
                   {dialogSelectedTable.number}
                 </span>
               </div>
@@ -249,13 +249,13 @@ export function TableBoardDialog({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0">
               {String(dialogSelectedTable.status || "").toUpperCase() !==
                 "AVAILABLE" && (
                 <Button
                   type="button"
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   onClick={() => void onReleaseTable(dialogSelectedTable)}
                 >
                   {t("tables.releaseAction")}
@@ -263,13 +263,15 @@ export function TableBoardDialog({
               )}
               <Button
                 type="button"
-                size="xs"
+                size="default"
                 onClick={() => void onConfirmSelect(dialogSelectedTable)}
                 disabled={
                   String(dialogSelectedTable.status || "").toUpperCase() ===
                   "RESERVED"
                 }
+                className="gap-2"
               >
+                <Check className="w-4 h-4" />
                 {t("tables.selectAction")}
               </Button>
             </div>
