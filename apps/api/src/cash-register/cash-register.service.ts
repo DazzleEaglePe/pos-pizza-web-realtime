@@ -11,7 +11,8 @@ import {
   paymentTransactions,
 } from '../drizzle/schema/payments.schema';
 import { orders } from '../drizzle/schema/orders.schema';
-import { sql, and, eq, sum, count } from 'drizzle-orm';
+import { users } from '../drizzle/schema/auth.schema';
+import { sql, and, eq, sum, count, desc, gte, lte, SQL } from 'drizzle-orm';
 
 @Injectable()
 export class CashRegisterService {
@@ -98,8 +99,8 @@ export class CashRegisterService {
     const salesData = await db
       .select({
         totalSales: sum(paymentTransactions.amount),
-        totalCash: sql<number>`COALESCE(SUM(CASE WHEN ${paymentTransactions.paymentMethod} = 'CASH' THEN ${paymentTransactions.amount} ELSE 0 END), 0)`,
-        totalDigital: sql<number>`COALESCE(SUM(CASE WHEN ${paymentTransactions.paymentMethod} != 'CASH' THEN ${paymentTransactions.amount} ELSE 0 END), 0)`,
+        totalCash: sql<number>`COALESCE(SUM(CASE WHEN ${paymentTransactions.paymentMethod} = 'CASH' THEN ${paymentTransactions.amount} WHEN ${paymentTransactions.paymentMethod} = 'MIXED' THEN COALESCE(${paymentTransactions.cashAmount}, 0) ELSE 0 END), 0)`,
+        totalDigital: sql<number>`COALESCE(SUM(CASE WHEN ${paymentTransactions.paymentMethod} NOT IN ('CASH', 'MIXED') THEN ${paymentTransactions.amount} WHEN ${paymentTransactions.paymentMethod} = 'MIXED' THEN COALESCE(${paymentTransactions.digitalAmount}, 0) ELSE 0 END), 0)`,
         totalTickets: count(paymentTransactions.id),
       })
       .from(paymentTransactions)
@@ -164,5 +165,86 @@ export class CashRegisterService {
       .returning();
 
     return closed;
+  }
+
+  // ─── History + Report ─────────────────────────────────────
+
+  async findHistory(filters: {
+    from?: string;
+    to?: string;
+    userId?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const page = filters.page ?? 1;
+    const limit = Math.min(filters.limit ?? 20, 100);
+    const offset = (page - 1) * limit;
+
+    const conditions: SQL[] = [eq(cashRegisters.status, 'CLOSED')];
+    if (filters.userId) conditions.push(eq(cashRegisters.userId, filters.userId));
+    if (filters.from) conditions.push(gte(cashRegisters.closedAt, new Date(filters.from)));
+    if (filters.to) conditions.push(lte(cashRegisters.closedAt, new Date(filters.to)));
+
+    const where = and(...conditions);
+
+    const [rows, countResult] = await Promise.all([
+      db
+        .select({
+          id: cashRegisters.id,
+          userId: cashRegisters.userId,
+          userName: users.name,
+          openedAt: cashRegisters.openedAt,
+          closedAt: cashRegisters.closedAt,
+          openingAmount: cashRegisters.openingAmount,
+          expectedCash: cashRegisters.expectedCash,
+          actualCash: cashRegisters.actualCash,
+          difference: cashRegisters.difference,
+          totalSales: cashRegisters.totalSales,
+          totalCashSales: cashRegisters.totalCashSales,
+          totalDigitalSales: cashRegisters.totalDigitalSales,
+          totalTickets: cashRegisters.totalTickets,
+          notes: cashRegisters.notes,
+        })
+        .from(cashRegisters)
+        .innerJoin(users, eq(cashRegisters.userId, users.id))
+        .where(where)
+        .orderBy(desc(cashRegisters.closedAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: count() })
+        .from(cashRegisters)
+        .where(where),
+    ]);
+
+    return { data: rows, total: countResult[0]?.count ?? 0, page, limit };
+  }
+
+  async findOneById(id: string) {
+    const [register] = await db
+      .select({
+        id: cashRegisters.id,
+        userId: cashRegisters.userId,
+        userName: users.name,
+        openedAt: cashRegisters.openedAt,
+        closedAt: cashRegisters.closedAt,
+        openingAmount: cashRegisters.openingAmount,
+        expectedCash: cashRegisters.expectedCash,
+        actualCash: cashRegisters.actualCash,
+        difference: cashRegisters.difference,
+        totalSales: cashRegisters.totalSales,
+        totalCashSales: cashRegisters.totalCashSales,
+        totalDigitalSales: cashRegisters.totalDigitalSales,
+        totalTickets: cashRegisters.totalTickets,
+        totalCancelled: cashRegisters.totalCancelled,
+        notes: cashRegisters.notes,
+        status: cashRegisters.status,
+      })
+      .from(cashRegisters)
+      .innerJoin(users, eq(cashRegisters.userId, users.id))
+      .where(eq(cashRegisters.id, id))
+      .limit(1);
+
+    return register ?? null;
   }
 }

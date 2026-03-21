@@ -1,23 +1,62 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   ParseUUIDPipe,
   Post,
+  Put,
+  Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { existsSync, mkdirSync } from 'node:fs';
+import { extname, join } from 'node:path';
+
+const PRODUCT_UPLOAD_DIR = join(process.cwd(), 'uploads', 'products');
+
+function ensureProductDir() {
+  if (!existsSync(PRODUCT_UPLOAD_DIR)) {
+    mkdirSync(PRODUCT_UPLOAD_DIR, { recursive: true });
+  }
+}
 
 @UseGuards(JwtAuthGuard)
 @Controller('catalog')
 export class CatalogController {
   constructor(private readonly catalogService: CatalogService) {}
+
+  @Get('categories')
+  async findActiveCategories() {
+    return await this.catalogService.findActiveCategories();
+  }
+
+  @Get('products')
+  async findProductsPage(
+    @Query('categoryId') categoryId?: string,
+    @Query('search') search?: string,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset?: number,
+  ) {
+    return await this.catalogService.findProductsPage({
+      categoryId,
+      search,
+      limit,
+      offset,
+    });
+  }
 
   @Get()
   async findAll() {
@@ -273,5 +312,77 @@ export class CatalogController {
       productId,
       modifierGroupId,
     );
+  }
+
+  // ─── Prep Times ──────────────────────────────────────────
+
+  @Get('prep-times')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async getAllPrepTimes() {
+    return await this.catalogService.getAllPrepTimes();
+  }
+
+  @Get('products/:id/prep-time')
+  async getPrepTime(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.catalogService.getPrepTime(id);
+  }
+
+  @Put('products/:id/prep-time')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async upsertPrepTime(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: { estimatedMinutes: number },
+  ) {
+    return await this.catalogService.upsertPrepTime(id, body.estimatedMinutes);
+  }
+
+  @Delete('products/:id/prep-time')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async deletePrepTime(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.catalogService.deletePrepTime(id);
+  }
+
+  // ─── Product Image Upload ────────────────────────────────
+
+  @Post('products/:id/image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: (_req, _file, cb) => {
+          ensureProductDir();
+          cb(null, PRODUCT_UPLOAD_DIR);
+        },
+        filename: (_req, file, cb) => {
+          const ext = extname(file.originalname || '').toLowerCase();
+          const safe = (file.originalname || 'product')
+            .replace(ext, '')
+            .replace(/[^a-zA-Z0-9_-]/g, '')
+            .toLowerCase();
+          cb(null, `${Date.now()}-${safe || 'product'}${ext || '.png'}`);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+        if (!allowed.includes(file.mimetype)) {
+          cb(new BadRequestException('IMAGE_INVALID_MIME'), false);
+          return;
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadProductImage(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('IMAGE_FILE_REQUIRED');
+    const imageUrl = `/uploads/products/${file.filename}`;
+    return await this.catalogService.updateProduct(id, { imageUrl });
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { db } from '../drizzle/db';
 import {
   categories,
@@ -8,10 +8,100 @@ import {
   modifiers,
   productModifiers,
 } from '../drizzle/schema/catalog.schema';
-import { eq, asc, and } from 'drizzle-orm';
+import { productPrepTimes } from '../drizzle/schema/config.schema';
+import { eq, asc, and, count, ilike, inArray } from 'drizzle-orm';
 
 @Injectable()
 export class CatalogService {
+  private async hydrateProducts<T extends { id: string }>(productRows: T[]) {
+    if (productRows.length === 0) return [];
+
+    const productIds = productRows.map((product) => product.id);
+
+    const allVariants = await db
+      .select()
+      .from(productVariants)
+      .where(
+        and(
+          eq(productVariants.isActive, true),
+          inArray(productVariants.productId, productIds),
+        ),
+      )
+      .orderBy(asc(productVariants.displayOrder));
+
+    const allProductModifiers = await db
+      .select()
+      .from(productModifiers)
+      .where(inArray(productModifiers.productId, productIds));
+
+    const modifierGroupIds = [
+      ...new Set(allProductModifiers.map((item) => item.modifierGroupId)),
+    ];
+
+    const allModifierGroups = modifierGroupIds.length
+      ? await db
+          .select()
+          .from(modifierGroups)
+          .where(
+            and(
+              eq(modifierGroups.isActive, true),
+              inArray(modifierGroups.id, modifierGroupIds),
+            ),
+          )
+          .orderBy(asc(modifierGroups.displayOrder))
+      : [];
+
+    const allModifierOptions = modifierGroupIds.length
+      ? await db
+          .select()
+          .from(modifiers)
+          .where(
+            and(
+              eq(modifiers.isActive, true),
+              inArray(modifiers.groupId, modifierGroupIds),
+            ),
+          )
+          .orderBy(asc(modifiers.displayOrder))
+      : [];
+
+    return productRows.map((product) => ({
+      ...product,
+      variants: allVariants.filter((variant) => variant.productId === product.id),
+      modifierGroups: allProductModifiers
+        .filter((productModifier) => productModifier.productId === product.id)
+        .map((productModifier) => {
+          const group = allModifierGroups.find(
+            (item) => item.id === productModifier.modifierGroupId,
+          );
+          if (!group) return null;
+          return {
+            ...group,
+            modifiers: allModifierOptions.filter(
+              (modifier) => modifier.groupId === group.id,
+            ),
+          };
+        })
+        .filter((group): group is NonNullable<typeof group> => group !== null),
+    }));
+  }
+
+  private buildActiveProductsWhere(filters?: {
+    categoryId?: string;
+    search?: string;
+  }) {
+    const conditions = [eq(products.isActive, true)];
+
+    if (filters?.categoryId) {
+      conditions.push(eq(products.categoryId, filters.categoryId));
+    }
+
+    if (filters?.search?.trim()) {
+      conditions.push(ilike(products.name, `%${filters.search.trim()}%`));
+    }
+
+    return conditions.length === 1 ? conditions[0] : and(...conditions);
+  }
+
   private slugify(value: string) {
     return value
       .toLowerCase()
@@ -119,6 +209,68 @@ export class CatalogService {
     }));
 
     return menu;
+  }
+
+  async findActiveCategories() {
+    const [cats, counts] = await Promise.all([
+      db
+        .select({
+          id: categories.id,
+          name: categories.name,
+          icon: categories.icon,
+        })
+        .from(categories)
+        .where(eq(categories.isActive, true))
+        .orderBy(asc(categories.displayOrder)),
+      db
+        .select({
+          categoryId: products.categoryId,
+          count: count(),
+        })
+        .from(products)
+        .where(eq(products.isActive, true))
+        .groupBy(products.categoryId),
+    ]);
+
+    const countMap = new Map(counts.map((c) => [c.categoryId, Number(c.count)]));
+
+    return cats.map((cat) => ({
+      ...cat,
+      productCount: countMap.get(cat.id) ?? 0,
+    }));
+  }
+
+  async findProductsPage(filters: {
+    categoryId?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const limit = Math.min(Math.max(filters.limit ?? 10, 1), 30);
+    const offset = Math.max(filters.offset ?? 0, 0);
+    const where = this.buildActiveProductsWhere(filters);
+
+    const [productRows, totalRows] = await Promise.all([
+      db
+        .select()
+        .from(products)
+        .where(where)
+        .orderBy(asc(products.displayOrder), asc(products.name))
+        .limit(limit)
+        .offset(offset),
+      db.select({ total: count() }).from(products).where(where),
+    ]);
+
+    const items = await this.hydrateProducts(productRows);
+    const total = Number(totalRows[0]?.total ?? 0);
+
+    return {
+      items,
+      total,
+      limit,
+      offset,
+      hasMore: offset + items.length < total,
+    };
   }
 
   async findAllAdmin() {
@@ -562,5 +714,57 @@ export class CatalogService {
       .returning();
 
     return removed ?? null;
+  }
+
+  // ─── Prep Times ──────────────────────────────────────────
+
+  async getAllPrepTimes() {
+    return await db
+      .select({
+        id: productPrepTimes.id,
+        productId: productPrepTimes.productId,
+        estimatedMinutes: productPrepTimes.estimatedMinutes,
+        productName: products.name,
+      })
+      .from(productPrepTimes)
+      .innerJoin(products, eq(productPrepTimes.productId, products.id));
+  }
+
+  async getPrepTime(productId: string) {
+    const [row] = await db
+      .select()
+      .from(productPrepTimes)
+      .where(eq(productPrepTimes.productId, productId))
+      .limit(1);
+    return row ?? null;
+  }
+
+  async upsertPrepTime(productId: string, estimatedMinutes: number) {
+    const product = await db.query.products.findFirst({ where: eq(products.id, productId) });
+    if (!product) throw new NotFoundException('PRODUCT_NOT_FOUND');
+
+    const existing = await this.getPrepTime(productId);
+    if (existing) {
+      const [updated] = await db
+        .update(productPrepTimes)
+        .set({ estimatedMinutes })
+        .where(eq(productPrepTimes.productId, productId))
+        .returning();
+      return updated;
+    }
+
+    const [created] = await db
+      .insert(productPrepTimes)
+      .values({ productId, estimatedMinutes })
+      .returning();
+    return created;
+  }
+
+  async deletePrepTime(productId: string) {
+    const [deleted] = await db
+      .delete(productPrepTimes)
+      .where(eq(productPrepTimes.productId, productId))
+      .returning();
+    return deleted ?? null;
   }
 }

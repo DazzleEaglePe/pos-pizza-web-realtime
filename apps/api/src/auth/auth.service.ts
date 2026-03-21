@@ -6,14 +6,21 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { db } from '../drizzle/db';
-import { users } from '../drizzle/schema/auth.schema';
-import { eq } from 'drizzle-orm';
+import { users, sessions } from '../drizzle/schema/auth.schema';
+import { eq, and } from 'drizzle-orm';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { AuditService } from '../audit/audit.service';
+
+const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private auditService: AuditService,
+  ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await db.query.users.findFirst({
@@ -27,22 +34,125 @@ export class AuthService {
     return null;
   }
 
+  private async generateTokenPair(user: { id: string; email: string; role: string }) {
+    const payload = { email: user.email, sub: user.id, role: user.role };
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = randomBytes(40).toString('hex');
+    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+
+    await db.insert(sessions).values({
+      userId: user.id,
+      refreshToken,
+      expiresAt,
+    });
+
+    return { accessToken, refreshToken };
+  }
+
   async login(user: any) {
     await db
       .update(users)
       .set({ lastLoginAt: new Date(), updatedAt: new Date() })
       .where(eq(users.id, user.id));
 
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const { accessToken, refreshToken } = await this.generateTokenPair(user);
+
+    // Audit login
+    this.auditService
+      .log({
+        userId: user.id,
+        action: 'LOGIN',
+        entityType: 'auth',
+        details: { email: user.email },
+      })
+      .catch(() => {});
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: accessToken,
+      refresh_token: refreshToken,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
-      }
+      },
     };
+  }
+
+  async refreshSession(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('REFRESH_TOKEN_REQUIRED');
+    }
+
+    const [session] = await db
+      .select()
+      .from(sessions)
+      .where(
+        and(
+          eq(sessions.refreshToken, refreshToken),
+          eq(sessions.isRevoked, false),
+        ),
+      )
+      .limit(1);
+
+    if (!session || session.expiresAt < new Date()) {
+      throw new UnauthorizedException('REFRESH_TOKEN_EXPIRED');
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.id, session.userId), eq(users.isActive, true)))
+      .limit(1);
+
+    if (!user) {
+      throw new UnauthorizedException('INVALID_SESSION');
+    }
+
+    // Revoke old session (rotation)
+    await db
+      .update(sessions)
+      .set({ isRevoked: true })
+      .where(eq(sessions.id, session.id));
+
+    // Generate new pair
+    const tokens = await this.generateTokenPair(user);
+    return {
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
+  }
+
+  async logout(refreshToken: string, userId?: string) {
+    if (!refreshToken) return;
+    await db
+      .update(sessions)
+      .set({ isRevoked: true })
+      .where(eq(sessions.refreshToken, refreshToken));
+
+    // Audit logout
+    if (userId) {
+      this.auditService
+        .log({
+          userId,
+          action: 'LOGOUT',
+          entityType: 'auth',
+        })
+        .catch(() => {});
+    }
+  }
+
+  private async revokeAllSessions(userId: string) {
+    await db
+      .update(sessions)
+      .set({ isRevoked: true })
+      .where(and(eq(sessions.userId, userId), eq(sessions.isRevoked, false)));
   }
 
   async register(email: string, pass: string): Promise<any> {
@@ -186,5 +296,8 @@ export class AuthService {
     if (!updated) {
       throw new UnauthorizedException('INVALID_SESSION');
     }
+
+    // Revoke all sessions — force re-login everywhere
+    await this.revokeAllSessions(userId);
   }
 }

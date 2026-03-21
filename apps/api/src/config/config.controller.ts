@@ -36,8 +36,8 @@ export class BusinessConfigController {
 
   @Get()
   async getPublicConfig() {
-    const taxRate = await this.configService.getTaxRatePercent();
-    return { taxRate };
+    const config = await this.configService.getConfig();
+    return { taxRate: config?.taxRateDefault ?? 18, currency: config?.currency ?? 'PEN' };
   }
 
   @Get('full')

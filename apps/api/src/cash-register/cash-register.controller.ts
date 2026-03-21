@@ -2,7 +2,12 @@ import {
   Controller,
   Get,
   Post,
+  Param,
   Body,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
+  ParseUUIDPipe,
   UseGuards,
 } from '@nestjs/common';
 import { CashRegisterService } from './cash-register.service';
@@ -30,6 +35,24 @@ export class CashRegisterController {
   async getSummary(@CurrentUser() user: AuthUser) {
     const summary = await this.cashRegisterService.getSummary(user.id);
     return { summary: summary || null };
+  }
+
+  @Get('history')
+  @Roles('ADMIN')
+  async getHistory(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('userId') userId?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ) {
+    return await this.cashRegisterService.findHistory({ from, to, userId, page, limit });
+  }
+
+  @Get('history/:id')
+  @Roles('ADMIN')
+  async getHistoryDetail(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.cashRegisterService.findOneById(id);
   }
 
   @Post('open')

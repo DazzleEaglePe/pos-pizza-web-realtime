@@ -6,10 +6,13 @@ import * as schema from '../../drizzle/schema';
 type DbTransaction = PgTransaction<any, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 export interface PaymentDetails {
-  method: 'CASH' | 'YAPE' | 'PLIN' | 'CARD';
+  method: 'CASH' | 'YAPE' | 'PLIN' | 'CARD' | 'MIXED';
   cashReceived?: number;
   referenceNumber?: string;
   amount: number;
+  cashAmount?: number;
+  digitalAmount?: number;
+  digitalMethod?: 'YAPE' | 'PLIN' | 'CARD';
 }
 
 export interface PaymentStrategy {
