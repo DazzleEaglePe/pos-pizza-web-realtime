@@ -298,3 +298,123 @@
   background: var(--destructive) !important;
   color: oklch(0.985 0 0) !important;
 }
+
+/* Loading bar animation */
+@keyframes loading-bar {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(100%); }
+  100% { transform: translateX(300%); }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 1.4s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Global Scrollbar — slim, themed, auto-hide
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* === Webkit (Chrome, Edge, Safari) === */
+
+/* Default: thin scrollbar for ALL elements */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
+  scrollbar-color: oklch(0.6 0 0 / 30%) transparent;
+}
+
+.dark *:hover {
+  scrollbar-color: oklch(1 0 0 / 18%) transparent;
+}
+
+/* Track — invisible */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Thumb — rounded, translucent, appears on hover */
+::-webkit-scrollbar-thumb {
+  background: oklch(0.6 0 0 / 0%);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: oklch(0.6 0 0 / 25%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.6 0 0 / 40%);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: oklch(0.6 0 0 / 55%);
+}
+
+/* Dark mode overrides */
+.dark ::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 0%);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 15%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: oklch(1 0 0 / 25%);
+}
+
+.dark ::-webkit-scrollbar-thumb:active {
+  background: oklch(1 0 0 / 35%);
+}
+
+/* Scrollbar corner */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* === Utility classes === */
+
+/* .custom-scrollbar — always-visible slim bar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.6 0 0 / 20%) transparent;
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: oklch(1 0 0 / 12%) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.6 0 0 / 20%);
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: oklch(0.6 0 0 / 35%);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 12%);
+}
+
+.dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 22%);
+}
+
+/* .no-scrollbar — completely hidden */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

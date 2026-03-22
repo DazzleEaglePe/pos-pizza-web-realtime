@@ -14,6 +14,11 @@ import { io } from "socket.io-client";
 import { useParams } from "next/navigation";
 import { API_URL, WS_URL } from "@/lib/config";
 import { useTranslation } from "@/i18n";
+import {
+  AnimatedTrackingStep,
+  AnimatedProgressBar,
+  getEstimatedMinutes,
+} from "@/components/tracking/tracking-animations";
 
 type OrderStatus =
   | "RECEIVED"
@@ -384,10 +389,7 @@ export default function TrackingTicketPage() {
             <div className="lg:col-span-7 lg:sticky lg:top-6 lg:self-start">
               <div className="bg-card rounded-[2rem] p-6 sm:p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] w-full relative">
                 <div className="absolute top-10 sm:top-12 bottom-10 sm:bottom-12 left-10 sm:left-13 w-1 bg-border/50 -translate-x-1/2 rounded-full z-0" />
-                <div
-                  className="absolute top-10 sm:top-12 bottom-10 sm:bottom-12 left-10 sm:left-13 w-1 bg-primary -translate-x-1/2 rounded-full z-0 transition-all duration-700 ease-in-out"
-                  style={{ height: `${progressPercent}%` }}
-                />
+                <AnimatedProgressBar percent={progressPercent} />
 
                 <div className="space-y-10 sm:space-y-12 relative z-10">
                   {STATUS_STEPS.map((step, idx) => {
@@ -405,13 +407,22 @@ export default function TrackingTicketPage() {
                         ? t("tracking.inProgress")
                         : "--:--";
 
+                    const estMinutes = stepStatus === "active" ? getEstimatedMinutes(step.key) : 0;
+                    const estimatedLabel =
+                      estMinutes > 0
+                        ? t("tracking.estimatedMinutes", { min: String(estMinutes) })
+                        : undefined;
+
                     return (
-                      <TrackingStep
+                      <AnimatedTrackingStep
                         key={step.key}
+                        stepKey={step.key}
                         status={stepStatus}
                         title={step.title}
                         time={time}
                         desc={step.desc}
+                        index={idx}
+                        estimatedLabel={estimatedLabel}
                       />
                     );
                   })}
@@ -455,56 +466,4 @@ export default function TrackingTicketPage() {
   );
 }
 
-function TrackingStep({
-  status,
-  title,
-  time,
-  desc,
-}: {
-  status: "done" | "active" | "pending";
-  title: string;
-  time: string;
-  desc: string;
-}) {
-  const isDone = status === "done";
-  const isActive = status === "active";
-  const isPending = status === "pending";
-
-  return (
-    <div className="flex gap-5 sm:gap-6 w-full group">
-      <div className="relative shrink-0 flex items-center justify-center pt-1">
-        <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center border-4 border-card shadow-sm z-10 transition-all duration-500
-               ${isDone ? "bg-primary text-primary-foreground" : isActive ? "bg-card border-primary shadow-[0_0_15px_rgba(0,191,166,0.3)]" : "bg-muted border-muted text-muted-foreground/50"}`}
-        >
-          {isDone && <CheckCircle2 className="w-5 h-5 text-primary-foreground" />}
-          {isActive && (
-            <div className="w-3 h-3 bg-primary rounded-full animate-ping absolute"></div>
-          )}
-          {isActive && (
-            <div className="w-3 h-3 bg-primary rounded-full relative z-10"></div>
-          )}
-          {isPending && <CircleDashed className="w-5 h-5 stroke-3" />}
-        </div>
-      </div>
-
-      <div
-        className={`flex flex-col pt-0.5 transition-opacity duration-500 ${isPending ? "opacity-50" : "opacity-100"}`}
-      >
-        <h4
-          className={`text-lg tracking-tight font-black leading-none ${isActive ? "text-primary" : "text-foreground"}`}
-        >
-          {title}
-        </h4>
-        <span
-          className={`text-[13px] font-bold mt-1.5 ${isActive ? "text-foreground" : "text-muted-foreground"}`}
-        >
-          {time}
-        </span>
-        <p className="text-sm font-medium text-muted-foreground mt-1.5 leading-snug pr-4">
-          {desc}
-        </p>
-      </div>
-    </div>
-  );
-}
+// TrackingStep is now handled by AnimatedTrackingStep from tracking-animations

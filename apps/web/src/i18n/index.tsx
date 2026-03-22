@@ -22,7 +22,7 @@ type FlattenKeys<T, Prefix extends string = ""> = T extends Record<string, any>
     }[keyof T]
   : never;
 
-type TranslationKey = FlattenKeys<Dictionary>;
+export type TranslationKey = FlattenKeys<Dictionary>;
 
 // Helper to get nested value from a key like "login.title"
 function getNestedValue(obj: any, path: string): string {
