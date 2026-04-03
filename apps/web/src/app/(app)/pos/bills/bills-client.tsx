@@ -2,15 +2,23 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  ExternalLink,
-  Printer,
-  ReceiptText,
-  Search,
-  Wallet,
-  X,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { ExternalLink, Printer, ReceiptText, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  PosPageHeader,
+  PosSearchCard,
+  PosEmptyCard,
+} from "@pos-pizza/ui";
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0, 0, 0.2, 1] as const } },
+};
+
+const listVariants = {
+  visible: { transition: { staggerChildren: 0.04 } },
+};
 
 type TxRow = {
   id: string;
@@ -65,74 +73,43 @@ export function BillsClient({
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
-      <div className="flex items-start justify-between gap-6 mb-8">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center">
-              <ReceiptText className="w-5 h-5 text-primary" />
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">
-              Facturas
-            </h1>
-          </div>
-          <p className="mt-2 text-sm font-medium text-muted-foreground">
-            Registro de pagos y reimpresion de tickets.
-          </p>
+      <PosPageHeader
+        icon={<ReceiptText className="w-5 h-5 text-primary" />}
+        title="Facturas"
+        description="Registro de pagos y reimpresion de tickets."
+        cta={{
+          label: "Volver al POS",
+          href: "/pos",
+          icon: <ExternalLink className="w-4 h-4" />,
+        }}
+      >
+        <Badge variant="outline" className="h-7 px-3">
+          {all.length} transacciones
+        </Badge>
+      </PosPageHeader>
 
-          <div className="mt-4 flex items-center gap-3">
-            <Badge variant="outline" className="h-7 px-3">
-              {all.length} transacciones
-            </Badge>
-          </div>
-        </div>
+      <PosSearchCard
+        value={query}
+        onChange={setQuery}
+        placeholder="Ej: TKT-260312-0012"
+      />
 
-        <Link
-          href="/pos"
-          className="hidden sm:inline-flex items-center gap-2 h-11 px-5 rounded-full bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest hover:opacity-95 transition-opacity"
+      {filtered.length === 0 ? (
+        <PosEmptyCard text="No hay resultados." />
+      ) : (
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          variants={listVariants}
+          initial="hidden"
+          animate="visible"
         >
-          Volver al POS
-          <ExternalLink className="w-4 h-4" />
-        </Link>
-      </div>
-
-      <div className="bg-card border border-border rounded-3xl p-4 sm:p-5 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-muted/60 flex items-center justify-center">
-            <Search className="w-5 h-5 text-muted-foreground" />
-          </div>
-          <div className="flex-1">
-            <div className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-              Buscar por ticket
-            </div>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ej: TKT-260312-0012"
-              className="mt-1 w-full bg-transparent outline-none text-sm font-bold tracking-wide text-foreground placeholder:text-muted-foreground"
-            />
-          </div>
-          {query.trim() && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              className="w-10 h-10 rounded-2xl hover:bg-accent/60 transition-colors flex items-center justify-center"
-              aria-label="Limpiar"
-            >
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filtered.length === 0 ? (
-          <div className="bg-card border border-border rounded-3xl p-6 text-sm font-semibold text-muted-foreground">
-            No hay resultados.
-          </div>
-        ) : (
-          filtered.map((tx) => <BillCard key={tx.id} tx={tx} />)
-        )}
-      </div>
+          {filtered.map((tx) => (
+            <motion.div key={tx.id} variants={cardVariants}>
+              <BillCard tx={tx} />
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
     </div>
   );
 }
@@ -152,7 +129,7 @@ function BillCard({ tx }: { tx: TxRow }) {
   const printHref = `/print/ticket/${encodeURIComponent(ticket)}`;
 
   return (
-    <div className="bg-card border border-border rounded-3xl p-5 shadow-sm">
+    <div className="bg-card border border-border rounded-sm p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-lg font-black tracking-tight text-foreground">

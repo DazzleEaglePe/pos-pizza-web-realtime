@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import { io, Socket } from "socket.io-client";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
@@ -8,6 +9,7 @@ import { WS_URL } from "@/lib/config";
 import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { LayoutGrid, Users, RefreshCw } from "lucide-react";
+import { PosPageHeader } from "@pos-pizza/ui";
 
 /* ─── Types ───────────────────────────────────────────── */
 
@@ -38,6 +40,15 @@ const STATUS_DOT: Record<string, string> = {
   AVAILABLE: "bg-emerald-500",
   OCCUPIED: "bg-red-500",
   RESERVED: "bg-amber-500",
+};
+
+const tableCardVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.2, ease: [0, 0, 0.2, 1] as const } },
+};
+
+const tableGridVariants = {
+  visible: { transition: { staggerChildren: 0.03 } },
 };
 
 /* ─── Component ───────────────────────────────────────── */
@@ -101,34 +112,28 @@ export default function POSTablesPage() {
   if (loading) return <PageSkeleton variant="cards" cards={12} />;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <LayoutGrid className="w-6 h-6 text-primary" />
-            Mapa de Mesas
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Estado en tiempo real de las mesas del salón
-          </p>
-        </div>
+    <div className="max-w-6xl mx-auto px-6 py-8">
+      <PosPageHeader
+        icon={<LayoutGrid className="w-5 h-5 text-primary" />}
+        title="Mapa de Mesas"
+        description="Estado en tiempo real de las mesas del salón"
+      >
         <button
           onClick={() => { setLoading(true); void fetchTables(); }}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-muted hover:bg-accent transition-colors"
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary/10 text-primary border border-primary/15 font-black text-xs uppercase tracking-widest hover:bg-primary/15 transition-colors"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5" />
           Actualizar
         </button>
-      </div>
+      </PosPageHeader>
 
       {/* Filter chips */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 mb-6">
         {(["ALL", "AVAILABLE", "OCCUPIED", "RESERVED"] as const).map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
+            className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest transition-colors border ${
               filter === s
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-card border-border text-muted-foreground hover:bg-muted"
@@ -141,7 +146,7 @@ export default function POSTablesPage() {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 text-xs text-muted-foreground">
+      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-6">
         {Object.entries(STATUS_STYLE).map(([key, val]) => (
           <div key={key} className="flex items-center gap-1.5">
             <span className={`w-2.5 h-2.5 rounded-full ${STATUS_DOT[key]}`} />
@@ -157,23 +162,37 @@ export default function POSTablesPage() {
           if (zoneTables.length === 0) return null;
           return (
             <div key={zone} className="space-y-3">
-              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+              <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest">
                 {zone}
               </h2>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              <motion.div
+                className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3"
+                variants={tableGridVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 {zoneTables.map((table) => (
-                  <TableCard key={table.id} table={table} />
+                  <motion.div key={table.id} variants={tableCardVariants}>
+                    <TableCard table={table} />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </div>
           );
         })
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+        <motion.div
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3"
+          variants={tableGridVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {filtered.map((table) => (
-            <TableCard key={table.id} table={table} />
+            <motion.div key={table.id} variants={tableCardVariants}>
+              <TableCard table={table} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {filtered.length === 0 && (
@@ -193,15 +212,15 @@ function TableCard({ table }: { table: Table }) {
 
   return (
     <div
-      className={`relative flex flex-col items-center justify-center rounded-xl p-4 ring-1 ${style.bg} ${style.ring} transition-all duration-300`}
+      className={`relative flex flex-col items-center justify-center rounded-sm p-5 ring-1 ${style.bg} ${style.ring} transition-all duration-300 h-full`}
     >
-      <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${dot} animate-pulse`} />
-      <span className="text-2xl font-bold">{table.number}</span>
+      <span className={`absolute top-2.5 right-2.5 w-2 h-2 rounded-full ${dot} animate-pulse`} />
+      <span className="text-2xl font-black">{table.number}</span>
       <div className="flex items-center gap-1 mt-1 text-[11px] text-muted-foreground">
         <Users className="w-3 h-3" />
         {table.capacity}
       </div>
-      <span className="text-[10px] font-semibold mt-1 uppercase tracking-wide opacity-70">
+      <span className="text-[10px] font-black mt-1 uppercase tracking-wide opacity-70">
         {style.label}
       </span>
     </div>
