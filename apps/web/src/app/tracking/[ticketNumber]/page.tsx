@@ -324,7 +324,7 @@ export default function TrackingTicketPage() {
         </header>
 
         <main className="mt-8">
-          <div className="bg-card rounded-[2rem] p-6 sm:p-7 border border-border shadow-sm">
+          <div className="bg-card rounded-sm p-6 sm:p-7 border border-border shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight leading-tight">
@@ -387,7 +387,7 @@ export default function TrackingTicketPage() {
           <div className="mt-6 grid gap-6 lg:grid-cols-12 lg:gap-8 items-start">
             {/* Stepper */}
             <div className="lg:col-span-7 lg:sticky lg:top-6 lg:self-start">
-              <div className="bg-card rounded-[2rem] p-6 sm:p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] w-full relative">
+              <div className="bg-card rounded-sm p-6 sm:p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] w-full relative">
                 <div className="absolute top-10 sm:top-12 bottom-10 sm:bottom-12 left-10 sm:left-13 w-1 bg-border/50 -translate-x-1/2 rounded-full z-0" />
                 <AnimatedProgressBar percent={progressPercent} />
 
@@ -432,7 +432,7 @@ export default function TrackingTicketPage() {
 
             {/* Receipt */}
             <div className="lg:col-span-5">
-              <div className="bg-card rounded-3xl p-5 sm:p-6 shadow-sm border border-border">
+              <div className="bg-card rounded-sm p-5 sm:p-6 shadow-sm border border-border">
                 <div className="flex items-center gap-2 font-bold text-foreground border-b border-border pb-4 mb-4">
                   <Ticket className="w-5 h-5 text-primary" />
                   <h3>{t("tracking.orderSummary")}</h3>

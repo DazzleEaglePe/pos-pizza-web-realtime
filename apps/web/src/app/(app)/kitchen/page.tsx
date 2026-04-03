@@ -303,7 +303,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
 
   return (
     <div
-      className={`bg-card border rounded-2xl p-3.5 sm:p-5 shadow-lg transition-all ${
+      className={`bg-card border rounded-sm p-3.5 sm:p-5 shadow-lg transition-all ${
         isNew
           ? "border-primary/40 ring-1 ring-primary/10"
           : isProgress
@@ -363,7 +363,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
           <button
             onClick={() => runUpdate("PREPARING")}
             disabled={isUpdating}
-            className="w-full py-2.5 sm:py-3 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 sm:py-3 rounded-sm bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isUpdating ? (
               <>
@@ -412,7 +412,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
           <button
             onClick={() => runUpdate("DELIVERED")}
             disabled={isUpdating}
-            className="w-full py-2.5 sm:py-3 rounded-xl border border-border text-foreground font-bold bg-muted hover:bg-accent transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 sm:py-3 rounded-sm border border-border text-foreground font-bold bg-muted hover:bg-accent transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isUpdating ? (
               <>

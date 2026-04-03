@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Res, UseGuards, BadRequestException } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { DailySummaryService } from './daily-summary.service';
 import { exportPDF } from './export-pdf';

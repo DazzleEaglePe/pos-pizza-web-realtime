@@ -135,8 +135,8 @@ export function AnimatedProgressBar({ percent }: { percent: number }) {
   return (
     <motion.div
       className="absolute top-10 sm:top-12 bottom-10 sm:bottom-12 left-10 sm:left-13 w-1 bg-primary -translate-x-1/2 rounded-full z-0 origin-top"
-      initial={{ height: "0%" }}
-      animate={{ height: `${percent}%` }}
+      initial={{ scaleY: 0 }}
+      animate={{ scaleY: percent / 100 }}
       transition={{ duration: 0.7, ease: "easeInOut" }}
     />
   );
