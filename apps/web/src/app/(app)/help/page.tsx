@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   HelpCircle,
   LayoutGrid,
@@ -15,6 +16,8 @@ import {
   Search,
   Monitor,
   Keyboard,
+  ExternalLink,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -200,7 +203,18 @@ const SECTIONS: HelpSection[] = [
   },
 ];
 
-/* ─── Components ──────────────────────────────────────── */
+/* ─── Animation variants ──────────────────────────────── */
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0, 0, 0.2, 1] as const } },
+};
+
+const gridVariants = {
+  visible: { transition: { staggerChildren: 0.05 } },
+};
+
+/* ─── FaqAccordion ────────────────────────────────────── */
 
 function FaqAccordion({ faq }: { faq: FaqItem }) {
   const [open, setOpen] = useState(false);
@@ -210,7 +224,7 @@ function FaqAccordion({ faq }: { faq: FaqItem }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-4 text-left gap-3 group"
       >
-        <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+        <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
           {faq.q}
         </span>
         {open ? (
@@ -247,18 +261,22 @@ export default function HelpPage() {
       : sec.faqs,
   })).filter((sec) => sec.faqs.length > 0);
 
+  const activeSec = activeSection
+    ? SECTIONS.find((s) => s.id === activeSection)
+    : null;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* ── Hero header ───────────────────────────────── */}
       <div className="bg-card border-b border-border">
-        <div className="max-w-4xl mx-auto px-6 py-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-            <Pizza className="w-7 h-7 text-primary" />
+        <div className="max-w-6xl mx-auto px-6 py-12 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center mx-auto mb-5">
+            <Pizza className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-black tracking-tight text-foreground mb-2">
             Centro de Ayuda
           </h1>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8">
+          <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8 font-medium">
             Encuentra respuestas rápidas sobre cómo usar el sistema POS Pizza
           </p>
 
@@ -270,97 +288,157 @@ export default function HelpPage() {
               placeholder="Buscar en la ayuda..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-muted border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
+              className="w-full pl-11 pr-10 py-3 bg-card border border-border rounded-3xl text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition-shadow"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full hover:bg-accent flex items-center justify-center transition-colors"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        {/* Section cards grid */}
-        {!activeSection && !normalizedSearch && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-            {SECTIONS.map((sec) => (
-              <button
-                key={sec.id}
-                onClick={() => setActiveSection(sec.id)}
-                className="flex flex-col items-start gap-3 p-5 rounded-sm border border-border bg-card hover:bg-accent/50 hover:border-primary/30 transition-all text-left group"
-              >
-                <div className="w-10 h-10 rounded-sm bg-primary/10 flex items-center justify-center">
-                  <sec.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
-                    {sec.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {sec.description}
-                  </p>
-                </div>
-                <span className="text-[11px] text-muted-foreground">
-                  {sec.faqs.length} preguntas
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
+      {/* ── Content ───────────────────────────────────── */}
+      <div className="max-w-6xl mx-auto px-6 py-10">
 
-        {/* Active section or search results */}
-        {(activeSection || normalizedSearch) && (
-          <div>
-            {activeSection && !normalizedSearch && (
+        {/* Section grid — shown when no active section and no search */}
+        <AnimatePresence>
+          {!activeSection && !normalizedSearch && (
+            <motion.div
+              key="section-grid"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10"
+              variants={gridVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0 }}
+            >
+              {SECTIONS.map((sec) => (
+                <motion.button
+                  key={sec.id}
+                  variants={cardVariants}
+                  onClick={() => setActiveSection(sec.id)}
+                  className="flex flex-col items-start gap-3 p-5 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
+                    <sec.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-sm text-foreground group-hover:text-primary transition-colors">
+                      {sec.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {sec.description}
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-bold text-muted-foreground">
+                    {sec.faqs.length} preguntas
+                  </span>
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Active section view */}
+        <AnimatePresence mode="wait">
+          {activeSection && !normalizedSearch && activeSec && (
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0, transition: { duration: 0.22 } }}
+              exit={{ opacity: 0, y: -6, transition: { duration: 0.15 } }}
+            >
+              {/* Section header */}
+              <div className="flex items-start justify-between gap-6 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
+                    <activeSec.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-black tracking-tight text-foreground">
+                      {activeSec.title}
+                    </h2>
+                    <p className="text-sm font-medium text-muted-foreground mt-0.5">
+                      {activeSec.description}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setActiveSection(null)}
+                  className="hidden sm:inline-flex items-center gap-2 h-11 px-5 rounded-full bg-primary/10 text-primary border border-primary/15 font-black text-xs uppercase tracking-widest hover:bg-primary/15 transition-colors"
+                >
+                  ← Todas las secciones
+                </button>
+              </div>
+
               <button
                 onClick={() => setActiveSection(null)}
-                className="text-sm text-primary hover:underline mb-6 font-medium"
+                className="sm:hidden mb-4 text-sm font-black text-primary hover:underline"
               >
-                ← Volver a todas las secciones
+                ← Volver
               </button>
-            )}
 
-            {filteredSections.map((sec) => {
-              if (activeSection && sec.id !== activeSection && !normalizedSearch)
-                return null;
-              return (
-                <div key={sec.id} className="mb-10">
+              <div className="bg-card border border-border rounded-3xl px-5 shadow-sm divide-y divide-border">
+                {activeSec.faqs.map((faq, i) => (
+                  <FaqAccordion key={i} faq={faq} />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Search results */}
+        {normalizedSearch && (
+          <motion.div
+            key="search-results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {filteredSections.length === 0 ? (
+              <div className="text-center py-16">
+                <HelpCircle className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground font-medium">
+                  No se encontraron resultados para &quot;{search}&quot;
+                </p>
+              </div>
+            ) : (
+              filteredSections.map((sec) => (
+                <div key={sec.id} className="mb-8">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-sm bg-primary/10 flex items-center justify-center">
-                      <sec.icon className="w-4 h-4 text-primary" />
+                    <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
+                      <sec.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <h2 className="font-bold text-lg text-foreground">
+                    <h2 className="font-black text-lg text-foreground">
                       {sec.title}
                     </h2>
                   </div>
-                  <div className="bg-card border border-border rounded-sm divide-y divide-border px-5">
+                  <div className="bg-card border border-border rounded-3xl px-5 shadow-sm divide-y divide-border">
                     {sec.faqs.map((faq, i) => (
                       <FaqAccordion key={i} faq={faq} />
                     ))}
                   </div>
                 </div>
-              );
-            })}
-
-            {filteredSections.length === 0 && (
-              <div className="text-center py-16">
-                <HelpCircle className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  No se encontraron resultados para &quot;{search}&quot;
-                </p>
-              </div>
+              ))
             )}
-          </div>
+          </motion.div>
         )}
 
-        {/* Footer link */}
-        <div className="text-center pt-6 border-t border-border mt-10">
-          <p className="text-xs text-muted-foreground">
+        {/* Footer */}
+        <div className="text-center pt-8 border-t border-border mt-10">
+          <p className="text-xs text-muted-foreground font-medium">
             ¿No encuentras lo que buscas? Contacta al administrador del sistema.
           </p>
           <Link
             href="/pos"
-            className="inline-block mt-3 text-sm text-primary hover:underline font-medium"
+            className="inline-flex items-center gap-2 mt-3 h-10 px-5 rounded-full bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest hover:opacity-95 transition-opacity"
           >
-            Volver al POS →
+            Volver al POS <ExternalLink className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
