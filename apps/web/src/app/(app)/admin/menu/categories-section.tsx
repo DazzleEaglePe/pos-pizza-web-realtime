@@ -19,8 +19,8 @@ export function CategoriesSection({
 }: CategoriesSectionProps) {
   return (
     <>
-      <div className="bg-card border border-border rounded-sm p-5 space-y-4">
-        <h2 className="font-semibold text-foreground">
+      <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+        <h2 className="font-black text-foreground">
           {categoryForm.id ? "Editar categoría" : "Nueva categoría"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -28,13 +28,13 @@ export function CategoriesSection({
             value={categoryForm.name}
             onChange={(e) => setCategoryForm((s) => ({ ...s, name: e.target.value }))}
             placeholder="Nombre"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <input
             value={categoryForm.icon}
             onChange={(e) => setCategoryForm((s) => ({ ...s, icon: e.target.value }))}
             placeholder="Icon"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <input
             type="number"
@@ -43,12 +43,12 @@ export function CategoriesSection({
               setCategoryForm((s) => ({ ...s, displayOrder: Number(e.target.value || 0) }))
             }
             placeholder="Orden"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <button
             type="button"
             onClick={() => void submitCategory()}
-            className="px-4 py-2.5 bg-primary text-primary-foreground rounded-sm text-sm font-semibold"
+            className="px-4 py-2.5 bg-primary text-primary-foreground rounded-full text-[11px] font-black uppercase tracking-widest"
           >
             <span className="inline-flex items-center gap-1">
               <Plus className="w-4 h-4" />
@@ -59,29 +59,29 @@ export function CategoriesSection({
             value={categoryForm.description}
             onChange={(e) => setCategoryForm((s) => ({ ...s, description: e.target.value }))}
             placeholder="Descripción"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm md:col-span-4"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm md:col-span-4"
           />
         </div>
       </div>
 
-      <div className="bg-card rounded-sm border border-border overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   Categoría
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   Slug
                 </th>
-                <th className="text-right px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-right px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   Orden
                 </th>
-                <th className="text-center px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-center px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   Estado
                 </th>
-                <th className="text-center px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-center px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   Acciones
                 </th>
               </tr>
@@ -99,7 +99,7 @@ export function CategoriesSection({
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                         category.isActive
                           ? "bg-primary/10 text-primary"
                           : "bg-muted text-muted-foreground"
@@ -120,14 +120,14 @@ export function CategoriesSection({
                             displayOrder: category.displayOrder,
                           })
                         }
-                        className="p-1.5 rounded-sm hover:bg-accent"
+                        className="p-1.5 rounded-lg hover:bg-accent"
                         title="Editar"
                       >
                         <Pencil className="w-4 h-4 text-muted-foreground" />
                       </button>
                       <button
                         onClick={() => void disableCategory(category.id)}
-                        className="p-1.5 rounded-sm hover:bg-destructive/10"
+                        className="p-1.5 rounded-lg hover:bg-destructive/10"
                         title="Desactivar"
                       >
                         <Trash2 className="w-4 h-4 text-destructive" />

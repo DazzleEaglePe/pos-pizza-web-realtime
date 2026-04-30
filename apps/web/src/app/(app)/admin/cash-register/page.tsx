@@ -14,6 +14,7 @@ import {
   Eye,
   X,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 /* ─── Types ───────────────────────────────────────────── */
 
@@ -114,47 +115,43 @@ export default function CashRegisterHistoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Wallet className="w-6 h-6 text-primary" />
-            Historial de Caja
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Registro de aperturas y cierres de caja
-          </p>
-        </div>
-        <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-3 py-1.5">
-          <CalendarDays className="w-4 h-4 text-muted-foreground" />
-          <input
-            type="date"
-            value={from}
-            onChange={(e) => { setFrom(e.target.value); setPage(1); }}
-            className="bg-transparent text-sm font-medium outline-none w-[130px]"
-          />
-          <span className="text-muted-foreground text-xs">→</span>
-          <input
-            type="date"
-            value={to}
-            onChange={(e) => { setTo(e.target.value); setPage(1); }}
-            className="bg-transparent text-sm font-medium outline-none w-[130px]"
-          />
-        </div>
-      </div>
+      <AdminPageHeader
+        icon={<Wallet className="w-4 h-4 text-primary" />}
+        title="Historial de Caja"
+        description="Registro de aperturas y cierres de caja"
+        actions={
+          <div className="flex items-center gap-2 bg-muted/60 rounded-full px-4 py-2">
+            <CalendarDays className="w-4 h-4 text-muted-foreground" />
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => { setFrom(e.target.value); setPage(1); }}
+              className="bg-transparent text-sm font-medium outline-none w-[130px]"
+            />
+            <span className="text-muted-foreground text-xs">→</span>
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => { setTo(e.target.value); setPage(1); }}
+              className="bg-transparent text-sm font-medium outline-none w-[130px]"
+            />
+          </div>
+        }
+      />
 
       {/* Table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40 text-left">
-                <th className="px-4 py-3 font-semibold text-muted-foreground">Usuario</th>
-                <th className="px-4 py-3 font-semibold text-muted-foreground">Apertura</th>
-                <th className="px-4 py-3 font-semibold text-muted-foreground">Cierre</th>
-                <th className="px-4 py-3 font-semibold text-muted-foreground text-right">Ventas</th>
-                <th className="px-4 py-3 font-semibold text-muted-foreground text-right">Diferencia</th>
-                <th className="px-4 py-3 font-semibold text-muted-foreground text-center">Tickets</th>
-                <th className="px-4 py-3 font-semibold text-muted-foreground text-center">Detalle</th>
+                <th className="px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">Usuario</th>
+                <th className="px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">Apertura</th>
+                <th className="px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">Cierre</th>
+                <th className="px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground text-right">Ventas</th>
+                <th className="px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground text-right">Diferencia</th>
+                <th className="px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground text-center">Tickets</th>
+                <th className="px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground text-center">Detalle</th>
               </tr>
             </thead>
             <tbody>
@@ -220,9 +217,9 @@ export default function CashRegisterHistoryPage() {
       {/* Detail modal */}
       {detail && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDetail(null)}>
-          <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">Detalle de Caja</h2>
+              <h2 className="text-lg font-black">Detalle de Caja</h2>
               <button onClick={() => setDetail(null)} className="p-1 rounded-md hover:bg-accent">
                 <X className="w-5 h-5" />
               </button>

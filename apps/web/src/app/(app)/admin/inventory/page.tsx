@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Search,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 interface InventoryItem {
   id: string;
@@ -69,33 +70,23 @@ export default function InventoryPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-              <Package className="h-3.5 w-3.5" />
-              Centro de inventario
-            </span>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Package className="w-6 h-6 text-primary" />
-              Gestión de Insumos
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Administra ingredientes, costos y niveles de stock del inventario.
-            </p>
-          </div>
+      <AdminPageHeader
+        icon={<Package className="w-4 h-4 text-primary" />}
+        title="Gestión de Insumos"
+        description="Administra ingredientes, costos y niveles de stock del inventario."
+        actions={
           <button
             onClick={() => {
               setEditingItem(null);
               setShowForm(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition shrink-0"
           >
             <Plus className="w-4 h-4" />
             Nuevo Insumo
           </button>
-        </div>
-      </section>
+        }
+      />
 
       {/* Search */}
       <div className="relative max-w-md">
@@ -105,7 +96,7 @@ export default function InventoryPage() {
           placeholder="Buscar por nombre, SKU o proveedor..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-sm text-sm focus:ring-1 focus:ring-primary/50 outline-none text-foreground placeholder:text-muted-foreground"
+          className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-full text-sm focus:ring-1 focus:ring-primary/50 outline-none text-foreground placeholder:text-muted-foreground"
         />
       </div>
 
@@ -113,30 +104,30 @@ export default function InventoryPage() {
       {loading ? (
         <PageSkeleton variant="table" cols={7} rows={6} showHero={false} />
       ) : (
-        <div className="bg-card rounded-sm border border-border overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Insumo
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     SKU
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-right px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Stock Actual
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-right px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Stock Mín.
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-right px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Costo Unit.
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Proveedor
                   </th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-center px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Acciones
                   </th>
                 </tr>
@@ -291,9 +282,9 @@ function ItemFormDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <form
         onSubmit={handleSubmit}
-        className="bg-card border border-border rounded-sm p-6 w-full max-w-md space-y-4 shadow-xl"
+        className="bg-card border border-border rounded-2xl p-6 w-full max-w-md space-y-4 shadow-xl"
       >
-        <h2 className="text-lg font-bold text-foreground">
+        <h2 className="text-lg font-black text-foreground">
           {item ? "Editar Insumo" : "Nuevo Insumo"}
         </h2>
 
@@ -409,14 +400,14 @@ function ItemFormDialog({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-sm"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-full"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-sm shadow hover:opacity-90 transition disabled:opacity-50"
+            className="px-5 py-2.5 text-[11px] font-black uppercase tracking-widest bg-primary text-primary-foreground rounded-full shadow hover:opacity-90 transition disabled:opacity-50"
           >
             {saving ? "Guardando..." : item ? "Actualizar" : "Crear"}
           </button>

@@ -24,6 +24,7 @@ import {
   Star,
   Loader2,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 type PromotionItem = {
   id: string;
@@ -146,34 +147,24 @@ export default function AdminPromotionsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-              <Gift className="h-3.5 w-3.5" />
-              Centro de promociones
-            </span>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Gift className="w-6 h-6 text-primary" />
-              Combos & Promociones
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Gestiona combos, vigencias y precios promocionales visibles en POS.
-            </p>
-          </div>
-          <Button onClick={openCreate} className="gap-2 shrink-0">
+      <AdminPageHeader
+        icon={<Gift className="w-4 h-4 text-primary" />}
+        title="Combos & Promociones"
+        description="Gestiona combos, vigencias y precios promocionales visibles en POS."
+        actions={
+          <Button onClick={openCreate} className="gap-2 shrink-0 rounded-full font-black text-[11px] uppercase tracking-widest">
             <Plus className="w-4 h-4" />
             Nuevo combo
           </Button>
-        </div>
-      </section>
+        }
+      />
 
       {/* List */}
       {loading ? (
         <PageSkeleton variant="cards" cards={3} showHero={false} />
       ) : promotions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-sm bg-muted/60 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mb-4">
             <Gift className="w-6 h-6 text-muted-foreground/60" />
           </div>
           <p className="text-sm font-medium text-muted-foreground">
@@ -189,7 +180,7 @@ export default function AdminPromotionsPage() {
             <Card key={promo.id} className="overflow-hidden">
               <CardContent className="p-4 flex items-start gap-4">
                 {/* Image */}
-                <div className="w-16 h-16 rounded-sm overflow-hidden bg-muted/40 shrink-0">
+                <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted/40 shrink-0">
                   <img
                     src={
                       promo.imageUrl ||
@@ -311,7 +302,7 @@ export default function AdminPromotionsPage() {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Ej. Combo Familiar"
-                className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
@@ -326,7 +317,7 @@ export default function AdminPromotionsPage() {
                   setForm((f) => ({ ...f, description: e.target.value }))
                 }
                 placeholder="Breve descripción del combo"
-                className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
@@ -344,7 +335,7 @@ export default function AdminPromotionsPage() {
                     setForm((f) => ({ ...f, promoPrice: e.target.value }))
                   }
                   placeholder="25.00"
-                  className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div>
@@ -360,7 +351,7 @@ export default function AdminPromotionsPage() {
                     setForm((f) => ({ ...f, originalPrice: e.target.value }))
                   }
                   placeholder="35.00"
-                  className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
             </div>
@@ -376,7 +367,7 @@ export default function AdminPromotionsPage() {
                   setForm((f) => ({ ...f, imageUrl: e.target.value }))
                 }
                 placeholder="https://..."
-                className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
@@ -392,7 +383,7 @@ export default function AdminPromotionsPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, displayOrder: e.target.value }))
                   }
-                  className="w-full h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div className="flex flex-col justify-end pb-1">

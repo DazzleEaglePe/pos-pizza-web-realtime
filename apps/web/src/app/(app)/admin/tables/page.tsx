@@ -15,6 +15,7 @@ import {
   X,
   Users,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 interface Table {
   id: string;
@@ -78,38 +79,36 @@ export default function TablesAdminPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <LayoutGrid className="w-6 h-6 text-primary" />
-            {t("tables.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("tables.subtitle")}</p>
-        </div>
-        <button
-          onClick={() => {
-            setEditingTable(null);
-            setShowForm(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          <Plus className="w-4 h-4" />
-          {t("tables.addTable")}
-        </button>
-      </div>
+      <AdminPageHeader
+        icon={<LayoutGrid className="w-4 h-4 text-primary" />}
+        title={t("tables.title")}
+        description={t("tables.subtitle")}
+        actions={
+          <button
+            onClick={() => {
+              setEditingTable(null);
+              setShowForm(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest hover:opacity-90 transition-opacity"
+          >
+            <Plus className="w-4 h-4" />
+            {t("tables.addTable")}
+          </button>
+        }
+      />
 
       {/* Summary */}
       <div className="flex gap-3 flex-wrap">
-        <div className="bg-card border border-border rounded-lg px-4 py-2.5 text-sm">
+        <div className="bg-card border border-border rounded-2xl px-4 py-2.5 text-sm">
           <span className="text-muted-foreground">{t("tables.totalTables")}:</span>{" "}
           <span className="font-bold">{tables.length}</span>
         </div>
-        <div className="bg-card border border-border rounded-lg px-4 py-2.5 text-sm">
+        <div className="bg-card border border-border rounded-2xl px-4 py-2.5 text-sm">
           <span className="text-muted-foreground">{t("tables.activeTables")}:</span>{" "}
           <span className="font-bold text-emerald-600">{tables.filter((t2) => t2.isActive).length}</span>
         </div>
         {zones.length > 0 && (
-          <div className="bg-card border border-border rounded-lg px-4 py-2.5 text-sm">
+          <div className="bg-card border border-border rounded-2xl px-4 py-2.5 text-sm">
             <span className="text-muted-foreground">{t("tables.zones")}:</span>{" "}
             <span className="font-bold">{zones.join(", ")}</span>
           </div>
@@ -121,7 +120,7 @@ export default function TablesAdminPage() {
         {tables.map((table) => (
           <div
             key={table.id}
-            className={`bg-card border border-border rounded-xl p-4 flex flex-col items-center gap-2 transition-all ${!table.isActive ? "opacity-40" : ""}`}
+            className={`bg-card border border-border rounded-2xl p-4 flex flex-col items-center gap-2 transition-all ${!table.isActive ? "opacity-40" : ""}`}
           >
             <div className="text-2xl font-black text-foreground">{table.number}</div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -129,11 +128,11 @@ export default function TablesAdminPage() {
               {table.capacity}
             </div>
             {table.zone && (
-              <span className="text-[10px] bg-muted px-2 py-0.5 rounded-md font-medium text-muted-foreground">
+              <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full font-medium text-muted-foreground">
                 {table.zone}
               </span>
             )}
-            <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${STATUS_COLORS[table.status] || "bg-muted text-muted-foreground"}`}>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${STATUS_COLORS[table.status] || "bg-muted text-muted-foreground"}`}>
               {table.status}
             </span>
             <div className="flex gap-1 mt-1">
@@ -232,8 +231,8 @@ function TableFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-bold mb-4">
+      <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-black mb-4">
           {isEditing ? t("tables.editTable") : t("tables.addTable")}
         </h2>
 
@@ -285,10 +284,10 @@ function TableFormModal({
           {error && <p className="text-sm text-destructive font-medium">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors">
               {t("tables.cancel")}
             </button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
               {saving ? "..." : isEditing ? t("tables.save") : t("tables.create")}
             </button>
           </div>

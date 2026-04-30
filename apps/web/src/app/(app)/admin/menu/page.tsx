@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { UtensilsCrossed } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
@@ -381,24 +382,14 @@ export default function AdminMenuPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="space-y-2">
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-            <UtensilsCrossed className="h-3.5 w-3.5" />
-            Centro de catálogo
-          </span>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <UtensilsCrossed className="w-6 h-6 text-primary" />
-            Gestión de Menú
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Administra categorías, productos, variantes y grupos de modificadores.
-          </p>
-        </div>
-      </section>
+      <AdminPageHeader
+        icon={<UtensilsCrossed className="w-4 h-4 text-primary" />}
+        title="Gestión de Menú"
+        description="Administra categorías, productos, variantes y grupos de modificadores."
+      />
 
       {error && (
-        <div className="px-4 py-3 rounded-sm border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
+        <div className="px-4 py-3 rounded-2xl border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
           {error}
         </div>
       )}
@@ -407,7 +398,7 @@ export default function AdminMenuPage() {
         <button
           type="button"
           onClick={() => setTab("categories")}
-          className={`px-4 py-2 rounded-sm text-sm font-semibold transition ${
+          className={`px-4 py-2 rounded-full text-sm font-bold transition ${
             tab === "categories"
               ? "bg-primary text-primary-foreground"
               : "bg-card border border-border text-foreground"
@@ -418,7 +409,7 @@ export default function AdminMenuPage() {
         <button
           type="button"
           onClick={() => setTab("products")}
-          className={`px-4 py-2 rounded-sm text-sm font-semibold transition ${
+          className={`px-4 py-2 rounded-full text-sm font-bold transition ${
             tab === "products"
               ? "bg-primary text-primary-foreground"
               : "bg-card border border-border text-foreground"

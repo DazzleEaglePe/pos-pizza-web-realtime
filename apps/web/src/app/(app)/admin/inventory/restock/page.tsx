@@ -6,6 +6,7 @@ import { getAccessToken } from "@/lib/auth";
 import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { PackagePlus } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 interface InventoryItem {
   id: string;
@@ -73,26 +74,16 @@ export default function RestockPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-lg">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="space-y-2">
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-            <PackagePlus className="h-3.5 w-3.5" />
-            Centro de inventario
-          </span>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <PackagePlus className="w-6 h-6 text-primary" />
-            Reposición de Inventario
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Registra la entrada de mercancía y actualiza stock en tiempo real.
-          </p>
-        </div>
-      </section>
+      <AdminPageHeader
+        icon={<PackagePlus className="w-4 h-4 text-primary" />}
+        title="Reposición de Inventario"
+        description="Registra la entrada de mercancía y actualiza stock en tiempo real."
+      />
 
       {loading ? (
         <PageSkeleton variant="form" showHero={false} />
       ) : (
-        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-sm p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-4">
           <div>
             <label className="text-xs font-semibold text-muted-foreground">Insumo *</label>
             <select

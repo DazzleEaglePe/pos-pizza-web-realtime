@@ -5,6 +5,7 @@ import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { ArrowDownUp } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 interface Movement {
   id: string;
@@ -73,21 +74,11 @@ export default function MovementsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="space-y-2">
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-            <ArrowDownUp className="h-3.5 w-3.5" />
-            Centro de inventario
-          </span>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <ArrowDownUp className="w-6 h-6 text-primary" />
-            Historial de Movimientos
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Revisa entradas, salidas y ajustes para trazabilidad de stock.
-          </p>
-        </div>
-      </section>
+      <AdminPageHeader
+        icon={<ArrowDownUp className="w-4 h-4 text-primary" />}
+        title="Historial de Movimientos"
+        description="Revisa entradas, salidas y ajustes para trazabilidad de stock."
+      />
 
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
@@ -119,30 +110,30 @@ export default function MovementsPage() {
       {loading ? (
         <PageSkeleton variant="table" cols={6} rows={6} showHero={false} showFilterBar />
       ) : (
-        <div className="bg-card rounded-sm border border-border overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Fecha
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Insumo
                   </th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-center px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Tipo
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-right px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Cantidad
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-right px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Stock Después
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Referencia
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                  <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                     Notas
                   </th>
                 </tr>

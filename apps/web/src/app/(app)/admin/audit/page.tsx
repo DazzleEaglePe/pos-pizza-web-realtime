@@ -18,6 +18,7 @@ import {
   Trash2,
   Filter,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 /* ─── Types ─────────────────────────────────────── */
 
@@ -41,9 +42,9 @@ interface AuditResponse {
 }
 
 const ACTION_BADGE: Record<string, string> = {
-  CREATE: "bg-green-500/10 text-green-600 border-green-500/20",
-  UPDATE: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  DELETE: "bg-red-500/10 text-red-600 border-red-500/20",
+  CREATE: "bg-primary/10 text-foreground border-primary/15",
+  UPDATE: "bg-muted text-foreground border-border",
+  DELETE: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 const ACTION_ICON: Record<string, typeof Plus> = {
@@ -119,25 +120,17 @@ export default function AuditPage() {
   return (
     <div className="p-6 space-y-6 max-w-[1200px] mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-          <ScrollText className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">
-            {t("audit.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("audit.subtitle")}
-          </p>
-        </div>
-      </div>
+      <AdminPageHeader
+        icon={<ScrollText className="w-4 h-4 text-primary" />}
+        title={t("audit.title")}
+        description={t("audit.subtitle")}
+      />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-3 bg-card border border-border rounded-xl p-4">
+      <div className="flex flex-wrap items-end gap-3 bg-card border border-border rounded-2xl p-4">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Filter className="w-4 h-4" />
-          <span className="text-xs font-semibold uppercase tracking-wider">Filtros</span>
+          <span className="text-xs font-bold uppercase tracking-wider">Filtros</span>
         </div>
         <select
           value={actionFilter}
@@ -170,24 +163,24 @@ export default function AuditPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   {t("audit.date")}
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   {t("audit.user")}
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   {t("audit.action")}
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   {t("audit.entity")}
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   {t("audit.details")}
                 </th>
               </tr>
@@ -232,7 +225,7 @@ export default function AuditPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeCls}`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${badgeCls}`}
                         >
                           <ActionIcon className="w-3 h-3" />
                           {log.action}

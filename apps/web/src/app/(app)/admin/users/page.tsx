@@ -18,6 +18,7 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 interface User {
   id: string;
@@ -30,9 +31,9 @@ interface User {
 }
 
 const ROLE_CONFIG: Record<string, { label: string; color: string; icon: typeof Shield }> = {
-  ADMIN: { label: "Admin", color: "bg-purple-500/10 text-purple-600 border-purple-500/20", icon: ShieldCheck },
-  CAJERO: { label: "Cajero", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Shield },
-  COCINA: { label: "Cocina", color: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: ChefHat },
+  ADMIN: { label: "Admin", color: "bg-primary/10 text-foreground border-primary/15", icon: ShieldCheck },
+  CAJERO: { label: "Cajero", color: "bg-muted text-foreground border-border", icon: Shield },
+  COCINA: { label: "Cocina", color: "bg-muted text-foreground border-border", icon: ChefHat },
 };
 
 export default function UsersPage() {
@@ -89,25 +90,23 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Users className="w-6 h-6 text-primary" />
-            {t("users.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("users.subtitle")}</p>
-        </div>
-        <button
-          onClick={() => {
-            setEditingUser(null);
-            setShowForm(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          <Plus className="w-4 h-4" />
-          {t("users.addUser")}
-        </button>
-      </div>
+      <AdminPageHeader
+        icon={<Users className="w-4 h-4 text-primary" />}
+        title={t("users.title")}
+        description={t("users.subtitle")}
+        actions={
+          <button
+            onClick={() => {
+              setEditingUser(null);
+              setShowForm(true);
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest hover:opacity-90 transition-opacity"
+          >
+            <Plus className="w-4 h-4" />
+            {t("users.addUser")}
+          </button>
+        }
+      />
 
       {/* Search */}
       <div className="relative max-w-sm">
@@ -117,22 +116,22 @@ export default function UsersPage() {
           placeholder={t("users.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-muted/60 border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary/50"
+          className="w-full pl-10 pr-4 py-2.5 bg-muted/60 border border-border rounded-full text-sm outline-none focus:ring-1 focus:ring-primary/50"
         />
       </div>
 
       {/* Table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                <th className="text-left px-4 py-3 font-semibold text-xs uppercase text-muted-foreground">{t("users.name")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-xs uppercase text-muted-foreground">{t("users.email")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-xs uppercase text-muted-foreground">{t("users.role")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-xs uppercase text-muted-foreground">{t("users.status")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-xs uppercase text-muted-foreground">{t("users.lastLogin")}</th>
-                <th className="text-right px-4 py-3 font-semibold text-xs uppercase text-muted-foreground">{t("users.actions")}</th>
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">{t("users.name")}</th>
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">{t("users.email")}</th>
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">{t("users.role")}</th>
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">{t("users.status")}</th>
+                <th className="text-left px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">{t("users.lastLogin")}</th>
+                <th className="text-right px-4 py-3 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">{t("users.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -151,13 +150,13 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold border ${rc.color}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${rc.color}`}>
                         <RIcon className="w-3 h-3" />
                         {rc.label}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold ${u.isActive ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-500"}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${u.isActive ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-500"}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
                         {u.isActive ? t("users.active") : t("users.inactive")}
                       </span>
@@ -289,8 +288,8 @@ function UserFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-bold mb-4">
+        <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-black mb-4">
           {isEditing ? t("users.editUser") : t("users.addUser")}
         </h2>
 
@@ -356,10 +355,10 @@ function UserFormModal({
           {error && <p className="text-sm text-destructive font-medium">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors">
               {t("users.cancel")}
             </button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-5 py-2.5 bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
               {saving ? "..." : isEditing ? t("users.save") : t("users.create")}
             </button>
           </div>
@@ -404,8 +403,8 @@ function ResetPasswordModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+      <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-black mb-4 flex items-center gap-2">
           <KeyRound className="w-5 h-5 text-primary" />
           {t("users.resetPassword")}
         </h2>

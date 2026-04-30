@@ -50,7 +50,7 @@ export function AnimatedTrackingStep({
       <div className="relative shrink-0 flex items-center justify-center pt-1">
         <motion.div
           className={`w-8 h-8 rounded-full flex items-center justify-center border-4 border-card shadow-sm z-10 transition-all duration-500
-            ${isDone ? "bg-primary text-primary-foreground" : isActive ? "bg-card border-primary shadow-[0_0_15px_rgba(0,191,166,0.3)]" : "bg-muted border-muted text-muted-foreground/50"}`}
+            ${isDone ? "bg-primary text-primary-foreground" : isActive ? "bg-card border-primary shadow-[0_0_15px_oklch(0.205_0_0/0.15)] dark:shadow-[0_0_15px_oklch(0.922_0_0/0.2)]" : "bg-muted border-muted text-muted-foreground/50"}`}
           layout
         >
           <AnimatePresence mode="wait">

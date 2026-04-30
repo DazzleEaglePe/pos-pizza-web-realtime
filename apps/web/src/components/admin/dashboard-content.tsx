@@ -19,7 +19,19 @@ import {
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
-import { Package, AlertTriangle, ChevronRight, TrendingUp, Plus } from "lucide-react";
+import {
+  Package,
+  AlertTriangle,
+  ChevronRight,
+  TrendingUp,
+  Plus,
+  ShoppingBag,
+  Tags,
+  Warehouse,
+  TriangleAlert,
+  LayoutDashboard,
+} from "lucide-react";
+import { AdminPageHeader, AdminStatCard } from "@pos-pizza/ui";
 
 /* ─── Types ──────────────────────────────────────────── */
 
@@ -55,7 +67,16 @@ const SPARKLINES = {
   alerts:     [8, 7, 9, 6,  8,  5,  7,  4,  6,  3].map((v, i) => ({ v, i })),
 };
 
-const CAT_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#06b6d4"];
+/* ─── Neutral tones for category dots / bars ─────────── */
+
+const CAT_TONES = [
+  "var(--color-foreground)",
+  "oklch(0.55 0 0)",
+  "oklch(0.40 0 0)",
+  "oklch(0.70 0 0)",
+  "oklch(0.50 0 0)",
+  "oklch(0.62 0 0)",
+];
 
 /* ─── Component ──────────────────────────────────────── */
 
@@ -89,39 +110,39 @@ export function DashboardContent({ data }: { data: DashboardData }) {
 
   const STATS = [
     {
+      icon:  <ShoppingBag className="w-4 h-4 text-foreground/70" />,
       label: "Productos activos",
       value: data.activeProducts,
       sub:   data.activeCategories + " categorías · " + data.variantCount + " variantes",
       trend: "+2 esta semana",
       up:    true,
-      clr:   "#3b82f6",
       spark: "products" as keyof typeof SPARKLINES,
     },
     {
+      icon:  <Tags className="w-4 h-4 text-foreground/70" />,
       label: "Promociones",
       value: data.activePromotions,
       sub:   "de " + data.totalPromotions + " registradas",
       trend: data.activePromotions > 0 ? "+1 este mes" : "Sin cambios",
       up:    data.activePromotions > 0,
-      clr:   "#8b5cf6",
       spark: "promotions" as keyof typeof SPARKLINES,
     },
     {
+      icon:  <Warehouse className="w-4 h-4 text-foreground/70" />,
       label: "Insumos activos",
       value: data.activeInventory,
       sub:   data.stockAlerts.length + " con alerta",
       trend: "En sistema",
       up:    true,
-      clr:   "#10b981",
       spark: "inventory" as keyof typeof SPARKLINES,
     },
     {
+      icon:  <TriangleAlert className="w-4 h-4 text-foreground/70" />,
       label: "Alertas de stock",
       value: data.stockAlerts.length,
       sub:   criticalCount + " críticas",
       trend: criticalCount > 0 ? criticalCount + " urgentes" : "Todo en orden",
       up:    criticalCount === 0,
-      clr:   data.stockAlerts.length > 0 ? "#f59e0b" : "#10b981",
       spark: "alerts" as keyof typeof SPARKLINES,
     },
   ];
@@ -130,74 +151,57 @@ export function DashboardContent({ data }: { data: DashboardData }) {
     <div ref={scope} className="max-w-350 mx-auto space-y-5 pb-10">
 
       {/* ── Header ── */}
-      <div data-a="head" className="flex items-center justify-between">
-        <div>
-          <p className="text-[11px] text-muted-foreground capitalize tracking-wide">{today}</p>
-          <h1 className="text-xl font-bold tracking-tight mt-0.5">Panel de administración</h1>
-        </div>
-        <Link
-          href="/admin/menu"
-          className="flex items-center gap-1.5 text-[13px] font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-sm hover:bg-primary/90 transition-colors shadow-sm"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Agregar producto
-        </Link>
+      <div data-a="head">
+        <AdminPageHeader
+          icon={<LayoutDashboard className="w-4 h-4 text-primary" />}
+          title="Panel de administración"
+          description={today}
+          actions={
+            <Link
+              href="/admin/menu"
+              className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest bg-primary text-primary-foreground px-5 py-2.5 rounded-full hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Agregar producto
+            </Link>
+          }
+        />
       </div>
 
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map((s) => (
-          <div key={s.label} data-a="stat" className="bg-card rounded-sm shadow-sm p-4 lg:p-5">
-            {/* Label + overflow */}
-            <div className="flex items-start justify-between mb-1.5">
-              <p className="text-[12px] text-muted-foreground font-medium leading-tight pr-2">{s.label}</p>
-              <span className="text-muted-foreground/25 text-sm select-none shrink-0">···</span>
-            </div>
-
-            {/* Big value */}
-            <p className="text-3xl font-bold tracking-tight">{s.value}</p>
-
-            {/* Sparkline */}
-            <div className="h-9 -mx-1 mt-2 mb-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={SPARKLINES[s.spark]} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
-                  <defs>
-                    <linearGradient id={"sg-" + s.spark} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor={s.clr} stopOpacity={0.25} />
-                      <stop offset="95%" stopColor={s.clr} stopOpacity={0}    />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="v"
-                    stroke={s.clr}
-                    strokeWidth={1.5}
-                    fill={"url(#sg-" + s.spark + ")"}
-                    dot={false}
-                    activeDot={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Trend */}
-            <div className="flex items-center gap-1 flex-wrap">
-              <TrendingUp
-                className={cn("w-3 h-3 shrink-0", s.up ? "text-emerald-500" : "text-amber-500")}
-              />
-              <span
-                className={cn(
-                  "text-[11px] font-semibold",
-                  s.up
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-amber-600 dark:text-amber-400",
-                )}
-              >
-                {s.trend}
-              </span>
-              <span className="text-[11px] text-muted-foreground">· {s.sub}</span>
-            </div>
-          </div>
+          <AdminStatCard
+            key={s.label}
+            data-a="stat"
+            icon={s.icon}
+            label={s.label}
+            value={s.value}
+            sub={s.sub}
+            trend={s.trend}
+            trendUp={s.up}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={SPARKLINES[s.spark]} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
+                <defs>
+                  <linearGradient id={"sg-" + s.spark} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="var(--color-foreground)" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="var(--color-foreground)" stopOpacity={0}    />
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="v"
+                  stroke="var(--color-foreground)"
+                  strokeWidth={1.5}
+                  strokeOpacity={0.5}
+                  fill={"url(#sg-" + s.spark + ")"}
+                  dot={false}
+                  activeDot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </AdminStatCard>
         ))}
       </div>
 
@@ -205,17 +209,17 @@ export function DashboardContent({ data }: { data: DashboardData }) {
       <div className="grid gap-4 lg:grid-cols-[1fr_276px]">
 
         {/* Bar chart: products per category */}
-        <div data-a="chart" className="bg-card rounded-sm shadow-sm p-5">
+        <div data-a="chart" className="bg-card rounded-2xl border border-border p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-sm font-semibold">Catálogo por Categoría</h2>
+              <h2 className="text-sm font-black tracking-tight">Catálogo por Categoría</h2>
               <p className="text-[11px] text-muted-foreground mt-0.5">
                 Productos activos y totales por categoría
               </p>
             </div>
             <Link
               href="/admin/menu"
-              className="text-[12px] font-semibold bg-primary/10 text-primary px-3 py-1.5 rounded-sm hover:bg-primary/20 transition-colors"
+              className="text-[11px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors"
             >
               Ver menú →
             </Link>
@@ -248,7 +252,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
                   contentStyle={{
                     background: "var(--color-card)",
                     border: "1px solid var(--color-border)",
-                    borderRadius: "0.75rem",
+                    borderRadius: "1rem",
                     fontSize: 12,
                     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                   }}
@@ -279,22 +283,22 @@ export function DashboardContent({ data }: { data: DashboardData }) {
 
           <div className="flex items-center gap-5 mt-4 pt-0">
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-primary inline-block" />
+              <span className="w-3 h-3 rounded-full bg-primary inline-block" />
               <span className="text-[11px] text-muted-foreground font-medium">Activos</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-secondary inline-block" />
+              <span className="w-3 h-3 rounded-full bg-secondary inline-block" />
               <span className="text-[11px] text-muted-foreground font-medium">Total</span>
             </div>
           </div>
         </div>
 
         {/* Right: donut + top categories */}
-        <div data-a="chart" className="bg-card rounded-sm shadow-sm p-5 flex flex-col">
+        <div data-a="chart" className="bg-card rounded-2xl border border-border p-5 flex flex-col">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold">Estado del Menú</h2>
-            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-sm">
-              Esta semana ↓
+            <h2 className="text-sm font-black tracking-tight">Estado del Menú</h2>
+            <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              Esta semana
             </span>
           </div>
 
@@ -318,7 +322,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
               </Pie>
             </PieChart>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <p className="text-2xl font-bold leading-tight">{data.activeProducts}</p>
+              <p className="text-2xl font-black leading-tight">{data.activeProducts}</p>
               <p className="text-[10px] text-muted-foreground leading-tight">Activos</p>
               <p className="text-[9px] text-muted-foreground/60">de {data.totalProducts}</p>
             </div>
@@ -335,7 +339,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
                 <div key={cat.name} className="flex items-center gap-2.5">
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0 mt-0.5"
-                    style={{ background: CAT_COLORS[i] }}
+                    style={{ background: CAT_TONES[i] }}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
@@ -347,7 +351,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
                     <div className="h-1 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-700"
-                        style={{ width: pct + "%", background: CAT_COLORS[i] }}
+                        style={{ width: pct + "%", background: CAT_TONES[i] }}
                       />
                     </div>
                   </div>
@@ -366,19 +370,19 @@ export function DashboardContent({ data }: { data: DashboardData }) {
       </div>
 
       {/* ── Stock alerts table ── */}
-      <div data-a="table" className="bg-card rounded-sm shadow-sm overflow-hidden">
+      <div data-a="table" className="bg-card rounded-2xl border border-border overflow-hidden">
 
         {/* Table header */}
         <div className="flex items-center justify-between px-6 py-4">
           <div>
-            <h2 className="text-sm font-semibold">Alertas de Stock</h2>
+            <h2 className="text-sm font-black tracking-tight">Alertas de Stock</h2>
             <p className="text-[11px] text-muted-foreground mt-0.5">
               {data.stockAlerts.length} insumos bajo mínimo · {criticalCount} críticos
             </p>
           </div>
           <Link
             href="/admin/inventory/restock"
-            className="flex items-center gap-1.5 text-[13px] font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-sm hover:bg-primary/90 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest bg-primary text-primary-foreground px-5 py-2.5 rounded-full hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Registrar reposición
@@ -390,7 +394,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-3">
               <Package className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <p className="text-sm font-semibold">Stock en orden</p>
+            <p className="text-sm font-black">Stock en orden</p>
             <p className="text-[12px] text-muted-foreground mt-1">
               Todos los insumos sobre el mínimo.
             </p>
@@ -402,7 +406,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
               {["Insumo", "Unidad de medida", "Faltante", "Estado"].map((h) => (
                 <span
                   key={h}
-                  className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
+                  className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider"
                 >
                   {h}
                 </span>
@@ -410,7 +414,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
             </div>
 
             {/* Rows */}
-            <div className="divide-y divide-muted">
+            <div className="divide-y divide-border">
               {data.stockAlerts.map((a) => (
                 <div
                   key={a.id}
@@ -435,7 +439,7 @@ export function DashboardContent({ data }: { data: DashboardData }) {
                   <span className="text-[13px] text-muted-foreground self-center">
                     {a.unitOfMeasure}
                   </span>
-                  <span className="text-[13px] font-semibold self-center">
+                  <span className="text-[13px] font-bold self-center">
                     {Math.abs(a.shortage)}
                   </span>
                   <div className="self-center">

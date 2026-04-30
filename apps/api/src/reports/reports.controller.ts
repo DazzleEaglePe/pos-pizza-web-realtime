@@ -7,6 +7,7 @@ import { exportExcel } from './export-excel';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { BusinessConfigService } from '../config/config.service';
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -14,6 +15,7 @@ export class ReportsController {
   constructor(
     private readonly reportsService: ReportsService,
     private readonly dailySummaryService: DailySummaryService,
+    private readonly configService: BusinessConfigService,
   ) {}
 
   /* ─── Sales Today ────────────────────────────────────────── */
@@ -97,6 +99,7 @@ export class ReportsController {
   ) {
     const { start, end } = this.parseDateRange(from, to);
     const data = await this.reportsService.salesByRange(start, end);
+    const config = await this.configService.getConfig();
     const rows = (data.daily || []).map((d: any) => ({
       date: d.date,
       totalSales: Number(d.totalSales ?? 0).toFixed(2),
@@ -114,6 +117,13 @@ export class ReportsController {
         { header: 'Ticket Prom.', key: 'avgTicket', width: 100 },
       ],
       rows,
+      business: {
+        companyName: config.companyName,
+        ruc: config.ruc ?? undefined,
+        address: config.address ?? undefined,
+        phone: config.phone ?? undefined,
+        logoUrl: config.logoUrl ?? undefined,
+      },
     });
   }
 
@@ -157,6 +167,7 @@ export class ReportsController {
   ) {
     const { start, end } = this.parseDateRange(from, to);
     const products = await this.reportsService.topProducts(start, end, 50);
+    const config = await this.configService.getConfig();
     const rows = products.map((p: any) => ({
       productName: p.productName,
       totalQty: Number(p.totalQty ?? 0),
@@ -172,6 +183,13 @@ export class ReportsController {
         { header: 'Ingresos (S/)', key: 'totalRevenue', width: 120 },
       ],
       rows,
+      business: {
+        companyName: config.companyName,
+        ruc: config.ruc ?? undefined,
+        address: config.address ?? undefined,
+        phone: config.phone ?? undefined,
+        logoUrl: config.logoUrl ?? undefined,
+      },
     });
   }
 

@@ -5,6 +5,7 @@ import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { AlertTriangle, PackagePlus } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 import Link from "next/link";
 
 interface AlertItem {
@@ -43,26 +44,16 @@ export default function AlertsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="space-y-2">
-          <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-            <AlertTriangle className="h-3.5 w-3.5" />
-            Centro de inventario
-          </span>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <AlertTriangle className="w-6 h-6 text-destructive" />
-            Alertas de Stock Bajo
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Monitorea insumos por debajo del mínimo para actuar a tiempo.
-          </p>
-        </div>
-      </section>
+      <AdminPageHeader
+        icon={<AlertTriangle className="w-4 h-4 text-primary" />}
+        title="Alertas de Stock Bajo"
+        description="Monitorea insumos por debajo del mínimo para actuar a tiempo."
+      />
 
       {loading ? (
         <PageSkeleton variant="cards" cards={4} showHero={false} />
       ) : alerts.length === 0 ? (
-        <div className="bg-card rounded-sm border border-border p-8 text-center space-y-2">
+        <div className="bg-card rounded-2xl border border-border p-8 text-center space-y-2">
           <div className="text-4xl">✅</div>
           <h3 className="text-lg font-bold text-foreground">
             Todo en orden
@@ -76,7 +67,7 @@ export default function AlertsPage() {
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className={`bg-card rounded-sm border p-4 flex items-center justify-between ${
+              className={`bg-card rounded-2xl border p-4 flex items-center justify-between ${
                 alert.urgency === "critical"
                   ? "border-destructive/50"
                   : "border-yellow-500/50"
@@ -84,7 +75,7 @@ export default function AlertsPage() {
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-10 h-10 rounded-sm flex items-center justify-center ${
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                     alert.urgency === "critical"
                       ? "bg-destructive/10"
                       : "bg-yellow-500/10"
@@ -138,7 +129,7 @@ export default function AlertsPage() {
                 </div>
                 <Link
                   href="/admin/inventory/restock"
-                  className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-sm text-xs font-bold shadow hover:opacity-90 transition"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-full text-[11px] font-black uppercase tracking-widest shadow hover:opacity-90 transition"
                 >
                   <PackagePlus className="w-3.5 h-3.5" />
                   Reponer

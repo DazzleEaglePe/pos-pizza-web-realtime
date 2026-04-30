@@ -27,6 +27,7 @@ import {
   Usb,
   Loader2,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 import { posAlert } from "@/lib/sweetalert";
 
 /* ─── Types ───────────────────────────────────────────── */
@@ -201,34 +202,24 @@ export default function AdminPrintersPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       {/* Hero */}
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-              <Printer className="h-3.5 w-3.5" />
-              Configuración
-            </span>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Printer className="w-6 h-6 text-primary" />
-              Impresoras Térmicas
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Configura las impresoras térmicas de caja y cocina conectadas al sistema.
-            </p>
-          </div>
-          <Button onClick={openCreate} className="gap-2 shrink-0">
+      <AdminPageHeader
+        icon={<Printer className="w-4 h-4 text-primary" />}
+        title="Impresoras Térmicas"
+        description="Configura las impresoras térmicas de caja y cocina conectadas al sistema."
+        actions={
+          <Button onClick={openCreate} className="gap-2 shrink-0 rounded-full font-black text-[11px] uppercase tracking-widest">
             <Plus className="w-4 h-4" />
             Nueva impresora
           </Button>
-        </div>
-      </section>
+        }
+      />
 
       {/* List */}
       {loading ? (
         <PageSkeleton variant="cards" cards={3} showHero={false} />
       ) : printers.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-sm bg-muted/60 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mb-4">
             <Printer className="w-6 h-6 text-muted-foreground/60" />
           </div>
           <p className="text-sm font-medium text-muted-foreground">
@@ -248,7 +239,7 @@ export default function AdminPrintersPage() {
               <Card key={p.id} className="overflow-hidden">
                 <CardContent className="p-4 flex items-center gap-4">
                   {/* Icon */}
-                  <div className="w-12 h-12 rounded-sm bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                     <Printer className="w-5 h-5 text-primary" />
                   </div>
 
@@ -351,7 +342,7 @@ export default function AdminPrintersPage() {
             <div>
               <label className="text-sm font-medium text-foreground">Nombre</label>
               <input
-                className="mt-1 w-full rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 placeholder="Ej: Impresora Caja Principal"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -362,7 +353,7 @@ export default function AdminPrintersPage() {
             <div>
               <label className="text-sm font-medium text-foreground">Ubicación</label>
               <select
-                className="mt-1 w-full rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
               >
@@ -375,7 +366,7 @@ export default function AdminPrintersPage() {
             <div>
               <label className="text-sm font-medium text-foreground">Tipo de conexión</label>
               <select
-                className="mt-1 w-full rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 value={form.connectionType}
                 onChange={(e) =>
                   setForm({ ...form, connectionType: e.target.value, ipAddress: "", port: "" })
@@ -392,7 +383,7 @@ export default function AdminPrintersPage() {
                 <div className="col-span-2">
                   <label className="text-sm font-medium text-foreground">Dirección IP</label>
                   <input
-                    className="mt-1 w-full rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 font-mono"
+                    className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 font-mono"
                     placeholder="192.168.1.100"
                     value={form.ipAddress}
                     onChange={(e) => setForm({ ...form, ipAddress: e.target.value })}
@@ -401,7 +392,7 @@ export default function AdminPrintersPage() {
                 <div>
                   <label className="text-sm font-medium text-foreground">Puerto</label>
                   <input
-                    className="mt-1 w-full rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 font-mono"
+                    className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 font-mono"
                     placeholder="9100"
                     value={form.port}
                     onChange={(e) => setForm({ ...form, port: e.target.value.replace(/\D/g, "") })}
@@ -414,7 +405,7 @@ export default function AdminPrintersPage() {
             <div>
               <label className="text-sm font-medium text-foreground">Ancho de papel</label>
               <select
-                className="mt-1 w-full rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 value={form.paperWidth}
                 onChange={(e) => setForm({ ...form, paperWidth: e.target.value })}
               >

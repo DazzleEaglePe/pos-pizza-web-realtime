@@ -21,6 +21,7 @@ import {
   XCircle,
   FileDown,
 } from "lucide-react";
+import { AdminPageHeader, AdminStatCard } from "@pos-pizza/ui";
 import { API_URL } from "@/lib/config";
 import {
   AreaChart,
@@ -80,7 +81,7 @@ function fmtMoney(v: number | string, symbol: string) {
   return `${symbol} ${Number(v || 0).toFixed(2)}`;
 }
 
-const PIE_COLORS = ["hsl(142, 71%, 45%)", "hsl(217, 91%, 60%)", "hsl(45, 93%, 47%)", "hsl(0, 84%, 60%)"];
+const PIE_COLORS = ["var(--color-foreground)", "oklch(0.55 0 0)", "oklch(0.40 0 0)", "oklch(0.70 0 0)"];
 
 /* ─── Component ───────────────────────────────────────── */
 
@@ -155,84 +156,78 @@ export default function ReportsPage() {
   return (
     <div className="space-y-8">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-primary" />
-            {t("reports.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("reports.subtitle")}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-3 py-1.5">
-            <CalendarDays className="w-4 h-4 text-muted-foreground" />
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="bg-transparent text-sm font-medium outline-none w-[130px]"
-            />
-            <span className="text-muted-foreground text-xs">→</span>
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className="bg-transparent text-sm font-medium outline-none w-[130px]"
-            />
+      <AdminPageHeader
+        icon={<BarChart3 className="w-4 h-4 text-primary" />}
+        title={t("reports.title")}
+        description={t("reports.subtitle")}
+        actions={
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-muted/60 rounded-full px-4 py-2">
+              <CalendarDays className="w-4 h-4 text-muted-foreground" />
+              <input
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                className="bg-transparent text-sm font-medium outline-none w-[130px]"
+              />
+              <span className="text-muted-foreground text-xs">→</span>
+              <input
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                className="bg-transparent text-sm font-medium outline-none w-[130px]"
+              />
+            </div>
+            <ExportDropdown from={from} to={to} />
           </div>
-          <ExportDropdown from={from} to={to} />
-        </div>
-      </div>
+        }
+      />
 
       {/* ── Summary Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard
-          icon={DollarSign}
+        <AdminStatCard
+          icon={<DollarSign className="w-4 h-4 text-foreground/70" />}
           label={t("reports.totalSales")}
           value={fmtMoney(summary?.totalSales ?? 0, cs)}
-          accent="text-primary"
         />
-        <SummaryCard
-          icon={Receipt}
+        <AdminStatCard
+          icon={<Receipt className="w-4 h-4 text-foreground/70" />}
           label={t("reports.totalOrders")}
           value={String(summary?.totalOrders ?? 0)}
-          accent="text-blue-500"
         />
-        <SummaryCard
-          icon={TrendingUp}
+        <AdminStatCard
+          icon={<TrendingUp className="w-4 h-4 text-foreground/70" />}
           label={t("reports.avgTicket")}
           value={fmtMoney(summary?.avgTicket ?? 0, cs)}
-          accent="text-amber-500"
         />
-        <SummaryCard
-          icon={XCircle}
+        <AdminStatCard
+          icon={<XCircle className="w-4 h-4 text-foreground/70" />}
           label={t("reports.cancelled")}
           value={String(summary?.totalCancelled ?? 0)}
-          accent="text-destructive"
         />
       </div>
 
       {/* ── Area Chart: Daily Sales ── */}
       {dailyChart.length > 1 && (
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="text-sm font-semibold mb-4 text-foreground">{t("reports.dailyTrend")}</h2>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h2 className="text-sm font-black tracking-tight mb-4 text-foreground">{t("reports.dailyTrend")}</h2>
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dailyChart}>
                 <defs>
                   <linearGradient id="gradSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--color-foreground)" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="var(--color-foreground)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 8,
+                    backgroundColor: "var(--color-card)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "1rem",
                     fontSize: 12,
                   }}
                   formatter={(v: ValueType | undefined) => [fmtMoney(Number(v ?? 0), cs), t("reports.totalSales")]}
@@ -240,7 +235,7 @@ export default function ReportsPage() {
                 <Area
                   type="monotone"
                   dataKey="ventas"
-                  stroke="hsl(142, 71%, 45%)"
+                  stroke="var(--color-foreground)"
                   strokeWidth={2}
                   fill="url(#gradSales)"
                 />
@@ -253,8 +248,8 @@ export default function ReportsPage() {
       {/* ── Row: Payment Pie + Type Pie + Top Products ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Payment method pie */}
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="text-sm font-semibold mb-3 text-foreground">{t("reports.byPaymentMethod")}</h2>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h2 className="text-sm font-black tracking-tight mb-3 text-foreground">{t("reports.byPaymentMethod")}</h2>
           {paymentPie.length > 0 ? (
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -265,7 +260,7 @@ export default function ReportsPage() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ backgroundColor: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: "1rem", fontSize: 12 }}
                     formatter={(v: ValueType | undefined) => fmtMoney(Number(v ?? 0), cs)}
                   />
                 </PieChart>
@@ -285,18 +280,18 @@ export default function ReportsPage() {
         </div>
 
         {/* Order type pie */}
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="text-sm font-semibold mb-3 text-foreground">{t("reports.byOrderType")}</h2>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h2 className="text-sm font-black tracking-tight mb-3 text-foreground">{t("reports.byOrderType")}</h2>
           {typePie.length > 0 ? (
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={typePie} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={3}>
-                    <Cell fill="hsl(142, 71%, 45%)" />
-                    <Cell fill="hsl(217, 91%, 60%)" />
+                    <Cell fill="var(--color-foreground)" />
+                    <Cell fill="oklch(0.55 0 0)" />
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ backgroundColor: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: "1rem", fontSize: 12 }}
                     formatter={(v: ValueType | undefined) => fmtMoney(Number(v ?? 0), cs)}
                   />
                 </PieChart>
@@ -308,7 +303,7 @@ export default function ReportsPage() {
           <div className="flex justify-center gap-4 mt-2">
             {typePie.map((p, i) => (
               <div key={p.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: i === 0 ? "hsl(142, 71%, 45%)" : "hsl(217, 91%, 60%)" }} />
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: i === 0 ? "var(--color-foreground)" : "oklch(0.55 0 0)" }} />
                 {p.name}
               </div>
             ))}
@@ -316,13 +311,13 @@ export default function ReportsPage() {
         </div>
 
         {/* Top products */}
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="text-sm font-semibold mb-3 text-foreground">{t("reports.topProducts")}</h2>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h2 className="text-sm font-black tracking-tight mb-3 text-foreground">{t("reports.topProducts")}</h2>
           {topProducts.length > 0 ? (
             <div className="space-y-2.5 max-h-[250px] overflow-y-auto custom-scrollbar">
               {topProducts.map((p, i) => (
                 <div key={p.productId} className="flex items-center gap-3">
-                  <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${i < 3 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${i < 3 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -342,50 +337,24 @@ export default function ReportsPage() {
 
       {/* ── Category Breakdown ── */}
       {byCategory.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h2 className="text-sm font-semibold mb-4 text-foreground">{t("reports.byCategory")}</h2>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <h2 className="text-sm font-black tracking-tight mb-4 text-foreground">{t("reports.byCategory")}</h2>
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byCategory.map((c) => ({ name: c.categoryName, ventas: Number(c.totalSales || 0) }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="var(--color-muted-foreground)" />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{ backgroundColor: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: "1rem", fontSize: 12 }}
                   formatter={(v: ValueType | undefined) => [fmtMoney(Number(v ?? 0), cs), t("reports.totalSales")]}
                 />
-                <Bar dataKey="ventas" fill="hsl(142, 71%, 45%)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="ventas" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-/* ─── Summary Card ────────────────────────────────────── */
-
-function SummaryCard({
-  icon: Icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: typeof DollarSign;
-  label: string;
-  value: string;
-  accent: string;
-}) {
-  return (
-    <div className="bg-card border border-border rounded-xl p-4 flex items-start gap-3">
-      <div className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 ${accent}`}>
-        <Icon className="w-5 h-5" />
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground font-medium">{label}</p>
-        <p className="text-lg font-bold tracking-tight mt-0.5">{value}</p>
-      </div>
     </div>
   );
 }
@@ -424,13 +393,13 @@ function ExportDropdown({ from, to }: { from: string; to: string }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
+        className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground rounded-full text-[11px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
       >
         <FileDown className="w-4 h-4" />
         Exportar
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 w-52 bg-card border border-border rounded-lg shadow-lg z-50 py-1">
+        <div className="absolute right-0 mt-1 w-52 bg-card border border-border rounded-2xl shadow-lg z-50 py-1">
           <button onClick={() => download("/reports/export/sales/pdf")} className="w-full px-3 py-2 text-sm text-left hover:bg-muted">
             Ventas — PDF
           </button>

@@ -14,6 +14,7 @@ import {
   Ticket,
   UserRound,
 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
@@ -457,14 +458,14 @@ export default function AdminSettingsPage() {
   if (!loading && !isAdmin) {
     return (
       <div className="p-6">
-        <div className="max-w-xl rounded-sm border border-border bg-card p-6 space-y-3">
+        <div className="max-w-xl rounded-2xl border border-border bg-card p-6 space-y-3">
           <h1 className="text-lg font-bold text-foreground">Acceso restringido</h1>
           <p className="text-sm text-muted-foreground">
             La configuración del negocio solo está disponible para administradores.
           </p>
           <Link
             href="/pos"
-            className="inline-flex items-center px-4 py-2 rounded-sm bg-primary text-primary-foreground text-sm font-semibold"
+            className="inline-flex items-center px-4 py-2 rounded-full bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest"
           >
             Volver a Operación
           </Link>
@@ -483,38 +484,26 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-              <BadgeCheck className="h-3.5 w-3.5" />
-              Centro de configuración
-            </span>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Settings className="h-6 w-6 text-primary" />
-              Admin Settings
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Gestiona negocio, cuenta, seguridad, branding e idioma desde un solo lugar.
-            </p>
-          </div>
-        </div>
-      </section>
+      <AdminPageHeader
+        icon={<Settings className="w-4 h-4 text-primary" />}
+        title="Admin Settings"
+        description="Gestiona negocio, cuenta, seguridad, branding e idioma desde un solo lugar."
+      />
 
       {error && (
-        <div className="px-4 py-3 rounded-sm border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
+        <div className="px-4 py-3 rounded-2xl border border-destructive/40 bg-destructive/10 text-destructive text-sm font-medium">
           {error}
         </div>
       )}
 
       {successMessage && (
-        <div className="px-4 py-3 rounded-sm border border-primary/40 bg-primary/10 text-primary text-sm font-medium">
+        <div className="px-4 py-3 rounded-2xl border border-primary/40 bg-primary/10 text-primary text-sm font-medium">
           {successMessage}
         </div>
       )}
 
       <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="rounded-sm border border-border bg-card p-3 h-fit">
+        <aside className="rounded-2xl border border-border bg-card p-3 h-fit">
           <nav className="space-y-1">
             {SETTINGS_SECTIONS.map((section) => {
               const Icon = section.icon;
@@ -524,7 +513,7 @@ export default function AdminSettingsPage() {
                   key={section.id}
                   type="button"
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full text-left rounded-sm px-3 py-2.5 transition border ${
+                  className={`w-full text-left rounded-xl px-3 py-2.5 transition border ${
                     isActive
                       ? "bg-primary text-primary-foreground border-primary/70"
                       : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -549,7 +538,7 @@ export default function AdminSettingsPage() {
           </nav>
         </aside>
 
-        <div className="rounded-sm border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5">
           {activeSection === "business" && (
             <div className="space-y-5">
               <SectionTitle
@@ -635,7 +624,7 @@ export default function AdminSettingsPage() {
                   type="button"
                   onClick={saveBusiness}
                   disabled={savingAction === "business"}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition disabled:opacity-60"
                 >
                   <Save className="w-4 h-4" />
                   {savingAction === "business" ? "Guardando..." : "Guardar negocio"}
@@ -692,7 +681,7 @@ export default function AdminSettingsPage() {
                   type="button"
                   onClick={saveBusiness}
                   disabled={savingAction === "business"}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition disabled:opacity-60"
                 >
                   <Save className="w-4 h-4" />
                   {savingAction === "business" ? "Guardando..." : "Guardar ticket & tracking"}
@@ -722,7 +711,7 @@ export default function AdminSettingsPage() {
                     type="button"
                     onClick={saveProfileName}
                     disabled={savingAction === "profile"}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition disabled:opacity-60"
                   >
                     <Save className="w-4 h-4" />
                     {savingAction === "profile" ? "Guardando..." : "Guardar nombre"}
@@ -743,7 +732,7 @@ export default function AdminSettingsPage() {
                     type="button"
                     onClick={saveProfileEmail}
                     disabled={savingAction === "email"}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition disabled:opacity-60"
                   >
                     <Mail className="w-4 h-4" />
                     {savingAction === "email" ? "Guardando..." : "Guardar correo"}
@@ -751,7 +740,7 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-sm border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              <div className="rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                 Usuario actual: <span className="font-semibold text-foreground">{profile?.role || "ADMIN"}</span>
               </div>
             </div>
@@ -797,7 +786,7 @@ export default function AdminSettingsPage() {
                   type="button"
                   onClick={changePassword}
                   disabled={savingAction === "password"}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition disabled:opacity-60"
                 >
                   <Shield className="w-4 h-4" />
                   {savingAction === "password"
@@ -817,7 +806,7 @@ export default function AdminSettingsPage() {
               />
 
               <div className="grid gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-                <div className="rounded-sm border border-border bg-muted/30 p-3 h-45 flex items-center justify-center overflow-hidden">
+                <div className="rounded-xl border border-border bg-muted/30 p-3 h-45 flex items-center justify-center overflow-hidden">
                   {logoPreviewUrl ? (
                     <img
                       src={logoPreviewUrl}
@@ -840,7 +829,7 @@ export default function AdminSettingsPage() {
                       type="file"
                       accept=".png,.jpg,.jpeg,.webp,.svg,image/*"
                       onChange={(event) => uploadLogo(event.target.files?.[0] ?? null)}
-                      className="w-full text-sm text-foreground file:mr-3 file:px-3 file:py-2 file:rounded-sm file:border file:border-border file:bg-background file:text-foreground"
+                      className="w-full text-sm text-foreground file:mr-3 file:px-3 file:py-2 file:rounded-xl file:border file:border-border file:bg-background file:text-foreground"
                     />
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       Formatos: PNG, JPG, WEBP, SVG · Máximo 4MB.
@@ -859,7 +848,7 @@ export default function AdminSettingsPage() {
                     type="button"
                     onClick={saveBusiness}
                     disabled={savingAction === "business" || uploadingLogo}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition disabled:opacity-60"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition disabled:opacity-60"
                   >
                     <Save className="w-4 h-4" />
                     {uploadingLogo
@@ -889,7 +878,7 @@ export default function AdminSettingsPage() {
                       key={option}
                       type="button"
                       onClick={() => applyLocale(option)}
-                      className={`rounded-sm border px-4 py-3 text-left transition ${
+                      className={`rounded-2xl border px-4 py-3 text-left transition ${
                         isActive
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-background text-foreground hover:bg-accent"
@@ -957,7 +946,7 @@ function Field({
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full px-3 py-2.5 bg-background border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/50"
+        className="mt-1.5 w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/50"
       />
     </label>
   );

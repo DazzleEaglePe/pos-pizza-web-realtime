@@ -66,7 +66,7 @@ export function AdminTopbar({
             new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }),
           )
         }
-        className="hidden sm:flex flex-1 max-w-64 items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground transition-colors text-left"
+        className="hidden sm:flex flex-1 max-w-64 items-center gap-2 px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground transition-colors text-left"
       >
         <Search className="w-3.5 h-3.5 shrink-0" />
         <span className="flex-1 text-[13px]">Buscar en admin...</span>

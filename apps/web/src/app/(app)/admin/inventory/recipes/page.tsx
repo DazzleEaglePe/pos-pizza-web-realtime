@@ -6,6 +6,7 @@ import { getAccessToken } from "@/lib/auth";
 import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { BookOpen, Plus, Trash2 } from "lucide-react";
+import { AdminPageHeader } from "@pos-pizza/ui";
 
 interface RecipeRow {
   id: string;
@@ -110,30 +111,20 @@ export default function RecipesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <section className="rounded-[24px] border border-border bg-card px-6 py-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-sm border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-              <BookOpen className="h-3.5 w-3.5" />
-              Centro de inventario
-            </span>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-primary" />
-              Recetas
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Define qué insumos usa cada producto y en qué cantidad exacta.
-            </p>
-          </div>
+      <AdminPageHeader
+        icon={<BookOpen className="w-4 h-4 text-primary" />}
+        title="Recetas"
+        description="Define qué insumos usa cada producto y en qué cantidad exacta."
+        actions={
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-sm font-semibold text-sm shadow hover:opacity-90 transition shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-black text-[11px] uppercase tracking-widest shadow hover:opacity-90 transition shrink-0"
           >
             <Plus className="w-4 h-4" />
             Agregar Ingrediente
           </button>
-        </div>
-      </section>
+        }
+      />
 
       {loading ? (
         <PageSkeleton variant="table" cols={4} rows={5} showHero={false} />
@@ -146,7 +137,7 @@ export default function RecipesPage() {
           {Object.entries(grouped).map(([productName, rows]) => (
             <div
               key={productName}
-              className="bg-card rounded-sm border border-border overflow-hidden"
+              className="bg-card rounded-2xl border border-border overflow-hidden"
             >
               <div className="px-4 py-3 bg-muted/30 border-b border-border">
                 <h3 className="font-bold text-foreground">{productName}</h3>
@@ -154,16 +145,16 @@ export default function RecipesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/50">
-                    <th className="text-left px-4 py-2 font-semibold text-muted-foreground">
+                    <th className="text-left px-4 py-2 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                       Variante
                     </th>
-                    <th className="text-left px-4 py-2 font-semibold text-muted-foreground">
+                    <th className="text-left px-4 py-2 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                       Ingrediente
                     </th>
-                    <th className="text-right px-4 py-2 font-semibold text-muted-foreground">
+                    <th className="text-right px-4 py-2 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                       Cantidad
                     </th>
-                    <th className="text-center px-4 py-2 font-semibold text-muted-foreground">
+                    <th className="text-center px-4 py-2 font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                       Acción
                     </th>
                   </tr>
@@ -268,7 +259,7 @@ function RecipeFormDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <form
         onSubmit={handleSubmit}
-        className="bg-card border border-border rounded-sm p-6 w-full max-w-lg space-y-4 shadow-xl max-h-[90vh] overflow-y-auto"
+        className="bg-card border border-border rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-xl max-h-[90vh] overflow-y-auto"
       >
         <h2 className="text-lg font-bold text-foreground">
           Agregar Ingredientes a Receta
@@ -386,14 +377,14 @@ function RecipeFormDialog({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-sm"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition rounded-full"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-sm shadow hover:opacity-90 transition disabled:opacity-50"
+            className="px-5 py-2.5 text-[11px] font-black uppercase tracking-widest bg-primary text-primary-foreground rounded-full shadow hover:opacity-90 transition disabled:opacity-50"
           >
             {saving ? "Guardando..." : "Guardar Receta"}
           </button>

@@ -76,15 +76,15 @@ export function ProductsSection({
   const cs = useConfig((s) => s.currencySymbol);
   return (
     <>
-      <div className="bg-card border border-border rounded-sm p-5 space-y-4">
-        <h2 className="font-semibold text-foreground">
+      <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+        <h2 className="font-black text-foreground">
           {productForm.id ? "Editar producto" : "Nuevo producto"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <select
             value={productForm.categoryId}
             onChange={(e) => setProductForm((s) => ({ ...s, categoryId: e.target.value }))}
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           >
             {catalog.map((category) => (
               <option key={category.id} value={category.id}>
@@ -96,7 +96,7 @@ export function ProductsSection({
             value={productForm.name}
             onChange={(e) => setProductForm((s) => ({ ...s, name: e.target.value }))}
             placeholder="Nombre"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <input
             type="number"
@@ -106,12 +106,12 @@ export function ProductsSection({
               setProductForm((s) => ({ ...s, basePrice: Number(e.target.value || 0) }))
             }
             placeholder="Precio base"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <button
             type="button"
             onClick={() => void submitProduct()}
-            className="px-4 py-2.5 bg-primary text-primary-foreground rounded-sm text-sm font-semibold"
+            className="px-4 py-2.5 bg-primary text-primary-foreground rounded-full text-[11px] font-black uppercase tracking-widest"
           >
             <span className="inline-flex items-center gap-1">
               <Plus className="w-4 h-4" />
@@ -122,19 +122,19 @@ export function ProductsSection({
             value={productForm.description}
             onChange={(e) => setProductForm((s) => ({ ...s, description: e.target.value }))}
             placeholder="Descripción"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm md:col-span-2"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm md:col-span-2"
           />
           <input
             value={productForm.imageUrl}
             onChange={(e) => setProductForm((s) => ({ ...s, imageUrl: e.target.value }))}
             placeholder="URL de imagen"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm md:col-span-2"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm md:col-span-2"
           />
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-sm p-5 space-y-4">
-        <h2 className="font-semibold text-foreground">
+      <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+        <h2 className="font-black text-foreground">
           {modifierGroupForm.id ? "Editar grupo de modificadores" : "Nuevo grupo de modificadores"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -142,7 +142,7 @@ export function ProductsSection({
             value={modifierGroupForm.name}
             onChange={(e) => setModifierGroupForm((s) => ({ ...s, name: e.target.value }))}
             placeholder="Nombre del grupo"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <input
             type="number"
@@ -151,7 +151,7 @@ export function ProductsSection({
               setModifierGroupForm((s) => ({ ...s, minSelections: Number(e.target.value || 0) }))
             }
             placeholder="Mínimo"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <input
             type="number"
@@ -160,7 +160,7 @@ export function ProductsSection({
               setModifierGroupForm((s) => ({ ...s, maxSelections: Number(e.target.value || 99) }))
             }
             placeholder="Máximo"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <input
             type="number"
@@ -169,12 +169,12 @@ export function ProductsSection({
               setModifierGroupForm((s) => ({ ...s, displayOrder: Number(e.target.value || 0) }))
             }
             placeholder="Orden"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
           />
           <button
             type="button"
             onClick={() => void submitModifierGroup()}
-            className="px-4 py-2.5 bg-primary text-primary-foreground rounded-sm text-sm font-semibold"
+            className="px-4 py-2.5 bg-primary text-primary-foreground rounded-full text-[11px] font-black uppercase tracking-widest"
           >
             <span className="inline-flex items-center gap-1">
               <Plus className="w-4 h-4" />
@@ -187,13 +187,13 @@ export function ProductsSection({
               setModifierGroupForm((s) => ({ ...s, description: e.target.value }))
             }
             placeholder="Descripción"
-            className="px-3 py-2.5 rounded-sm border border-border bg-background text-sm md:col-span-5"
+            className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm md:col-span-5"
           />
         </div>
 
         <div className="space-y-3">
           {modifierGroups.map((group) => (
-            <div key={group.id} className="rounded-sm border border-border p-3 space-y-2">
+            <div key={group.id} className="rounded-xl border border-border p-3 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-medium text-sm text-foreground">{group.name}</p>
@@ -216,14 +216,14 @@ export function ProductsSection({
                         displayOrder: group.displayOrder,
                       })
                     }
-                    className="p-1.5 rounded-sm hover:bg-accent"
+                    className="p-1.5 rounded-lg hover:bg-accent"
                     title="Editar grupo"
                   >
                     <Pencil className="w-4 h-4 text-muted-foreground" />
                   </button>
                   <button
                     onClick={() => void disableModifierGroup(group.id)}
-                    className="p-1.5 rounded-sm hover:bg-destructive/10"
+                    className="p-1.5 rounded-lg hover:bg-destructive/10"
                     title="Desactivar grupo"
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />
@@ -235,7 +235,7 @@ export function ProductsSection({
                 {group.modifiers.map((modifier) => (
                   <div
                     key={modifier.id}
-                    className="flex items-center justify-between px-2 py-1.5 rounded-sm border border-border/60 bg-background/50"
+                    className="flex items-center justify-between px-2 py-1.5 rounded-xl border border-border/60 bg-background/50"
                   >
                     <span className="text-xs text-foreground">
                       {modifier.name} · {cs}{Number(modifier.price).toFixed(2)}
@@ -243,13 +243,13 @@ export function ProductsSection({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => void editModifier(modifier)}
-                        className="p-1 rounded-sm hover:bg-accent"
+                        className="p-1 rounded-lg hover:bg-accent"
                       >
                         <Pencil className="w-3 h-3 text-muted-foreground" />
                       </button>
                       <button
                         onClick={() => void disableModifier(modifier.id)}
-                        className="p-1 rounded-sm hover:bg-destructive/10"
+                        className="p-1 rounded-lg hover:bg-destructive/10"
                       >
                         <Trash2 className="w-3 h-3 text-destructive" />
                       </button>
@@ -272,7 +272,7 @@ export function ProductsSection({
                     }))
                   }
                   placeholder="Nuevo modificador"
-                  className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
+                  className="px-3 py-2 rounded-xl border border-border bg-background text-sm"
                 />
                 <input
                   type="number"
@@ -289,7 +289,7 @@ export function ProductsSection({
                     }))
                   }
                   placeholder="Precio"
-                  className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
+                  className="px-3 py-2 rounded-xl border border-border bg-background text-sm"
                 />
                 <input
                   type="number"
@@ -305,11 +305,11 @@ export function ProductsSection({
                     }))
                   }
                   placeholder="Orden"
-                  className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
+                  className="px-3 py-2 rounded-xl border border-border bg-background text-sm"
                 />
                 <button
                   onClick={() => void createModifier(group.id)}
-                  className="px-3 py-2 rounded-sm bg-primary text-primary-foreground text-sm font-semibold"
+                  className="px-3 py-2 rounded-full bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest"
                 >
                   Agregar modificador
                 </button>
@@ -323,11 +323,11 @@ export function ProductsSection({
         {allProducts.map((product) => (
           <div
             key={product.id}
-            className="bg-card border border-border rounded-sm p-4 space-y-3"
+            className="bg-card border border-border rounded-2xl p-4 space-y-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-semibold text-foreground">{product.name}</h3>
+                <h3 className="font-bold text-foreground">{product.name}</h3>
                 <p className="text-xs text-muted-foreground">
                   {product.slug} · {cs}{Number(product.basePrice).toFixed(2)}
                 </p>
@@ -349,14 +349,14 @@ export function ProductsSection({
                       displayOrder: product.displayOrder,
                     })
                   }
-                  className="p-1.5 rounded-sm hover:bg-accent"
+                  className="p-1.5 rounded-lg hover:bg-accent"
                   title="Editar"
                 >
                   <Pencil className="w-4 h-4 text-muted-foreground" />
                 </button>
                 <button
                   onClick={() => void disableProduct(product.id)}
-                  className="p-1.5 rounded-sm hover:bg-destructive/10"
+                  className="p-1.5 rounded-lg hover:bg-destructive/10"
                   title="Desactivar"
                 >
                   <Trash2 className="w-4 h-4 text-destructive" />
@@ -376,7 +376,7 @@ export function ProductsSection({
                   {product.modifierGroups.map((group) => (
                     <div
                       key={group.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-sm border border-border/60 bg-background/50"
+                      className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 bg-background/50"
                     >
                       <span className="text-sm text-foreground">
                         {group.name} ({group.minSelections}-{group.maxSelections})
@@ -385,7 +385,7 @@ export function ProductsSection({
                         onClick={() =>
                           void removeModifierGroupFromProduct(product.id, group.id)
                         }
-                        className="p-1 rounded-sm hover:bg-destructive/10"
+                        className="p-1 rounded-lg hover:bg-destructive/10"
                         title="Quitar grupo"
                       >
                         <Trash2 className="w-3.5 h-3.5 text-destructive" />
@@ -404,7 +404,7 @@ export function ProductsSection({
                       [product.id]: e.target.value,
                     }))
                   }
-                  className="px-3 py-2 rounded-sm border border-border bg-background text-sm md:col-span-3"
+                  className="px-3 py-2 rounded-xl border border-border bg-background text-sm md:col-span-3"
                 >
                   <option value="">Seleccionar grupo...</option>
                   {modifierGroups
@@ -417,7 +417,7 @@ export function ProductsSection({
                 </select>
                 <button
                   onClick={() => void assignModifierGroup(product.id)}
-                  className="px-3 py-2 rounded-sm bg-primary text-primary-foreground text-sm font-semibold"
+                  className="px-3 py-2 rounded-full bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest"
                 >
                   Asignar grupo
                 </button>
@@ -433,7 +433,7 @@ export function ProductsSection({
                   {product.variants.map((variant) => (
                     <div
                       key={variant.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-sm border border-border/60 bg-background/50"
+                      className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 bg-background/50"
                     >
                       <span className="text-sm text-foreground">
                         {variant.name} · {cs}{Number(variant.price).toFixed(2)}
@@ -441,13 +441,13 @@ export function ProductsSection({
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => void editVariant(variant)}
-                          className="p-1 rounded-sm hover:bg-accent"
+                          className="p-1 rounded-lg hover:bg-accent"
                         >
                           <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                         <button
                           onClick={() => void disableVariant(variant.id)}
-                          className="p-1 rounded-sm hover:bg-destructive/10"
+                          className="p-1 rounded-lg hover:bg-destructive/10"
                         >
                           <Trash2 className="w-3.5 h-3.5 text-destructive" />
                         </button>
@@ -471,7 +471,7 @@ export function ProductsSection({
                     }))
                   }
                   placeholder="Nombre variante"
-                  className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
+                  className="px-3 py-2 rounded-xl border border-border bg-background text-sm"
                 />
                 <input
                   type="number"
@@ -488,7 +488,7 @@ export function ProductsSection({
                     }))
                   }
                   placeholder="Precio"
-                  className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
+                  className="px-3 py-2 rounded-xl border border-border bg-background text-sm"
                 />
                 <input
                   type="number"
@@ -504,11 +504,11 @@ export function ProductsSection({
                     }))
                   }
                   placeholder="Orden"
-                  className="px-3 py-2 rounded-sm border border-border bg-background text-sm"
+                  className="px-3 py-2 rounded-xl border border-border bg-background text-sm"
                 />
                 <button
                   onClick={() => void createVariant(product.id)}
-                  className="px-3 py-2 rounded-sm bg-primary text-primary-foreground text-sm font-semibold"
+                  className="px-3 py-2 rounded-full bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest"
                 >
                   Agregar variante
                 </button>
@@ -571,7 +571,7 @@ function PrepTimeButton({ productId }: { productId: string }) {
     return (
       <button
         onClick={() => void handleOpen()}
-        className="p-1.5 rounded-sm hover:bg-accent"
+        className="p-1.5 rounded-lg hover:bg-accent"
         title="Tiempo de preparación"
       >
         <Timer className="w-4 h-4 text-muted-foreground" />
@@ -580,7 +580,7 @@ function PrepTimeButton({ productId }: { productId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-1.5 bg-muted/60 rounded-sm px-2 py-1">
+    <div className="flex items-center gap-1.5 bg-muted/60 rounded-xl px-2 py-1">
       <Timer className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
       <input
         type="number"
