@@ -1,7 +1,20 @@
-import { Controller, Post, Body, Get, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Patch,
+  UseGuards,
+  Request,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -25,6 +38,37 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req: any) {
-    return req.user;
+    return this.authService.getProfile(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  updateProfile(@Request() req: any, @Body() body: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.id, body.name);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('email')
+  updateEmail(@Request() req: any, @Body() body: UpdateEmailDto) {
+    return this.authService.updateEmail(req.user.id, body.email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('change-password')
+  async changePassword(@Request() req: any, @Body() body: ChangePasswordDto) {
+    await this.authService.changePassword(req.user.id, body);
+    return { success: true, forceRelogin: true };
+  }
+
+  @Post('refresh')
+  async refresh(@Body() body: RefreshTokenDto) {
+    return this.authService.refreshSession(body.refreshToken);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req: any, @Body() body: RefreshTokenDto) {
+    await this.authService.logout(body.refreshToken, req.user?.id);
+    return { success: true };
   }
 }

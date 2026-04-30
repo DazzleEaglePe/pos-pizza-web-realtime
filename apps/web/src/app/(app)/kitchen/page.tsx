@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Clock, CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { API_URL } from "@/lib/config";
 import { getAccessToken } from "@/lib/auth";
 import { posAlert } from "@/lib/sweetalert";
+import { isUnauthorized, handleSessionExpired } from "@/lib/api-error-handler";
 import { useKitchenUi } from "./kitchen-ui-context";
 import { flashDocumentTitle, playNewOrderSfx } from "./kds-sfx";
 
@@ -48,6 +50,7 @@ export default function KitchenPage() {
 
         if (!cancelled) setOrders(list);
       } catch (err) {
+        if (isUnauthorized(err)) { handleSessionExpired(); return; }
         console.error("Failed to load active orders", err);
         posAlert.fire({
           toast: true,
@@ -146,9 +149,8 @@ export default function KitchenPage() {
 
   if (loading)
     return (
-      <div className="p-10 text-white font-bold flex items-center gap-3">
-        <Loader2 className="w-5 h-5 animate-spin text-primary" />
-        Cargando pedidos...
+      <div className="p-6">
+        <PageSkeleton variant="board" showHero={false} />
       </div>
     );
 
@@ -215,18 +217,18 @@ function OrderColumn({
   highlighted,
 }: any) {
   return (
-    <div className="flex flex-col w-[calc(100vw-2rem)] sm:w-[360px] lg:w-[380px] max-w-[440px] h-full min-h-0 shrink-0 snap-start">
+    <div className="flex flex-col w-[calc(100vw-2rem)] sm:w-90 lg:w-95 max-w-110 h-full min-h-0 shrink-0 snap-start">
       <div className="flex items-center justify-between mb-4 px-2">
-        <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-3">
+        <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-3">
           {title}{" "}
-          <span className="text-sm bg-[#1c1c1c] text-primary px-3 py-1 rounded-full font-black border border-primary/20">
+          <span className="text-sm bg-card text-primary px-3 py-1 rounded-full font-black border border-primary/20">
             {count}
           </span>
         </h2>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-4 pb-12">
         {items.length === 0 ? (
-          <div className="text-sm text-gray-400 px-2 py-8">
+          <div className="text-sm text-muted-foreground px-2 py-8">
             Sin pedidos aqui por ahora.
           </div>
         ) : (
@@ -270,12 +272,12 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
 
   const ageClass =
     ageTone === "late"
-      ? "bg-red-500/10 text-red-200 border-red-500/20"
+      ? "bg-destructive/10 text-destructive border-destructive/20"
       : ageTone === "warn"
-        ? "bg-orange-500/10 text-orange-200 border-orange-500/20"
+        ? "bg-orange-500/10 text-orange-500 border-orange-500/20"
         : ageTone === "ok"
-          ? "bg-yellow-500/10 text-yellow-200 border-yellow-500/20"
-          : "bg-emerald-500/10 text-emerald-200 border-emerald-500/20";
+          ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+          : "bg-primary/10 text-primary border-primary/20";
 
   const runUpdate = async (nextStatus: string) => {
     if (isUpdating) return;
@@ -283,6 +285,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
     try {
       await onUpdate(order.id, nextStatus);
     } catch (err: any) {
+      if (isUnauthorized(err)) { handleSessionExpired(); return; }
       console.error("Failed to update order status", err);
       posAlert.fire({
         toast: true,
@@ -300,25 +303,25 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
 
   return (
     <div
-      className={`bg-[#1c1c1c] border rounded-2xl p-5 shadow-2xl transition-all ${
+      className={`bg-card border rounded-sm p-3.5 sm:p-5 shadow-lg transition-all ${
         isNew
-          ? "border-primary/50 ring-1 ring-primary/20"
+          ? "border-primary/40 ring-1 ring-primary/10"
           : isProgress
-            ? "border-[#f6e05e]/50 ring-1 ring-[#f6e05e]/20"
-            : "border-emerald-400/30 ring-1 ring-emerald-400/10"
+            ? "border-amber-400/40 ring-1 ring-amber-400/10"
+            : "border-emerald-500/30 ring-1 ring-emerald-500/10"
       } ${
         isHighlighted
-          ? "ring-2 ring-primary/40 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.7)] animate-in zoom-in-95 fade-in duration-300"
+          ? "ring-2 ring-primary/40 shadow-xl animate-in zoom-in-95 fade-in duration-300"
           : ""
       }`}
     >
-      <div className="flex justify-between items-start mb-4 border-b border-white/5 pb-4">
+        <div className="flex justify-between items-start mb-3 sm:mb-4 border-b border-border pb-3 sm:pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg font-black text-white">
+            <span className="text-lg font-black text-foreground">
               {order.ticketNumber}
             </span>
-            <Badge className="bg-[#242426] text-white hover:bg-[#242426] border-white/10">
+            <Badge className="bg-muted text-foreground hover:bg-muted border-border">
               {isSalon
                 ? typeof order?.table?.number === "number"
                   ? `Mesa ${order.table.number}`
@@ -326,7 +329,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
                 : order.customerName || "Para Llevar"}
             </Badge>
           </div>
-          <div className="text-xs text-gray-500 flex items-center gap-1 font-medium">
+          <div className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
             <Clock className="w-3 h-3" /> hace{" "}
             {timeElapsed > 0 ? timeElapsed : "<1"} min
           </div>
@@ -340,7 +343,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
         </div>
       </div>
 
-      <div className="space-y-3 mb-6">
+      <div className="space-y-2.5 mb-4 sm:mb-6">
         {order.items?.map((item: any) => (
           <TicketItem
             key={item.id}
@@ -349,17 +352,18 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
               item.productName +
               (item.variantName ? ` (${item.variantName})` : "")
             }
+            modifierNames={item.modifierNames}
             note={item.notes}
           />
         ))}
       </div>
 
-      <div className="flex gap-2 pt-4 border-t border-white/5">
+      <div className="flex gap-2 pt-3 sm:pt-4 border-t border-border">
         {isNew && (
           <button
             onClick={() => runUpdate("PREPARING")}
             disabled={isUpdating}
-            className="w-full py-3 rounded-xl bg-primary text-gray-900 font-bold shadow-[0_0_15px_rgba(var(--primary),0.3)] hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 sm:py-3 rounded-sm bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isUpdating ? (
               <>
@@ -376,7 +380,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
           <button
             onClick={() => runUpdate("IN_OVEN")}
             disabled={isUpdating}
-            className="w-full py-3 rounded-xl bg-[#dd6b20] text-white font-bold shadow-[0_0_15px_rgba(221,107,32,0.3)] hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 sm:py-3 rounded-xl bg-orange-600 text-white font-bold shadow-md hover:bg-orange-600/90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isUpdating ? (
               <>
@@ -391,7 +395,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
           <button
             onClick={() => runUpdate("READY")}
             disabled={isUpdating}
-            className="w-full py-3 rounded-xl bg-[#f6e05e] text-orange-950 font-bold shadow-[0_0_15px_rgba(246,224,94,0.3)] hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 sm:py-3 rounded-xl bg-amber-400 text-amber-950 font-bold shadow-md hover:bg-amber-400/90 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isUpdating ? (
               <>
@@ -408,7 +412,7 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
           <button
             onClick={() => runUpdate("DELIVERED")}
             disabled={isUpdating}
-            className="w-full py-3 rounded-xl border border-white/10 text-white font-bold bg-[#242426] hover:bg-[#2a2a2c] transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 sm:py-3 rounded-sm border border-border text-foreground font-bold bg-muted hover:bg-accent transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isUpdating ? (
               <>
@@ -424,15 +428,20 @@ function OrderTicket({ type, order, onUpdate, now, isHighlighted }: any) {
   );
 }
 
-function TicketItem({ qty, name, note }: any) {
+function TicketItem({ qty, name, note, modifierNames }: any) {
   return (
-    <div className="flex gap-3 group cursor-pointer">
-      <span className="font-black text-white w-6 shrink-0">{qty}x</span>
-      <div>
-        <span className="font-bold text-sm text-gray-200">{name}</span>
+    <div className="flex gap-3">
+      <span className="font-black text-foreground w-6 shrink-0">{qty}x</span>
+      <div className="min-w-0">
+        <span className="font-bold text-sm text-foreground/80">{name}</span>
+        {modifierNames?.length > 0 && (
+          <p className="text-xs text-primary/80 font-semibold mt-0.5">
+            + {modifierNames.join(", ")}
+          </p>
+        )}
         {note && (
-          <p className="text-xs text-red-400 font-semibold mt-0.5 max-w-[90%]">
-            Nota: {note}
+          <p className="text-xs text-destructive font-semibold mt-0.5 truncate">
+            📝 {note}
           </p>
         )}
       </div>

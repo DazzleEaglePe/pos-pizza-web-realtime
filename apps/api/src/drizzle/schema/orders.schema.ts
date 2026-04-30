@@ -11,6 +11,7 @@ import { users } from './auth.schema';
 import { tables } from './tables.schema';
 import { cashRegisters } from './payments.schema';
 import { products, productVariants, modifiers } from './catalog.schema';
+import { promotions } from './promotions.schema';
 
 export const orders = pgTable('orders', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -46,9 +47,8 @@ export const orderItems = pgTable('order_items', {
   orderId: uuid('order_id')
     .notNull()
     .references(() => orders.id, { onDelete: 'cascade' }),
-  productId: uuid('product_id')
-    .notNull()
-    .references(() => products.id),
+  productId: uuid('product_id').references(() => products.id),
+  promotionId: uuid('promotion_id').references(() => promotions.id),
   variantId: uuid('variant_id').references(() => productVariants.id),
   productName: text('product_name').notNull(),
   variantName: text('variant_name'),
@@ -116,6 +116,10 @@ export const orderItemsRelations = relations(orderItems, ({ one, many }) => ({
   product: one(products, {
     fields: [orderItems.productId],
     references: [products.id],
+  }),
+  promotion: one(promotions, {
+    fields: [orderItems.promotionId],
+    references: [promotions.id],
   }),
   variant: one(productVariants, {
     fields: [orderItems.variantId],

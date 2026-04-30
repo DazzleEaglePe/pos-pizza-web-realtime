@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { uuid,  boolean,  timestamp,  pgTable, text, integer, real    } from "drizzle-orm/pg-core";
 import { products, productVariants } from "./catalog.schema";
 
@@ -24,3 +25,22 @@ export const promotionItems = pgTable("promotion_items", {
   quantity: integer("quantity").notNull().default(1),
   isRequired: boolean("is_required").notNull().default(true),
 });
+
+export const promotionsRelations = relations(promotions, ({ many }) => ({
+  items: many(promotionItems),
+}));
+
+export const promotionItemsRelations = relations(promotionItems, ({ one }) => ({
+  promotion: one(promotions, {
+    fields: [promotionItems.promotionId],
+    references: [promotions.id],
+  }),
+  product: one(products, {
+    fields: [promotionItems.productId],
+    references: [products.id],
+  }),
+  variant: one(productVariants, {
+    fields: [promotionItems.variantId],
+    references: [productVariants.id],
+  }),
+}));

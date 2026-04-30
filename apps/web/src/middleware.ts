@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Paths that require authentication
-  const isProtectedRoute = path.startsWith('/pos') || path.startsWith('/kitchen') || path.startsWith('/admin');
+  const isProtectedRoute = path.startsWith('/pos') || path.startsWith('/kitchen') || path.startsWith('/admin') || path.startsWith('/help');
   
   // Auth paths
   const isAuthRoute = path === '/login';
@@ -25,5 +25,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/pos/:path*', '/kitchen/:path*', '/admin/:path*', '/login'],
+  matcher: ['/pos/:path*', '/kitchen/:path*', '/admin/:path*', '/login', '/help/:path*'],
 };

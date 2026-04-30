@@ -5,23 +5,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { posAlert } from "@/lib/sweetalert";
 import { useTranslation } from "@/i18n";
 import { API_URL } from "@/lib/config";
+import { saveTokens } from "@/lib/auth";
 
 export function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@pospizza.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -36,21 +36,15 @@ export function LoginForm() {
         throw new Error(data.message || "Invalid credentials");
       }
 
-      // Store JWT in LocalStorage for client components (Zustand, pure React)
-      localStorage.setItem("pos_access_token", data.access_token);
+      saveTokens(data.access_token, data.refresh_token);
       localStorage.setItem("pos_user", JSON.stringify(data.user));
 
-      // Store JWT in Cookies as a Session Cookie (expires when browser closes)
-      document.cookie = `pos_access_token=${data.access_token}; path=/; SameSite=Lax`;
-
-      // Route to POS seamlessly
       router.push("/pos");
     } catch (err: any) {
       posAlert.fire({
         icon: "error",
         title: t("login.accessDenied"),
         text: err.message || t("login.invalidCredentials"),
-        confirmButtonColor: "#ff5757",
         confirmButtonText: t("login.tryAgain"),
       });
     } finally {
@@ -59,12 +53,10 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Email */}
       <div className="space-y-2">
-        <Label
-          htmlFor="email"
-          className="text-gray-700 dark:text-gray-300 font-bold text-sm"
-        >
+        <Label htmlFor="email" className="text-foreground font-bold text-sm">
           {t("login.emailLabel")}
         </Label>
         <Input
@@ -73,33 +65,46 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-12 bg-gray-50/50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl focus-visible:ring-primary text-gray-900 dark:text-white placeholder:text-gray-400"
-          placeholder="admin@pospizza.com"
+          className="h-12 bg-muted/50 border-border rounded-xl focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
+          placeholder={t("login.emailPlaceholder") || "admin@pospizza.com"}
         />
       </div>
 
+      {/* Password */}
       <div className="space-y-2">
-        <Label
-          htmlFor="password"
-          className="text-gray-700 dark:text-gray-300 font-bold text-sm"
-        >
+        <Label htmlFor="password" className="text-foreground font-bold text-sm">
           {t("login.passwordLabel")}
         </Label>
-        <Input
-          id="password"
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="h-12 bg-gray-50/50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl focus-visible:ring-primary text-gray-900 dark:text-white placeholder:text-gray-400"
-          placeholder="••••••••"
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-12 bg-muted/50 border-border rounded-xl focus-visible:ring-primary text-foreground placeholder:text-muted-foreground pr-11"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <EyeOff className="w-4.5 h-4.5" />
+            ) : (
+              <Eye className="w-4.5 h-4.5" />
+            )}
+          </button>
+        </div>
       </div>
 
+      {/* Submit */}
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full h-11 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+        className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-colors flex items-center justify-center gap-2"
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         {isLoading ? t("login.authenticating") : t("login.signIn")}

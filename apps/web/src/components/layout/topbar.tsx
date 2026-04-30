@@ -1,82 +1,62 @@
 "use client";
 
-import { Search, Bell, Menu, Sun, Moon, Languages } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { useTranslation, locales, localeNames, type Locale } from "@/i18n";
+import { useTranslation } from "@/i18n";
 import { MobileNav } from "./mobile-nav";
+import { NotificationBell } from "./notification-bell";
+import { useEffect, useState } from "react";
+import { Store, MonitorSmartphone } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useCashRegister } from "@/hooks/useCashRegister";
 
 export function Topbar() {
-  const { theme, setTheme } = useTheme();
-  const { t, locale, setLocale } = useTranslation();
-  const [mounted, setMounted] = useState(false);
+  const { t } = useTranslation();
+  const pathname = usePathname();
+  const isPosRoute = !pathname.startsWith("/admin");
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const cr = useCashRegister();
 
-  // Avoid hydration mismatch by waiting until component mounts
   useEffect(() => {
-    setMounted(true);
+    try {
+      const raw = localStorage.getItem("pos_user");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { name?: string; email?: string; role?: string };
+      setUser({
+        name: parsed?.name || parsed?.email || "Usuario",
+        role: parsed?.role ?? "",
+      });
+    } catch {}
   }, []);
 
-  const toggleLocale = () => {
-    const nextLocale = locale === "es" ? "en" : "es";
-    setLocale(nextLocale);
-  };
-
   return (
-    <header className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-background border-b border-border w-full gap-4">
-      <div className="flex items-center w-full sm:w-auto gap-4">
-        {/* Mobile Navigation Toggle */}
-        <MobileNav />
+    <header className="flex items-center justify-between gap-2 px-3 sm:px-4 h-14 bg-background border-b border-border w-full min-w-0">
+      <MobileNav />
 
-        {/* Search Bar */}
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder={t("topbar.searchPlaceholder")}
-            className="w-full pl-9 pr-4 py-2 h-10 bg-background border-input rounded-md text-sm focus-visible:ring-1 focus-visible:ring-ring transition-all placeholder:text-muted-foreground"
-          />
-        </div>
-      </div>
-
-      {/* Profile & Notifications */}
-      <div className="flex items-center gap-2 sm:ml-auto">
-        {mounted && (
-          <>
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLocale}
-              className="flex items-center gap-1.5 px-3 py-2 h-10 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors uppercase tracking-wider focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              aria-label="Toggle Language"
-            >
-              <Languages className="h-4 w-4" />
-              {locale}
-            </button>
-
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              aria-label={t("topbar.toggleDarkMode")}
-            >
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform duration-300 dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100" />
-            </button>
-          </>
-        )}
-
-        <button className="relative p-2 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-destructive rounded-full border border-background"></span>
-        </button>
-        
-        <div className="flex items-center gap-3 pl-4 ml-2 border-l border-border h-10">
-          <div className="flex flex-col items-end justify-center">
-            <span className="text-sm font-semibold text-foreground leading-none mb-1">Sofia L.</span>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{t("topbar.cashier")}</span>
+      {/* ── Context pills (POS routes only) ── */}
+      {isPosRoute && (
+        <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-sm bg-primary/8 border border-primary/15 text-[11px] font-semibold text-primary">
+            <Store className="w-3.5 h-3.5" />
+            POS Pizza
           </div>
-          <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden shrink-0">
-             <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Sofia&backgroundColor=e6f6f4" alt="Avatar" className="w-full h-full object-cover scale-110" />
+          {cr.register && (
+            <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-sm bg-emerald-500/8 border border-emerald-500/15 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <MonitorSmartphone className="w-3.5 h-3.5" />
+              {t("topbar.cashier")} #{cr.register.id.slice(-4).toUpperCase()}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center gap-1.5 sm:gap-3 ml-auto min-w-0">
+        <NotificationBell />
+
+        <div className="flex items-center gap-2 pl-2 sm:pl-3 ml-0.5 sm:ml-1 border-l border-border h-8 min-w-0">
+          <div className="hidden sm:flex flex-col items-end justify-center min-w-0">
+            <span className="text-[13px] font-semibold text-foreground leading-none">{user?.name ?? "Usuario"}</span>
+            <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">{user?.role?.toLowerCase() ?? t("topbar.cashier")}</span>
+          </div>
+          <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden shrink-0">
+             <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user?.name ?? "Usuario")}&backgroundColor=e6f6f4`} alt="Avatar" className="w-full h-full object-cover scale-110" />
           </div>
         </div>
       </div>

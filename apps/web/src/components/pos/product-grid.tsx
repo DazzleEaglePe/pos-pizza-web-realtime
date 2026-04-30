@@ -59,17 +59,17 @@ export function ProductGrid() {
       {mockProducts.map((product) => (
         <div
           key={product.id}
-          className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group"
+          className="bg-card rounded-3xl p-5 shadow-sm border border-border hover:shadow-md transition-shadow relative overflow-hidden group"
         >
           {/* Status/Badge */}
           {product.badge && (
-            <Badge className="absolute top-4 left-4 bg-[#ffbf00] hover:bg-[#ffbf00] text-gray-900 border-none rounded-xl font-bold px-3 py-1 z-10">
+            <Badge className="absolute top-4 left-4 bg-[#ffbf00] hover:bg-[#ffbf00] text-foreground border-none rounded-sm font-bold px-3 py-1 z-10">
               {product.badge}
             </Badge>
           )}
 
           {/* Image */}
-          <div className="w-full aspect-square rounded-2xl overflow-hidden mb-5 bg-gray-50 relative">
+          <div className="w-full aspect-square rounded-sm overflow-hidden mb-5 bg-muted relative">
             <img
               src={product.image}
               alt={product.name}
@@ -79,10 +79,10 @@ export function ProductGrid() {
 
           {/* Details */}
           <div className="space-y-1 mb-4">
-            <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2 min-h-[44px]">
+            <h3 className="font-bold text-foreground text-lg leading-tight line-clamp-2 min-h-11">
               {product.name}
             </h3>
-            <div className="flex items-center text-xs text-gray-500 gap-2 font-medium">
+            <div className="flex items-center text-xs text-muted-foreground gap-2 font-medium">
               <span className={product.available === 0 ? "text-red-500" : ""}>
                  {product.available} Available 
               </span>
@@ -92,20 +92,20 @@ export function ProductGrid() {
           </div>
 
           <div className="flex items-center justify-between mt-auto">
-             <span className="text-xl font-black text-gray-900">${product.price.toFixed(2)}</span>
+             <span className="text-xl font-black text-foreground">${product.price.toFixed(2)}</span>
              
              {/* Add Button Area based on Wireframe */}
              {product.available === 0 ? (
-               <button disabled className="bg-gray-100 text-gray-400 font-bold px-6 py-3 rounded-2xl text-sm transition-all cursor-not-allowed w-full ml-3">
+               <button disabled className="bg-muted text-muted-foreground font-bold px-6 py-3 rounded-sm text-sm transition-all cursor-not-allowed w-full ml-3">
                  Sold Out
                </button>
              ) : (
                 <div className="flex items-center gap-2">
-                   <button className="w-10 h-10 rounded-full border-2 border-gray-100 flex items-center justify-center text-gray-500 hover:border-primary hover:text-primary transition-colors">
+                   <button className="w-10 h-10 rounded-full border-2 border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors">
                      <Minus className="w-4 h-4" />
                    </button>
                    <span className="font-bold text-lg w-4 text-center">1</span>
-                   <button className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
+                   <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30">
                      <Plus className="w-5 h-5" />
                    </button>
                 </div>

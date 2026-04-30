@@ -76,28 +76,23 @@ export function useRealtimeOrders(handlers?: {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("🔌 WebSocket connected:", socket.id);
       setIsConnected(true);
     });
 
     socket.on("disconnect", () => {
-      console.log("🔴 WebSocket disconnected");
       setIsConnected(false);
     });
 
     // ─── Order lifecycle events ────────────────────
     socket.on("order:created", (data: RealtimeOrder) => {
-      console.log("📦 order:created", data);
       handlers?.onOrderCreated?.(data);
     });
 
     socket.on("order:statusUpdated", (data: OrderStatusUpdatedEvent) => {
-      console.log("🔄 order:statusUpdated", data);
       handlers?.onOrderStatusUpdated?.(data);
     });
 
     socket.on("order:cancelled", (data: OrderCancelledEvent) => {
-      console.log("❌ order:cancelled", data);
       handlers?.onOrderCancelled?.(data);
     });
 
